@@ -1,13 +1,33 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const ALLOWED_ORIGIN = "https://omeagle.online";
+
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Simple in-memory rate limiter: 1 request per 2s per user
+const rateLimitMap = new Map<string, number>();
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();
+  const last = rateLimitMap.get(userId) ?? 0;
+  if (now - last < 2000) return true;
+  rateLimitMap.set(userId, now);
+  // Cleanup old entries every ~500 calls
+  if (rateLimitMap.size > 500) {
+    for (const [k, v] of rateLimitMap) {
+      if (now - v > 30000) rateLimitMap.delete(k);
+    }
+  }
+  return false;
+}
+
 serve(async (req: Request) => {
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -19,7 +39,7 @@ serve(async (req: Request) => {
     // Admin client (bypasses RLS)
     const adminClient = createClient(supabaseUrl, supabaseSecretKey);
 
-    // User client (respects RLS, uses JWT)
+    // Validate auth header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -28,6 +48,7 @@ serve(async (req: Request) => {
       );
     }
 
+    // User client (validates JWT)
     const publishableKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
     const userClient = createClient(supabaseUrl, publishableKey, {
       global: { headers: { Authorization: authHeader } },
@@ -45,6 +66,14 @@ serve(async (req: Request) => {
       );
     }
 
+    // Rate limiting
+    if (isRateLimited(user.id)) {
+      return new Response(
+        JSON.stringify({ status: "waiting" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const body = await req.json();
     const { mode, preferences } = body;
 
@@ -55,7 +84,7 @@ serve(async (req: Request) => {
       );
     }
 
-    // Call the PostgreSQL matching function (bypasses RLS via SECURITY DEFINER)
+    // Call the PostgreSQL matching function (SECURITY DEFINER bypasses RLS)
     const { data, error } = await adminClient.rpc("match_users_in_queue", {
       p_user_id: user.id,
       p_mode: mode,

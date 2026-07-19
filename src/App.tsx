@@ -14,7 +14,6 @@ import { Terms } from './pages/Terms';
 import { Contact } from './pages/Contact';
 import type { ChatMode, ConnectionStatus, PartnerProfile } from './types/chat';
 import { joinQueue, pollMatch, leaveQueue, endCall, cleanupAfterSkip } from './services/queue';
-import { getVideoSender } from './services/webrtc';
 import { createCallChannel, type CallChannel } from './services/signaling';
 import { useWebRTC } from './hooks/useWebRTC';
 import { useMedia } from './hooks/useMedia';
@@ -22,7 +21,10 @@ import { useChat } from './hooks/useChat';
 import { useSettingsContext } from './contexts/SettingsContext';
 import { useThemeContext } from './contexts/ThemeContext';
 import { getOnlineCount } from './lib/auth';
+import { supabase } from './lib/supabase';
+import { getCurrentUserId } from './lib/auth';
 
+// Polling fallback intervals (used only when Realtime match detection is unavailable)
 const POLL_FAST_MS = 4000;
 const POLL_SLOW_MS = 8000;
 const SLOW_AFTER_MS = 30000;
@@ -68,6 +70,8 @@ export const App: React.FC = () => {
   const pollStartRef = useRef<number>(0);
   const currentModeRef = useRef<ChatMode>('landing');
   const initiatorRef = useRef<boolean>(false);
+  // Supabase Realtime channel used to detect when a match arrives
+  const matchChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   currentModeRef.current = mode;
 
@@ -75,6 +79,13 @@ export const App: React.FC = () => {
     if (pollTimerRef.current) {
       clearTimeout(pollTimerRef.current);
       pollTimerRef.current = null;
+    }
+  }, []);
+
+  const cleanupMatchChannel = useCallback(() => {
+    if (matchChannelRef.current) {
+      supabase.removeChannel(matchChannelRef.current);
+      matchChannelRef.current = null;
     }
   }, []);
 
@@ -139,6 +150,7 @@ export const App: React.FC = () => {
 
   const handleMatchFound = useCallback(async (callId: string, initiator: boolean, profile?: PartnerProfile | null) => {
     cleanupPoll();
+    cleanupMatchChannel();
     roomIdRef.current = callId;
     initiatorRef.current = initiator;
     setPartnerProfile(profile || null);
@@ -185,11 +197,13 @@ export const App: React.FC = () => {
     });
 
     callChannelRef.current = channel;
-  }, [chat, webrtc, media.localStream, cleanupPoll, handleOffer, handleStrangerDisconnected]);
+  }, [chat, webrtc, media.localStream, cleanupPoll, cleanupMatchChannel, handleOffer, handleStrangerDisconnected]);
 
+  // Polling fallback (fires only if Realtime hasn't picked up the match first)
   const doPoll = useCallback(async () => {
+    const chatMode = currentModeRef.current as 'video' | 'text';
     try {
-      const result = await pollMatch();
+      const result = await pollMatch(chatMode);  // FIX: pass actual mode
       if (result.status === 'matched' && result.call_id) {
         handleMatchFound(
           result.call_id,
@@ -207,10 +221,58 @@ export const App: React.FC = () => {
     }
   }, [handleMatchFound]);
 
+  /**
+   * Subscribe to Supabase Realtime on the calls table.
+   * When a new call is inserted that includes the current user as user1 or user2,
+   * we immediately handle the match — no polling needed.
+   */
+  const subscribeToMatchRealtime = useCallback((chatMode: 'video' | 'text') => {
+    cleanupMatchChannel();
+    const userId = getCurrentUserId();
+    if (!userId) return;
+
+    const ch = supabase
+      .channel(`match:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'calls',
+          filter: `user1_id=eq.${userId}`,
+        },
+        (payload) => {
+          const call = payload.new as { id: string; user1_id: string; user2_id: string; mode: string };
+          if (call.mode !== chatMode) return;
+          // user1 is the waiting user — they are NOT the initiator
+          handleMatchFound(call.id, false, null);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'calls',
+          filter: `user2_id=eq.${userId}`,
+        },
+        (payload) => {
+          const call = payload.new as { id: string; user1_id: string; user2_id: string; mode: string };
+          if (call.mode !== chatMode) return;
+          // user2 is the one who triggered the match — they ARE the initiator
+          handleMatchFound(call.id, true, null);
+        }
+      )
+      .subscribe();
+
+    matchChannelRef.current = ch;
+  }, [handleMatchFound, cleanupMatchChannel]);
+
   const startChatRef = useRef<(chatMode: 'video' | 'text') => Promise<void>>();
 
   const startChat = useCallback(async (chatMode: 'video' | 'text') => {
     cleanupPoll();
+    cleanupMatchChannel();
     await cleanupCallChannel();
     setMode(chatMode);
     setConnectionStatus('searching');
@@ -230,27 +292,40 @@ export const App: React.FC = () => {
     }
 
     try {
-      await joinQueue(chatMode, {
+      // Subscribe to Realtime BEFORE joining queue so we don't miss the match event
+      subscribeToMatchRealtime(chatMode);
+
+      const result = await joinQueue(chatMode, {
         country: settings.country,
         gender: settings.gender,
         interests: settings.interests,
         preferredGender: settings.preferredGender,
         preferredCountries: settings.preferredCountries,
       });
+
+      // If the RPC already returned a match immediately (user2 scenario), handle it
+      if (result.status === 'matched' && result.call_id) {
+        handleMatchFound(result.call_id, result.initiator ?? true, result.partner_profile);
+        return;
+      }
+
+      // Otherwise start polling as a fallback alongside Realtime
       pollStartRef.current = Date.now();
       doPoll();
     } catch (err) {
       console.error('[matching] join error:', err);
+      cleanupMatchChannel();
       const msg = err instanceof Error ? err.message : String(err);
       chat.addSystemMessage(`Failed to connect: ${msg}`);
       setConnectionStatus('idle');
     }
-  }, [settings, media, webrtc, chat, cleanupPoll, cleanupCallChannel, doPoll]);
+  }, [settings, media, webrtc, chat, cleanupPoll, cleanupMatchChannel, cleanupCallChannel, doPoll, subscribeToMatchRealtime, handleMatchFound]);
 
   startChatRef.current = startChat;
 
   const handleStop = useCallback(async () => {
     cleanupPoll();
+    cleanupMatchChannel();
     await cleanupCallChannel();
     const callId = roomIdRef.current;
     if (callId) {
@@ -263,10 +338,11 @@ export const App: React.FC = () => {
     setPartnerProfile(null);
     setConnectionStatus('idle');
     chat.addSystemMessage('You have disconnected.');
-  }, [webrtc, media, chat, cleanupPoll, cleanupCallChannel]);
+  }, [webrtc, media, chat, cleanupPoll, cleanupMatchChannel, cleanupCallChannel]);
 
   const handleNext = useCallback(async () => {
     cleanupPoll();
+    cleanupMatchChannel();
     await cleanupCallChannel();
     const callId = roomIdRef.current;
     if (callId) {
@@ -277,15 +353,16 @@ export const App: React.FC = () => {
     setRemoteStream(null);
     setPartnerProfile(null);
     setConnectionStatus('idle');
+    // Re-start in the same mode after a short delay
     setTimeout(() => startChatRef.current?.(currentModeRef.current as 'video' | 'text'), 300);
-  }, [webrtc, chat, cleanupPoll, cleanupCallChannel]);
+  }, [webrtc, cleanupPoll, cleanupMatchChannel, cleanupCallChannel]);
 
   const handleFlipCamera = useCallback(() => {
     media.flipCamera((newTrack) => {
-      const sender = getVideoSender();
+      const sender = webrtc.getVideoSender();
       if (sender) sender.replaceTrack(newTrack);
     });
-  }, [media]);
+  }, [media, webrtc]);
 
   const handleSendMessage = useCallback((text: string) => {
     chat.addMessage('you', text);
@@ -295,15 +372,21 @@ export const App: React.FC = () => {
     }
   }, [chat]);
 
+  // Online count — initial fetch + periodic refresh
   useEffect(() => {
     getOnlineCount().then(setOnlineCount).catch(() => {});
     const interval = setInterval(() => {
       getOnlineCount().then(setOnlineCount).catch(() => {});
-    }, 10000);
+    }, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => () => { cleanupPoll(); cleanupCallChannel(); }, [cleanupPoll, cleanupCallChannel]);
+  // Cleanup on unmount
+  useEffect(() => () => {
+    cleanupPoll();
+    cleanupMatchChannel();
+    cleanupCallChannel();
+  }, [cleanupPoll, cleanupMatchChannel, cleanupCallChannel]);
 
   const openPage = (page: string) => navigate(`/${page}`);
 

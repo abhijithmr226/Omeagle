@@ -119,13 +119,9 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
     },
 
     sendMessage: async (text: string) => {
-      await channel.send({
-        type: 'broadcast',
-        event: 'message',
-        payload: { text, senderId: userId },
-      });
-
-      // Also persist to database
+      // FIX: Persist to DB FIRST, then broadcast.
+      // This ensures the record exists before any realtime events fire.
+      // The broadcast is best-effort for real-time delivery; the DB is the source of truth.
       const { error } = await supabase
         .from('messages')
         .insert({
@@ -134,7 +130,16 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
           message: text,
         });
 
-      if (error) console.error('[signaling] sendMessage persist error:', error);
+      if (error) {
+        console.error('[signaling] sendMessage persist error:', error);
+        // Still attempt broadcast so the sender sees their message immediately
+      }
+
+      await channel.send({
+        type: 'broadcast',
+        event: 'message',
+        payload: { text, senderId: userId },
+      });
     },
 
     cleanup: () => {

@@ -14,9 +14,19 @@ export function useMedia() {
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
 
+  // FIX: Store the current stream in a ref so stopMedia always has the latest
+  // reference, avoiding the stale closure issue from depending on state.
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    streamRef.current = localStream;
+  }, [localStream]);
+
   const startMedia = useCallback(async (settings?: UserSettings): Promise<StartMediaResult> => {
     try {
       const stream = await getLocalUserMedia(settings?.videoDeviceId, settings?.audioDeviceId);
+      streamRef.current = stream;
       setLocalStream(stream);
       setIsMuted(false);
       setIsVideoOff(false);
@@ -28,27 +38,38 @@ export function useMedia() {
   }, []);
 
   const stopMedia = useCallback(() => {
-    localStream?.getTracks().forEach(t => {
-      try { t.stop(); } catch {}
-    });
+    // Use ref to always access the current stream, not the closure-captured one
+    const stream = streamRef.current;
+    if (stream) {
+      stream.getTracks().forEach(t => { try { t.stop(); } catch {} });
+    }
+    streamRef.current = null;
     setLocalStream(null);
     setIsMuted(false);
     setIsVideoOff(false);
-  }, [localStream]);
+  }, []); // no dependencies needed — uses ref
 
   const toggleMute = useCallback(() => {
-    localStream?.getAudioTracks().forEach(t => { t.enabled = isMuted; });
+    const stream = streamRef.current;
+    if (stream) {
+      stream.getAudioTracks().forEach(t => { t.enabled = isMuted; });
+    }
     setIsMuted(prev => !prev);
-  }, [localStream, isMuted]);
+  }, [isMuted]);
 
   const toggleVideo = useCallback(() => {
-    localStream?.getVideoTracks().forEach(t => { t.enabled = isVideoOff; });
+    const stream = streamRef.current;
+    if (stream) {
+      stream.getVideoTracks().forEach(t => { t.enabled = isVideoOff; });
+    }
     setIsVideoOff(prev => !prev);
-  }, [localStream, isVideoOff]);
+  }, [isVideoOff]);
 
   const flipCamera = useCallback(async (onNewTrack?: (track: MediaStreamTrack) => void) => {
-    const currentTrack = localStream?.getVideoTracks()[0];
-    if (!currentTrack) return;
+    const stream = streamRef.current;
+    const currentTrack = stream?.getVideoTracks()[0];
+    if (!currentTrack || !stream) return;
+
     const newFacing = facingMode === 'user' ? 'environment' : 'user';
     try {
       const newStream = await navigator.mediaDevices.getUserMedia({
@@ -56,16 +77,19 @@ export function useMedia() {
         audio: false,
       });
       const newVideoTrack = newStream.getVideoTracks()[0];
-      localStream?.removeTrack(currentTrack);
+      stream.removeTrack(currentTrack);
       currentTrack.stop();
-      localStream?.addTrack(newVideoTrack);
+      stream.addTrack(newVideoTrack);
+
+      // Notify caller so the RTP sender can replaceTrack immediately
       onNewTrack?.(newVideoTrack);
       setFacingMode(newFacing);
-      setLocalStream(localStream);
+      // Trigger a re-render with the same stream object (tracks changed in-place)
+      setLocalStream(s => s);
     } catch (err) {
       console.error('[media] flipCamera error:', err);
     }
-  }, [localStream, facingMode]);
+  }, [facingMode]);
 
   const loadDevices = useCallback(async () => {
     const list = await getMediaDevices();

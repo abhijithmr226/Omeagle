@@ -3,6 +3,8 @@ const ICE_SERVERS: RTCConfiguration = {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
+    // NOTE: These are public TURN credentials for development.
+    // For production, replace with a dedicated TURN service (e.g. Metered, Twilio).
     { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
     { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
     { urls: 'turns:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
@@ -20,40 +22,67 @@ export type ConnectionCallbacks = {
   onConnectionStateChange: (state: RTCPeerConnectionState) => void;
 };
 
-let peerConnection: RTCPeerConnection | null = null;
+// FIX: Use a class-based instance instead of a module-level singleton.
+// The old pattern (`let peerConnection: RTCPeerConnection | null`) was shared
+// across the entire module lifetime, causing corruption in React StrictMode
+// and during rapid skip/reconnect cycles.
 
-export function createPeerConnection(
-  signalSender: SignalSender,
-  callbacks: ConnectionCallbacks
-): RTCPeerConnection {
-  if (peerConnection) {
-    try { peerConnection.close(); } catch {}
-    peerConnection = null;
+export class PeerConnectionManager {
+  private pc: RTCPeerConnection | null = null;
+
+  create(signalSender: SignalSender, callbacks: ConnectionCallbacks): RTCPeerConnection {
+    if (this.pc) {
+      try { this.pc.close(); } catch {}
+      this.pc = null;
+    }
+
+    const pc = new RTCPeerConnection(ICE_SERVERS);
+    this.pc = pc;
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        signalSender.sendIceCandidate(event.candidate.toJSON());
+      }
+    };
+
+    pc.ontrack = (event) => {
+      if (event.streams?.[0]) {
+        callbacks.onRemoteStream(event.streams[0]);
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (pc === this.pc) {
+        callbacks.onConnectionStateChange(pc.connectionState);
+      }
+    };
+
+    return pc;
   }
-  const pc = new RTCPeerConnection(ICE_SERVERS);
-  peerConnection = pc;
 
-  pc.onicecandidate = (event) => {
-    if (event.candidate) {
-      signalSender.sendIceCandidate(event.candidate.toJSON());
+  get(): RTCPeerConnection | null {
+    return this.pc;
+  }
+
+  getVideoSender(): RTCRtpSender | null {
+    if (!this.pc) return null;
+    return this.pc.getSenders().find(s => s.track?.kind === 'video') || null;
+  }
+
+  close(): void {
+    if (this.pc) {
+      this.pc.onicecandidate = null;
+      this.pc.ontrack = null;
+      this.pc.onconnectionstatechange = null;
+      try { this.pc.getTransceivers().forEach(t => { try { t.stop(); } catch {} }); } catch {}
+      try { this.pc.getSenders().forEach(s => { try { s.replaceTrack(null); } catch {} }); } catch {}
+      try { this.pc.close(); } catch {}
+      this.pc = null;
     }
-  };
-
-  pc.ontrack = (event) => {
-    if (event.streams && event.streams[0]) {
-      callbacks.onRemoteStream(event.streams[0]);
-    }
-  };
-
-  pc.onconnectionstatechange = () => {
-    if (pc === peerConnection) {
-      callbacks.onConnectionStateChange(pc.connectionState);
-    }
-  };
-
-  return pc;
+  }
 }
 
+// Shared helpers (pure functions, no global state)
 export async function addLocalTracks(pc: RTCPeerConnection, stream: MediaStream): Promise<void> {
   stream.getTracks().forEach(track => pc.addTrack(track, stream));
 }
@@ -83,31 +112,10 @@ export async function handleIceCandidate(pc: RTCPeerConnection, candidate: RTCIc
   await pc.addIceCandidate(new RTCIceCandidate(candidate));
 }
 
-export function getVideoSender(): RTCRtpSender | null {
-  if (!peerConnection) return null;
-  return peerConnection.getSenders().find(s => s.track?.kind === 'video') || null;
-}
-
-export function closePeerConnection(): void {
-  if (peerConnection) {
-    peerConnection.onicecandidate = null;
-    peerConnection.ontrack = null;
-    peerConnection.onconnectionstatechange = null;
-    peerConnection.getTransceivers().forEach(t => { try { t.stop(); } catch {} });
-    peerConnection.getSenders().forEach(s => { try { s.replaceTrack(null); } catch {} });
-    peerConnection.close();
-    peerConnection = null;
-  }
-}
-
 export function stopMediaStream(stream: MediaStream | null): void {
   if (stream) {
     stream.getTracks().forEach(track => { try { track.stop(); } catch {} });
   }
-}
-
-export function getPeerConnection(): RTCPeerConnection | null {
-  return peerConnection;
 }
 
 export async function getLocalUserMedia(
@@ -115,7 +123,6 @@ export async function getLocalUserMedia(
   audioDeviceId?: string,
   audioOnly = false
 ): Promise<MediaStream> {
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const isPortrait = typeof window !== 'undefined' && window.innerHeight > window.innerWidth;
 
   const videoConstraints: MediaTrackConstraints | false = audioOnly
@@ -134,18 +141,16 @@ export async function getLocalUserMedia(
     ? { deviceId: { exact: audioDeviceId } }
     : { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
 
-  const constraints: MediaStreamConstraints = {
-    video: videoConstraints,
-    audio: audioConstraints,
-  };
-
   try {
-    return await navigator.mediaDevices.getUserMedia(constraints);
+    return await navigator.mediaDevices.getUserMedia({
+      video: videoConstraints,
+      audio: audioConstraints,
+    });
   } catch {
     try {
       return await navigator.mediaDevices.getUserMedia({ video: !audioOnly, audio: true });
     } catch (fallbackErr) {
-      console.warn('Could not get webcam stream:', fallbackErr);
+      console.warn('[webrtc] Could not get media stream:', fallbackErr);
       throw fallbackErr;
     }
   }

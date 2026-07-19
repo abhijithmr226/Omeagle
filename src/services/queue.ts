@@ -39,13 +39,13 @@ export async function joinQueue(
   return data as MatchResult;
 }
 
-export async function pollMatch(): Promise<MatchResult> {
+export async function pollMatch(mode: 'video' | 'text'): Promise<MatchResult> {
   const userId = getCurrentUserId();
   if (!userId) throw new Error('Not authenticated');
 
   const { data, error } = await supabase.rpc('match_users_in_queue', {
     p_user_id: userId,
-    p_mode: 'video',
+    p_mode: mode,        // ← FIX: was hardcoded 'video', now accepts the real mode
     p_preferences: {},
   });
 
@@ -69,6 +69,14 @@ export async function leaveQueue(): Promise<void> {
   if (error) console.error('[queue] leaveQueue error:', error);
 }
 
+async function deleteSignals(callId: string): Promise<void> {
+  const { error } = await supabase
+    .from('signals')
+    .delete()
+    .eq('call_id', callId);
+  if (error) console.error('[queue] deleteSignals error:', error);
+}
+
 export async function endCall(callId: string): Promise<void> {
   const userId = getCurrentUserId();
   if (!userId) return;
@@ -80,19 +88,11 @@ export async function endCall(callId: string): Promise<void> {
     .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
 
   if (callError) console.error('[queue] endCall error:', callError);
+
+  // Clean up signals for this call (also handled by DB trigger in 004_fix_rls.sql)
+  await deleteSignals(callId);
   await leaveQueue();
 }
 
-export async function cleanupAfterSkip(callId: string): Promise<void> {
-  const userId = getCurrentUserId();
-  if (!userId) return;
-
-  const { error: callError } = await supabase
-    .from('calls')
-    .update({ status: 'ended', ended_at: new Date().toISOString() })
-    .eq('id', callId)
-    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
-
-  if (callError) console.error('[queue] skip cleanup error:', callError);
-  await leaveQueue();
-}
+// Skip is identical to endCall — reuse it
+export const cleanupAfterSkip = endCall;

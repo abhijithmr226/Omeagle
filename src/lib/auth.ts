@@ -3,6 +3,15 @@ import type { User } from '@supabase/supabase-js';
 
 let cachedUser: User | null = null;
 
+// Keep cachedUser in sync with Supabase auth state changes (e.g. token refresh)
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session?.user) {
+    cachedUser = session.user;
+  } else if (event === 'SIGNED_OUT') {
+    cachedUser = null;
+  }
+});
+
 export async function initializeAuth(): Promise<User> {
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -67,7 +76,7 @@ export async function setOnlineStatus(userId: string, online: boolean) {
 export async function getOnlineCount(): Promise<number> {
   const { data, error } = await supabase.rpc('get_online_count');
   if (error) return 1;
-  return Number(data ?? 1) + 1;
+  return Number(data ?? 1);   // FIX: removed artificial +1 inflation
 }
 
 export async function signOut() {
@@ -80,26 +89,36 @@ export async function signOut() {
 
 export function setupOnlineWatchdog() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  // FIX: Use fetch with keepalive instead of sendBeacon.
+  // sendBeacon cannot set custom headers, so the Supabase REST endpoint
+  // would reject it with 401. fetch + keepalive behaves identically but
+  // supports headers and completes even after the page unloads.
+  const setOfflineViaFetch = () => {
+    if (!cachedUser) return;
+    fetch(`${supabaseUrl}/rest/v1/rpc/set_user_offline`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`,
+      },
+      body: JSON.stringify({ uid: cachedUser.id }),
+      keepalive: true,
+    }).catch(() => {});
+  };
 
   const handleBeforeUnload = () => {
-    if (cachedUser) {
-      navigator.sendBeacon(
-        `${supabaseUrl}/rest/v1/rpc/set_user_offline`,
-        new Blob(
-          [JSON.stringify({ uid: cachedUser.id })],
-          { type: 'application/json' }
-        )
-      );
-    }
+    setOfflineViaFetch();
   };
 
   const handleVisibilityChange = () => {
-    if (cachedUser) {
-      if (document.visibilityState === 'visible') {
-        setOnlineStatus(cachedUser.id, true);
-      } else {
-        setOnlineStatus(cachedUser.id, false);
-      }
+    if (!cachedUser) return;
+    if (document.visibilityState === 'visible') {
+      setOnlineStatus(cachedUser.id, true);
+    } else {
+      setOfflineViaFetch();
     }
   };
 
