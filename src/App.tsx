@@ -465,6 +465,18 @@ export const App: React.FC = () => {
         </Routes>
       </main>
 
+      <div className="ad-banner">
+        <script dangerouslySetInnerHTML={{ __html: `
+          atOptions = {
+            'key' : '8bdddf8feba87229589bd6c56db45ecd',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+          };
+        ` }} />
+        <script src="https://www.highperformanceformat.com/8bdddf8feba87229589bd6c56db45ecd/invoke.js" async />
+      </div>
       <Footer onOpenPage={openPage} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}
         settings={settings} onSaveSettings={updateSettings} />
@@ -491,6 +503,8 @@ export const App: React.FC = () => {
           .mobile-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.9rem; flex-shrink: 0; background: var(--bg-surface); }
           .mobile-chat-close { width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-surface-secondary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--text-primary); }
         }
+        .ad-banner { display: flex; justify-content: center; width: 100%; padding: 0.5rem 0; opacity: 0.85; }
+        @media (max-width: 768px) { .ad-banner { display: none; } }
       `}</style>
     </div>
   );
