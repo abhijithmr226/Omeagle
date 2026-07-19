@@ -70,10 +70,13 @@ export const App: React.FC = () => {
   const pollStartRef = useRef<number>(0);
   const currentModeRef = useRef<ChatMode>('landing');
   const initiatorRef = useRef<boolean>(false);
+  const localStreamRef = useRef<MediaStream | null>(null);
   // Supabase Realtime channel used to detect when a match arrives
   const matchChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   currentModeRef.current = mode;
+  // Keep ref in sync so callbacks always see the latest stream
+  localStreamRef.current = media.localStream;
 
   const cleanupPoll = useCallback(() => {
     if (pollTimerRef.current) {
@@ -125,11 +128,12 @@ export const App: React.FC = () => {
 
   const handleOffer = useCallback(async (offer: RTCSessionDescriptionInit) => {
     const callId = roomIdRef.current;
-    if (!callId || !media.localStream) return;
+    const localStream = localStreamRef.current;
+    if (!callId || !localStream) return;
     const channel = callChannelRef.current;
     if (!channel) return;
     try {
-      await webrtc.setupReceiver(callId, media.localStream, offer, {
+      await webrtc.setupReceiver(callId, localStream, offer, {
         sendOffer: channel.sendOffer,
         sendAnswer: channel.sendAnswer,
         sendIceCandidate: channel.sendIceCandidate,
@@ -146,7 +150,7 @@ export const App: React.FC = () => {
     } catch (err) {
       console.error('[app] handleOffer error:', err);
     }
-  }, [webrtc, media.localStream, handleStrangerDisconnected]);
+  }, [webrtc, handleStrangerDisconnected]);
 
   const handleMatchFound = useCallback(async (callId: string, initiator: boolean, profile?: PartnerProfile | null) => {
     cleanupPoll();
@@ -167,37 +171,45 @@ export const App: React.FC = () => {
       onStrangerStopTyping: chat.handleStrangerStopTyping,
       onReceiveMessage: chat.addMessage.bind(null, 'stranger'),
       onChannelStatus: (status) => {
-        if (status === 'SUBSCRIBED') {
-          setConnectionStatus('connected');
-          if (initiator && currentModeRef.current === 'video' && media.localStream) {
-            const localStream = media.localStream;
-            setTimeout(async () => {
-              const ch = callChannelRef.current;
-              if (!ch || !localStream) return;
-              try {
-                await webrtc.setupInitiator(callId, localStream, {
-                  sendOffer: ch.sendOffer,
-                  sendAnswer: ch.sendAnswer,
-                  sendIceCandidate: ch.sendIceCandidate,
-                }, {
-                  onRemoteStream: (stream) => setRemoteStream(stream),
-                  onConnectionStateChange: (state) => {
-                    if (state === 'disconnected' || state === 'failed') {
-                      handleStrangerDisconnected();
-                    }
-                  },
-                });
-              } catch (err) {
-                console.error('[app] WebRTC initiator error:', err);
-              }
-            }, 500);
+        if (status !== 'SUBSCRIBED') return;
+        if (initiator && currentModeRef.current === 'video') {
+          // Initiator in video mode: set up WebRTC; connectionStatus set by onConnectionStateChange
+          const localStream = localStreamRef.current;
+          setTimeout(async () => {
+            const ch = callChannelRef.current;
+            if (!ch || !localStream) return;
+            try {
+              await webrtc.setupInitiator(callId, localStream, {
+                sendOffer: ch.sendOffer,
+                sendAnswer: ch.sendAnswer,
+                sendIceCandidate: ch.sendIceCandidate,
+              }, {
+                onRemoteStream: (stream) => setRemoteStream(stream),
+                onConnectionStateChange: (state) => {
+                  if (state === 'connected') {
+                    setConnectionStatus('connected');
+                  } else if (state === 'disconnected' || state === 'failed') {
+                    handleStrangerDisconnected();
+                  }
+                },
+              });
+            } catch (err) {
+              console.error('[app] WebRTC initiator error:', err);
+            }
+          }, 500);
+        } else {
+          // Text mode or non-initiator: channel is ready, mark connected
+          // (Non-initiator in video mode gets 'connected' from WebRTC onConnectionStateChange)
+          if (currentModeRef.current === 'text') {
+            setConnectionStatus('connected');
           }
+          // Non-initiator in video mode: wait for WebRTC onConnectionStateChange
         }
       },
     });
 
     callChannelRef.current = channel;
-  }, [chat, webrtc, media.localStream, cleanupPoll, cleanupMatchChannel, handleOffer, handleStrangerDisconnected]);
+  }, [chat, webrtc, cleanupPoll, cleanupMatchChannel, handleOffer, handleStrangerDisconnected]);
 
   // Polling fallback (fires only if Realtime hasn't picked up the match first)
   const doPoll = useCallback(async () => {
