@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.local
+*.log
+server/reports.json
+server/bans.json
+.DS_Store
+Thumbs.db
