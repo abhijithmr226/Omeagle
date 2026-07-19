@@ -13,6 +13,9 @@ const httpServer = createServer(app);
 createSocketServer(httpServer);
 
 app.use(express.static(join(__dirname, '..', 'dist')));
+
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+
 app.get('/{*splat}', (req, res) => res.sendFile(join(__dirname, '..', 'dist', 'index.html')));
 
 httpServer.listen(CONFIG.PORT, () => logInfo('SERVER_START', `port=${CONFIG.PORT}`));
