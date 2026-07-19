@@ -9,7 +9,7 @@ import { checkRateLimit, cleanupRateLimit, getMessageLength, isSpam, sanitizeTex
 export function createSocketServer(httpServer) {
   const io = new Server(httpServer, {
     cors: { origin: '*', methods: ['GET', 'POST'] },
-    transports: ['websocket'],
+    transports: ['polling', 'websocket'],
     pingTimeout: CONFIG.PING_TIMEOUT,
     pingInterval: CONFIG.PING_INTERVAL,
   });

@@ -10,25 +10,23 @@ export const CONFIG = {
   PING_INTERVAL: 10000,
 };
 
-export function generateRoomId(): string {
+export function generateRoomId() {
   return crypto.randomUUID();
 }
 
-type LogLevel = 'INFO' | 'WARN' | 'ERROR';
-
-const LEVEL_COLORS: Record<LogLevel, string> = {
+const LEVEL_COLORS = {
   INFO: '\x1b[36m',
   WARN: '\x1b[33m',
   ERROR: '\x1b[31m',
 };
 const RESET = '\x1b[0m';
 
-function log(level: LogLevel, event: string, data?: string): void {
+function log(level, event, data) {
   const ts = new Date().toISOString().slice(11, 23);
   const color = LEVEL_COLORS[level];
   console.log(`${color}[${ts}] [${level}]${RESET} ${event}${data ? ` | ${data}` : ''}`);
 }
 
-export const logInfo = (event: string, data?: string) => log('INFO', event, data);
-export const logWarn = (event: string, data?: string) => log('WARN', event, data);
-export const logError = (event: string, data?: string) => log('ERROR', event, data);
+export const logInfo = (event, data) => log('INFO', event, data);
+export const logWarn = (event, data) => log('WARN', event, data);
+export const logError = (event, data) => log('ERROR', event, data);

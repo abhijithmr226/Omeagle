@@ -14,7 +14,9 @@ export function getSocket(): TypedSocket {
   if (!socket) {
     socket = io(SERVER_URL, {
       autoConnect: false,
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
+      upgrade: true,
+      rememberUpgrade: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,

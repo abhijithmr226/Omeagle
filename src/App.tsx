@@ -32,6 +32,7 @@ export const App: React.FC = () => {
   const [mode, setMode] = useState<ChatMode>('landing');
   const [onlineCount, setOnlineCount] = useState(120);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle');
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
@@ -39,12 +40,14 @@ export const App: React.FC = () => {
 
   const handleStrangerDisconnected = useCallback(() => {
     setConnectionStatus('disconnected');
+    setRemoteStream(null);
     webrtc.cleanup();
     chat.addSystemMessage('Stranger has disconnected.');
   }, [webrtc, chat]);
 
   const handleStrangerTimeout = useCallback(() => {
     setConnectionStatus('timed-out');
+    setRemoteStream(null);
     webrtc.cleanup();
     chat.addSystemMessage('Stranger took too long to respond. Finding someone new...');
     setTimeout(() => startChat(mode as 'video' | 'text'), 1500);
@@ -59,7 +62,7 @@ export const App: React.FC = () => {
       try {
         if (initiator) {
           await webrtc.setupInitiator(socket, roomId, media.localStream, {
-            onRemoteStream: () => {},
+            onRemoteStream: (stream) => setRemoteStream(stream),
             onConnectionStateChange: (state) => {
               if (state === 'disconnected' || state === 'failed') handleStrangerDisconnected();
             },
@@ -76,7 +79,7 @@ export const App: React.FC = () => {
     if (!roomId || !media.localStream) return;
     try {
       await webrtc.setupReceiver(socket, roomId, media.localStream, offer, {
-        onRemoteStream: () => {},
+        onRemoteStream: (stream) => setRemoteStream(stream),
         onConnectionStateChange: (state) => {
           if (state === 'disconnected' || state === 'failed') handleStrangerDisconnected();
         },
@@ -104,6 +107,7 @@ export const App: React.FC = () => {
   const startChat = useCallback(async (chatMode: 'video' | 'text') => {
     setMode(chatMode);
     setConnectionStatus('searching');
+    setRemoteStream(null);
     chat.clearMessages();
     webrtc.cleanup();
 
@@ -125,6 +129,7 @@ export const App: React.FC = () => {
     socket.emit('stop');
     webrtc.cleanup();
     media.stopMedia();
+    setRemoteStream(null);
     setConnectionStatus('idle');
     chat.addSystemMessage('You have disconnected.');
   }, [socket, webrtc, media, chat]);
@@ -132,6 +137,7 @@ export const App: React.FC = () => {
   const handleNext = useCallback(() => {
     socket.emit('skip');
     webrtc.cleanup();
+    setRemoteStream(null);
     setConnectionStatus('idle');
     setTimeout(() => startChat(mode as 'video' | 'text'), 300);
   }, [socket, webrtc, mode, startChat]);
@@ -174,7 +180,7 @@ export const App: React.FC = () => {
             ) : (
               <div className="chat-layout-grid">
                 <div className="video-column">
-                  <VideoGrid localStream={media.localStream} remoteStream={null}
+                  <VideoGrid localStream={media.localStream} remoteStream={remoteStream}
                     connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
                     onFlipCamera={media.flipCamera} />
                   <ControlsBar connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
