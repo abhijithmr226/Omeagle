@@ -163,6 +163,10 @@ export const App: React.FC = () => {
     chat.addSystemMessage(buildPartnerMessage(profile));
     setConnectionStatus('connecting');
 
+    // GTM Data Layer event
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'match_found', chat_mode: currentModeRef.current });
+
     const channel = createCallChannel(callId, {
       onOffer: handleOffer,
       onAnswer: webrtc.handleRemoteAnswer,
@@ -294,6 +298,10 @@ export const App: React.FC = () => {
     chat.clearMessages();
     webrtc.cleanup();
 
+    // GTM Data Layer event
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'chat_start', chat_mode: chatMode });
+
     if (chatMode === 'video') {
       const result = await media.startMedia(settings);
       if (!result.stream) {
@@ -351,6 +359,10 @@ export const App: React.FC = () => {
     setPartnerProfile(null);
     setConnectionStatus('idle');
     chat.addSystemMessage('You have disconnected.');
+
+    // GTM Data Layer event
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'chat_end', chat_mode: currentModeRef.current });
   }, [webrtc, media, chat, cleanupPoll, cleanupMatchChannel, cleanupCallChannel]);
 
   const handleNext = useCallback(async () => {
@@ -366,6 +378,11 @@ export const App: React.FC = () => {
     setRemoteStream(null);
     setPartnerProfile(null);
     setConnectionStatus('idle');
+
+    // GTM Data Layer event
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'skip_next', chat_mode: currentModeRef.current });
+
     // Re-start in the same mode after a short delay
     setTimeout(() => startChatRef.current?.(currentModeRef.current as 'video' | 'text'), 300);
   }, [webrtc, cleanupPoll, cleanupMatchChannel, cleanupCallChannel]);
