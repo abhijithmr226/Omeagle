@@ -1,5 +1,5 @@
 export type ChatMode = 'landing' | 'video' | 'text';
-export type ConnectionStatus = 'idle' | 'searching' | 'connected' | 'disconnected';
+export type ConnectionStatus = 'idle' | 'searching' | 'connecting' | 'connected' | 'disconnected' | 'timed-out';
 export type ThemeMode = 'light' | 'dark';
 
 export interface ChatMessage {

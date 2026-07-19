@@ -59,7 +59,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .vg-pip-wrap { position: absolute; bottom: 12px; right: 12px; width: 140px; height: 100px; border-radius: var(--radius-md); overflow: hidden; border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
         .vg-pip-video { width: 100%; height: 100%; object-fit: cover; }
         @media (max-width: 1024px) {
-          .vg-container { border-radius: 0; aspect-ratio: auto; height: calc(100dvh - 140px); }
+          .vg-container { border-radius: var(--radius-md); aspect-ratio: auto; flex: 1; height: calc(100dvh - 200px); min-height: 280px; }
         }
       `}</style>
     </div>

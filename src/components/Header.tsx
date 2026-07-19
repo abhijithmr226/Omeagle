@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Video, MessageSquare, Moon, Sun, Menu, X } from 'lucide-react';
 import { ChatMode, ThemeMode } from '../types/chat';
 
@@ -14,6 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentMode, onSelectMode, onlineCount, theme, onToggleTheme
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="site-header">
@@ -22,9 +24,9 @@ export const Header: React.FC<HeaderProps> = ({
           <button className="mobile-menu-btn" aria-label="Menu" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <a href="#" onClick={(e) => { e.preventDefault(); onSelectMode('landing'); }} className="logo-link">
+          <Link to="/" onClick={() => onSelectMode('landing')} className="logo-link">
             <img src="/headerlogo.png" alt="Omeagle" className="header-logo-img" />
-          </a>
+          </Link>
           <nav className="desktop-nav">
             <button className={`nav-tab ${currentMode === 'video' ? 'active' : ''}`} onClick={() => onSelectMode('video')}>
               <Video size={18} /><span>Video</span>
@@ -40,14 +42,14 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="online-number">{onlineCount.toLocaleString()}</span>
             <span className="online-label">online</span>
           </div>
-          <button className="theme-toggle-btn" onClick={onToggleTheme} title="Toggle theme">
+          <button className="theme-toggle-btn" onClick={onToggleTheme} title="Toggle theme" aria-label="Toggle theme">
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} className="sun-icon" />}
           </button>
         </div>
       </div>
       {mobileMenuOpen && (
         <div className="mobile-nav-drawer" onClick={() => setMobileMenuOpen(false)}>
-          <button className="mobile-drawer-item" onClick={() => onSelectMode('landing')}>Home</button>
+          <button className="mobile-drawer-item" onClick={() => { onSelectMode('landing'); navigate('/'); }}>Home</button>
           <button className="mobile-drawer-item" onClick={() => onSelectMode('video')}><Video size={18} /> Video Chat</button>
           <button className="mobile-drawer-item" onClick={() => onSelectMode('text')}><MessageSquare size={18} /> Text Chat</button>
         </div>
@@ -59,7 +61,6 @@ export const Header: React.FC<HeaderProps> = ({
         .mobile-menu-btn { display: none; color: var(--text-primary); padding: 0.4rem; }
         .logo-link { display: flex; align-items: center; text-decoration: none; }
         .header-logo-img { height: 38px; width: auto; object-fit: contain; }
-        [data-theme='dark'] .header-logo-img { filter: invert(1); }
         .desktop-nav { display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; }
         .nav-tab { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-weight: 600; font-size: 0.95rem; color: var(--text-secondary); border-radius: var(--radius-md); position: relative; }
         .nav-tab:hover { color: var(--brand-blue); background-color: var(--bg-surface-secondary); }
@@ -75,13 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
         .mobile-nav-drawer { display: none; flex-direction: column; padding: 0.5rem 0.75rem 1rem; border-top: 1px solid var(--border-color); background-color: var(--bg-surface); }
         .mobile-drawer-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); border-radius: var(--radius-md); }
         .mobile-drawer-item:hover { background-color: var(--bg-surface-secondary); }
-        @media (max-width: 868px) {
-          .desktop-nav { display: none; }
-          .mobile-menu-btn { display: flex; }
-          .mobile-nav-drawer { display: flex; }
-          .header-container { padding: 0.5rem 0.75rem; }
-          .header-logo-img { height: 32px; }
-        }
+        @media (max-width: 868px) { .desktop-nav { display: none; } .mobile-menu-btn { display: flex; } .mobile-nav-drawer { display: flex; } .header-container { padding: 0.5rem 0.75rem; } .header-logo-img { height: 32px; } }
       `}</style>
     </header>
   );

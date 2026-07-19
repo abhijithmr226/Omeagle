@@ -105,10 +105,22 @@ export function closePeerConnection(): void {
     peerConnection.ontrack = null;
     peerConnection.onconnectionstatechange = null;
     peerConnection.onnegotiationneeded = null;
-    peerConnection.getTransceivers().forEach(t => t.stop());
-    peerConnection.getSenders().forEach(s => s.replaceTrack(null));
+    peerConnection.getTransceivers().forEach(t => { try { t.stop(); } catch (e) {} });
+    peerConnection.getSenders().forEach(s => { try { s.replaceTrack(null); } catch (e) {} });
     peerConnection.close();
     peerConnection = null;
+  }
+}
+
+export function stopMediaStream(stream: MediaStream | null): void {
+  if (stream) {
+    stream.getTracks().forEach(track => {
+      try {
+        track.stop();
+      } catch (e) {
+        console.warn('Error stopping media track:', e);
+      }
+    });
   }
 }
 

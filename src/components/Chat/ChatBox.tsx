@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Smile, ArrowRight, Users } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Send, Smile, ArrowRight, Users, Search } from 'lucide-react';
 import { ChatMessage, ConnectionStatus } from '../../types/chat';
 
 interface ChatBoxProps {
@@ -9,29 +9,70 @@ interface ChatBoxProps {
   onNext: () => void;
   onStart: () => void;
   mode: 'video' | 'text';
+  isStrangerTyping?: boolean;
+  onTyping?: () => void;
 }
 
+const MAX_MSG = 2000;
+
 export const ChatBox: React.FC<ChatBoxProps> = ({
-  messages, connectionStatus, onSendMessage, onNext, onStart, mode
+  messages, connectionStatus, onSendMessage, onNext, onStart, mode,
+  isStrangerTyping = false, onTyping,
 }) => {
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const typingSentRef = useRef(false);
 
   const isConnected = connectionStatus === 'connected';
-  const canStart = connectionStatus === 'idle' || connectionStatus === 'disconnected';
+  const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
+  const canStart = connectionStatus === 'idle' || connectionStatus === 'disconnected' || connectionStatus === 'timed-out';
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isStrangerTyping]);
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowEmojiPicker(false);
+    };
+    if (showEmojiPicker) {
+      document.addEventListener('keydown', handler);
+      return () => document.removeEventListener('keydown', handler);
+    }
+  }, [showEmojiPicker]);
+
+  useEffect(() => {
+    if (isConnected) inputRef.current?.focus();
+  }, [isConnected]);
+
+  const handleSend = useCallback((e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!inputText.trim() || !isConnected) return;
     onSendMessage(inputText);
     setInputText('');
     setShowEmojiPicker(false);
-  };
+    typingSentRef.current = false;
+  }, [inputText, isConnected, onSendMessage]);
+
+  const handleInputChange = useCallback((value: string) => {
+    if (value.length > MAX_MSG) return;
+    setInputText(value);
+    if (onTyping && isConnected && !typingSentRef.current) {
+      typingSentRef.current = true;
+      onTyping();
+    }
+  }, [onTyping, isConnected]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }, [handleSend]);
+
+  const msgCount = inputText.length;
 
   return (
     <div className="chat-column-container">
@@ -40,34 +81,42 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
           <p className="sys-headline">You're now chatting with a random stranger.</p>
         </div>
 
-        <div className="messages-list">
-          {messages.map(msg => (
-            <div key={msg.id} className={`message-row ${msg.sender}`}>
-              <div className={`message-bubble bubble-${msg.sender}`}>
-                {msg.sender !== 'system' && (
-                  <div className="bubble-header">
-                    <span className="sender-label">{msg.sender === 'you' ? 'You' : 'Stranger'}</span>
-                    <span className="msg-timestamp">{msg.timestamp}</span>
-                  </div>
-                )}
-                <div className="bubble-text">{msg.text}</div>
+        <div className="messages-list" role="log" aria-live="polite">
+          {isSearching && (
+            <div className="message-row system">
+              <div className="bubble-system">
+                <Search size={16} className="spin-icon" /> Looking for someone to chat with...
               </div>
             </div>
+          )}
+          {messages.map(msg => (
+            <MessageBubble key={msg.id} message={msg} />
           ))}
+          {isStrangerTyping && (
+            <div className="message-row stranger">
+              <div className="message-bubble bubble-stranger typing-indicator">
+                <span className="sender-label">Stranger</span>
+                <div className="typing-dots">
+                  <span /><span /><span />
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
         {showEmojiPicker && (
-          <div className="emoji-picker-popover">
+          <div className="emoji-picker-popover" role="listbox">
             {['👋', '😊', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😍', '💯'].map(emoji => (
-              <button key={emoji} className="emoji-btn" onClick={() => setInputText(prev => prev + emoji)}>{emoji}</button>
+              <button key={emoji} className="emoji-btn" role="option" aria-label={emoji}
+                onClick={() => setInputText(prev => prev + emoji)}>{emoji}</button>
             ))}
           </div>
         )}
 
         {canStart ? (
           <div className="chat-start-area">
-            <button className="chat-start-btn" onClick={onStart}>
+            <button className="chat-start-btn" onClick={onStart} aria-label="Start chat">
               <Users size={20} />
               <span>Start Chat</span>
             </button>
@@ -75,25 +124,37 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         ) : (
           <form onSubmit={handleSend} className="chat-input-bar">
             <input
+              ref={inputRef}
               type="text"
               className="chat-input-field"
-              placeholder={isConnected ? "Type your message..." : "Waiting for connection..."}
+              placeholder={isConnected ? "Type your message..." : isSearching ? "Searching..." : "Waiting..."}
               value={inputText}
-              onChange={e => setInputText(e.target.value)}
+              onChange={e => handleInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
               disabled={!isConnected}
+              maxLength={MAX_MSG}
+              aria-label="Message input"
             />
-            <button type="button" className="emoji-toggle-btn" onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={!isConnected}>
+            <button type="button" className="emoji-toggle-btn" aria-label="Emoji picker"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={!isConnected}>
               <Smile size={20} />
             </button>
-            <button type="submit" className="send-message-btn" disabled={!isConnected || !inputText.trim()}>
+            <button type="submit" className="send-message-btn"
+              disabled={!isConnected || !inputText.trim()} aria-label="Send message">
               <Send size={18} />
             </button>
+            {isConnected && msgCount > 0 && (
+              <span className={`msg-counter ${msgCount > MAX_MSG * 0.9 ? 'near-limit' : ''}`}>
+                {msgCount}/{MAX_MSG}
+              </span>
+            )}
           </form>
         )}
       </div>
 
       <div className="action-cards-grid">
-        <div className="action-card" onClick={onNext}>
+        <div className="action-card" onClick={onNext} role="button" tabIndex={0}
+          onKeyDown={e => e.key === 'Enter' && onNext()}>
           <div className="action-card-icon blue-bg"><Users size={20} /></div>
           <div className="action-card-text"><h5>Next</h5><p>Find next stranger</p></div>
           <ArrowRight size={18} className="card-arrow" />
@@ -113,10 +174,18 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         .message-bubble { max-width: 75%; padding: 0.75rem 1rem; border-radius: var(--radius-lg); }
         .bubble-you { background-color: var(--brand-blue); color: #ffffff; border-bottom-right-radius: 4px; }
         .bubble-stranger { background-color: var(--bg-surface-secondary); color: var(--text-primary); border-bottom-left-radius: 4px; }
-        .bubble-system { background: none; color: var(--text-muted); font-size: 0.82rem; font-style: italic; text-align: center; max-width: 100%; }
+        .bubble-system { background: none; color: var(--text-muted); font-size: 0.82rem; font-style: italic; text-align: center; max-width: 100%; display: flex; align-items: center; gap: 0.4rem; justify-content: center; }
         .bubble-header { display: flex; justify-content: space-between; gap: 1.5rem; font-size: 0.75rem; margin-bottom: 0.25rem; opacity: 0.85; }
         .sender-label { font-weight: 700; }
         .bubble-text { font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
+        .typing-indicator { padding: 0.5rem 1rem; }
+        .typing-dots { display: flex; gap: 4px; padding: 4px 0; }
+        .typing-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); animation: typingBounce 1.4s infinite; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+        .spin-icon { animation: spin 1.5s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .emoji-picker-popover { position: absolute; bottom: 70px; right: 90px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.3rem; box-shadow: var(--shadow-lg); z-index: 50; }
         .emoji-btn { font-size: 1.4rem; padding: 0.3rem; border-radius: var(--radius-sm); }
         .emoji-btn:hover { background-color: var(--bg-surface-secondary); }
@@ -131,6 +200,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         .send-message-btn { display: flex; align-items: center; justify-content: center; background-color: var(--brand-blue); color: #ffffff; padding: 0.65rem 1rem; border-radius: var(--radius-md); }
         .send-message-btn:hover:not(:disabled) { background-color: var(--brand-blue-hover); }
         .send-message-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .msg-counter { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
+        .msg-counter.near-limit { color: var(--status-red); font-weight: 600; }
         .action-cards-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
         .action-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s ease; }
         .action-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-color-hover); }
@@ -139,10 +210,22 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         .action-card-text h5 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.1rem; }
         .action-card-text p { font-size: 0.78rem; color: var(--text-secondary); }
         .card-arrow { color: var(--text-muted); }
-        @media (max-width: 768px) {
-          .chat-feed-card { height: 380px; }
-        }
+        @media (max-width: 768px) { .chat-feed-card { height: 380px; } }
       `}</style>
     </div>
   );
 };
+
+const MessageBubble = React.memo<{ message: ChatMessage }>(({ message }) => (
+  <div className={`message-row ${message.sender}`}>
+    <div className={`message-bubble bubble-${message.sender}`}>
+      {message.sender !== 'system' && (
+        <div className="bubble-header">
+          <span className="sender-label">{message.sender === 'you' ? 'You' : 'Stranger'}</span>
+          <span className="msg-timestamp">{message.timestamp}</span>
+        </div>
+      )}
+      <div className="bubble-text">{message.text}</div>
+    </div>
+  </div>
+));
