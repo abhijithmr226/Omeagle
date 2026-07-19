@@ -8,6 +8,8 @@ export interface ServerToClientEvents {
   'stranger-timeout': () => void;
   'typing': (data: { from: string }) => void;
   'stop-typing': (data: { from: string }) => void;
+  'partner-profile': (data: { country?: string; gender?: string; interests?: string[] }) => void;
+  'room-ready': (data: { roomId: string }) => void;
 }
 
 export interface ClientToServerEvents {

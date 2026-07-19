@@ -1,45 +1,42 @@
 import { useRef, useCallback } from 'react';
-import type { Socket } from 'socket.io-client';
 import {
   createPeerConnection, addLocalTracks, createOffer, handleOffer,
   handleAnswer, handleIceCandidate, closePeerConnection, getPeerConnection,
+  type SignalSender, type ConnectionCallbacks,
 } from '../services/webrtc';
-
-interface WebRTCCallbacks {
-  onRemoteStream: (stream: MediaStream) => void;
-  onConnectionStateChange: (state: RTCPeerConnectionState) => void;
-}
 
 export function useWebRTC() {
   const roomIdRef = useRef<string | null>(null);
 
   const setupInitiator = useCallback(async (
-    socket: Socket, roomId: string, stream: MediaStream, callbacks: WebRTCCallbacks
+    callId: string, stream: MediaStream,
+    signalSender: SignalSender,
+    callbacks: ConnectionCallbacks
   ) => {
-    roomIdRef.current = roomId;
-    const pc = createPeerConnection(socket, roomId, {
+    roomIdRef.current = callId;
+    const pc = createPeerConnection(signalSender, {
       onRemoteStream: callbacks.onRemoteStream,
-      onIceCandidate: () => {},
       onConnectionStateChange: callbacks.onConnectionStateChange,
     });
     await addLocalTracks(pc, stream);
     const offer = await createOffer(pc);
-    socket.emit('offer', { roomId, offer });
+    await signalSender.sendOffer(offer);
   }, []);
 
   const setupReceiver = useCallback(async (
-    socket: Socket, roomId: string, stream: MediaStream,
-    offer: RTCSessionDescriptionInit, callbacks: WebRTCCallbacks
+    callId: string, stream: MediaStream,
+    offer: RTCSessionDescriptionInit,
+    signalSender: SignalSender,
+    callbacks: ConnectionCallbacks
   ) => {
-    roomIdRef.current = roomId;
-    const pc = createPeerConnection(socket, roomId, {
+    roomIdRef.current = callId;
+    const pc = createPeerConnection(signalSender, {
       onRemoteStream: callbacks.onRemoteStream,
-      onIceCandidate: () => {},
       onConnectionStateChange: callbacks.onConnectionStateChange,
     });
     await addLocalTracks(pc, stream);
     const answer = await handleOffer(pc, offer);
-    socket.emit('answer', { roomId, answer });
+    await signalSender.sendAnswer(answer);
   }, []);
 
   const handleRemoteAnswer = useCallback(async (answer: RTCSessionDescriptionInit) => {

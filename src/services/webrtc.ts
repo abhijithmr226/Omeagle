@@ -1,5 +1,3 @@
-import { Socket } from 'socket.io-client';
-
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
@@ -11,44 +9,49 @@ const ICE_SERVERS: RTCConfiguration = {
   ],
 };
 
+export type SignalSender = {
+  sendOffer: (offer: RTCSessionDescriptionInit) => Promise<void>;
+  sendAnswer: (answer: RTCSessionDescriptionInit) => Promise<void>;
+  sendIceCandidate: (candidate: RTCIceCandidateInit) => Promise<void>;
+};
+
 export type ConnectionCallbacks = {
   onRemoteStream: (stream: MediaStream) => void;
-  onIceCandidate: (candidate: RTCIceCandidate) => void;
   onConnectionStateChange: (state: RTCPeerConnectionState) => void;
 };
 
 let peerConnection: RTCPeerConnection | null = null;
 
 export function createPeerConnection(
-  socket: Socket,
-  roomId: string,
+  signalSender: SignalSender,
   callbacks: ConnectionCallbacks
 ): RTCPeerConnection {
   if (peerConnection) {
-    peerConnection.close();
+    try { peerConnection.close(); } catch {}
     peerConnection = null;
   }
-  peerConnection = new RTCPeerConnection(ICE_SERVERS);
+  const pc = new RTCPeerConnection(ICE_SERVERS);
+  peerConnection = pc;
 
-  peerConnection.onicecandidate = (event) => {
+  pc.onicecandidate = (event) => {
     if (event.candidate) {
-      socket.emit('ice-candidate', { roomId, candidate: event.candidate.toJSON() });
+      signalSender.sendIceCandidate(event.candidate.toJSON());
     }
   };
 
-  peerConnection.ontrack = (event) => {
+  pc.ontrack = (event) => {
     if (event.streams && event.streams[0]) {
       callbacks.onRemoteStream(event.streams[0]);
     }
   };
 
-  peerConnection.onconnectionstatechange = () => {
-    if (peerConnection) {
-      callbacks.onConnectionStateChange(peerConnection.connectionState);
+  pc.onconnectionstatechange = () => {
+    if (pc === peerConnection) {
+      callbacks.onConnectionStateChange(pc.connectionState);
     }
   };
 
-  return peerConnection;
+  return pc;
 }
 
 export async function addLocalTracks(pc: RTCPeerConnection, stream: MediaStream): Promise<void> {
@@ -78,6 +81,11 @@ export async function handleAnswer(pc: RTCPeerConnection, answer: RTCSessionDesc
 export async function handleIceCandidate(pc: RTCPeerConnection, candidate: RTCIceCandidateInit): Promise<void> {
   if (pc.signalingState === 'closed') return;
   await pc.addIceCandidate(new RTCIceCandidate(candidate));
+}
+
+export function getVideoSender(): RTCRtpSender | null {
+  if (!peerConnection) return null;
+  return peerConnection.getSenders().find(s => s.track?.kind === 'video') || null;
 }
 
 export function closePeerConnection(): void {

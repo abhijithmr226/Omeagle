@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { SocketProvider } from './contexts/SocketContext';
+import { SupabaseProvider } from './contexts/SupabaseContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { App } from './App';
@@ -10,13 +10,13 @@ import './index.css';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
-      <SocketProvider>
+      <SupabaseProvider>
         <ThemeProvider>
           <SettingsProvider>
             <App />
           </SettingsProvider>
         </ThemeProvider>
-      </SocketProvider>
+      </SupabaseProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -12,4 +12,15 @@ export interface ChatMessage {
 export interface UserSettings {
   videoDeviceId?: string;
   audioDeviceId?: string;
+  country?: string;
+  gender?: string;
+  interests?: string[];
+  preferredGender?: string;
+  preferredCountries?: string[];
+}
+
+export interface PartnerProfile {
+  country?: string;
+  gender?: string;
+  interests?: string[];
 }

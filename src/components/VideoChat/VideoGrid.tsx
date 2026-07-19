@@ -32,7 +32,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
     <div className="vg-container">
       <div className="vg-remote-wrap">
         {remoteStream ? (
-          <video ref={remoteVideoRef} autoPlay playsInline className="vg-remote-video" />
+          <video ref={remoteVideoRef} autoPlay playsInline muted className="vg-remote-video" />
         ) : (
           <div className="vg-placeholder">
             {isSearching ? <RefreshCw size={48} className="spin-icon" /> :

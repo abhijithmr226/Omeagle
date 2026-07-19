@@ -1,3 +1,5 @@
+import type { PartnerProfile } from '../types/chat';
+
 const SERVER_URL = import.meta.env.VITE_SERVER_URL
   || (window.location.hostname === 'localhost'
     ? `http://${window.location.hostname}:3001`
@@ -21,13 +23,30 @@ export interface MatchResult {
   channel?: string;
   partnerId?: string;
   initiator?: boolean;
+  partnerProfile?: PartnerProfile;
 }
 
-export async function joinQueue(mode: 'video' | 'text'): Promise<MatchResult> {
+export interface UserPreferences {
+  country?: string;
+  gender?: string;
+  interests?: string[];
+  preferredGender?: string;
+  preferredCountries?: string[];
+}
+
+export async function joinQueue(mode: 'video' | 'text', prefs?: UserPreferences): Promise<MatchResult> {
   const res = await fetch(`${SERVER_URL}/api/matching-queue`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mode, userId: getUserId() }),
+    body: JSON.stringify({
+      mode,
+      userId: getUserId(),
+      country: prefs?.country,
+      gender: prefs?.gender,
+      interests: prefs?.interests,
+      preferredGender: prefs?.preferredGender,
+      preferredCountries: prefs?.preferredCountries,
+    }),
   });
   return res.json();
 }

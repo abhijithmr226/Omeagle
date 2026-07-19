@@ -29,7 +29,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
   const audioDevices = devices.filter(d => d.kind === 'audioinput');
 
   const handleSave = () => {
-    onSaveSettings({ videoDeviceId: videoDeviceId || undefined, audioDeviceId: audioDeviceId || undefined });
+    onSaveSettings({
+      ...settings,
+      videoDeviceId: videoDeviceId || undefined,
+      audioDeviceId: audioDeviceId || undefined,
+    });
     onClose();
   };
 

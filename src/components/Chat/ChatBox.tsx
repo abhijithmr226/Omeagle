@@ -1,6 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Smile, ArrowRight, Users, Search } from 'lucide-react';
-import { ChatMessage, ConnectionStatus } from '../../types/chat';
+import { Send, Smile, ArrowRight, Users, Search, Globe, Tag, Heart } from 'lucide-react';
+import { ChatMessage, ConnectionStatus, PartnerProfile } from '../../types/chat';
+
+function getFlag(code: string): string {
+  if (!code) return '';
+  return String.fromCodePoint(
+    ...[...code.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0))
+  );
+}
 
 interface ChatBoxProps {
   messages: ChatMessage[];
@@ -11,13 +18,14 @@ interface ChatBoxProps {
   mode: 'video' | 'text';
   isStrangerTyping?: boolean;
   onTyping?: () => void;
+  partnerProfile?: PartnerProfile | null;
 }
 
 const MAX_MSG = 2000;
 
 export const ChatBox: React.FC<ChatBoxProps> = ({
   messages, connectionStatus, onSendMessage, onNext, onStart, mode,
-  isStrangerTyping = false, onTyping,
+  isStrangerTyping = false, onTyping, partnerProfile,
 }) => {
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -80,6 +88,20 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         <div className="system-banner">
           <p className="sys-headline">You're now chatting with a random stranger.</p>
         </div>
+
+        {partnerProfile && isConnected && (
+          <div className="partner-info-bar">
+            {partnerProfile.country && (
+              <span className="partner-chip"><Globe size={13} /> {getFlag(partnerProfile.country)} {partnerProfile.country}</span>
+            )}
+            {partnerProfile.gender && (
+              <span className="partner-chip"><Heart size={13} /> {partnerProfile.gender}</span>
+            )}
+            {partnerProfile.interests && partnerProfile.interests.length > 0 && (
+              <span className="partner-chip interests-chip"><Tag size={13} /> {partnerProfile.interests.slice(0, 4).join(', ')}</span>
+            )}
+          </div>
+        )}
 
         <div className="messages-list" role="log" aria-live="polite">
           {isSearching && (
@@ -166,6 +188,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         .chat-feed-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: flex; flex-direction: column; height: 480px; position: relative; overflow: hidden; }
         .system-banner { background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); padding: 1rem 1.25rem; }
         .sys-headline { font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
+        .partner-info-bar { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.5rem 1.25rem; background: var(--brand-blue-light); border-bottom: 1px solid var(--border-color); }
+        .partner-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; color: var(--brand-blue); white-space: nowrap; }
+        .interests-chip { color: var(--text-primary); background: var(--bg-surface-secondary); }
         .messages-list { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
         .message-row { display: flex; width: 100%; }
         .message-row.you { justify-content: flex-end; }

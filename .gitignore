@@ -2,6 +2,7 @@ node_modules
 dist
 .env
 .env.local
+.env*.local
 *.log
 server/reports.json
 server/bans.json
@@ -9,3 +10,7 @@ server/bans.json
 Thumbs.db
 
 .vercel
+
+# Supabase
+supabase/.temp
+supabase/.env.local

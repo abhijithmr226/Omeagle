@@ -10,6 +10,7 @@
     "start": "node server/index.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.7",
     "canvas-confetti": "^1.9.4",
     "concurrently": "^10.0.3",
     "express": "^5.2.1",

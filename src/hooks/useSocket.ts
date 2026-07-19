@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import type { Socket } from 'socket.io-client';
-import type { ConnectionStatus } from '../types/chat';
+import type { ConnectionStatus, PartnerProfile } from '../types/chat';
 
 interface UseSocketOptions {
   onOffer: (offer: RTCSessionDescriptionInit) => void;
@@ -12,6 +12,8 @@ interface UseSocketOptions {
   onTyping: () => void;
   onStopTyping: () => void;
   onOnlineCount: (count: number) => void;
+  onPartnerProfile: (profile: PartnerProfile) => void;
+  onRoomReady: (data: { roomId: string }) => void;
   setConnectionStatus: (s: ConnectionStatus) => void;
 }
 
@@ -34,6 +36,8 @@ export function useSocketListeners(socket: Socket | null, opts: UseSocketOptions
       'stranger-timeout': () => o.onStrangerTimeout(),
       'typing': () => o.onTyping(),
       'stop-typing': () => o.onStopTyping(),
+      'partner-profile': (data: PartnerProfile) => o.onPartnerProfile(data),
+      'room-ready': (data: { roomId: string }) => o.onRoomReady(data),
     };
 
     for (const [event, handler] of Object.entries(handlers)) {

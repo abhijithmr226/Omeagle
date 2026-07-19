@@ -1,5 +1,19 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { UserSettings } from '../types/chat';
+
+const STORAGE_KEY = 'omeagle_settings';
+
+function loadSettings(): UserSettings {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return {};
+}
+
+function saveSettings(s: UserSettings) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
+}
 
 interface SettingsContextType {
   settings: UserSettings;
@@ -12,7 +26,10 @@ const SettingsContext = createContext<SettingsContextType>({
 });
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<UserSettings>({});
+  const [settings, setSettings] = useState<UserSettings>(loadSettings);
+
+  useEffect(() => { saveSettings(settings); }, [settings]);
+
   const updateSettings = useCallback((s: UserSettings) => setSettings(s), []);
 
   return (
