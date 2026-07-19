@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
@@ -12,13 +12,18 @@ import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Contact } from './pages/Contact';
 import type { ChatMode, ConnectionStatus } from './types/chat';
-import { getSocket } from './services/socket';
+import { getSocket, connectSocket, disconnectSocket } from './services/socket';
+import { joinQueue, pollMatch, leaveQueue, getUserId, getOnlineCount } from './services/matching';
 import { useWebRTC } from './hooks/useWebRTC';
 import { useMedia } from './hooks/useMedia';
 import { useChat } from './hooks/useChat';
-import { useSocketListeners, useSocketConnect } from './hooks/useSocket';
+import { useSocketListeners } from './hooks/useSocket';
 import { useSettingsContext } from './contexts/SettingsContext';
 import { useThemeContext } from './contexts/ThemeContext';
+
+const POLL_FAST_MS = 4000;
+const POLL_SLOW_MS = 8000;
+const SLOW_AFTER_MS = 30000;
 
 export const App: React.FC = () => {
   const socket = getSocket();
@@ -36,32 +41,37 @@ export const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
-  const { connect: socketConnect } = useSocketConnect(socket);
+  const roomIdRef = useRef<string | null>(null);
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollStartRef = useRef<number>(0);
+  const currentModeRef = useRef<ChatMode>('landing');
 
-  const handleStrangerDisconnected = useCallback(() => {
-    setConnectionStatus('disconnected');
-    setRemoteStream(null);
-    webrtc.cleanup();
-    chat.addSystemMessage('Stranger has disconnected.');
-  }, [webrtc, chat]);
+  currentModeRef.current = mode;
 
-  const handleStrangerTimeout = useCallback(() => {
-    setConnectionStatus('timed-out');
-    setRemoteStream(null);
-    webrtc.cleanup();
-    chat.addSystemMessage('Stranger took too long to respond. Finding someone new...');
-    setTimeout(() => startChat(mode as 'video' | 'text'), 1500);
-  }, [webrtc, chat, mode]);
+  const cleanupPoll = useCallback(() => {
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  }, []);
 
-  const handleStrangerFound = useCallback(async (roomId: string, initiator: boolean) => {
+  const handleMatchFound = useCallback(async (channel: string, initiator: boolean) => {
+    cleanupPoll();
+    roomIdRef.current = channel;
     chat.clearMessages();
     chat.addSystemMessage("You're now chatting with a random stranger. Say hi!");
+    setConnectionStatus('connecting');
+
+    connectSocket();
+    socket.emit('register', { userId: getUserId() });
+    socket.emit('join-room', { roomId: channel });
+
     setConnectionStatus('connected');
 
-    if (mode === 'video' && media.localStream) {
+    if (currentModeRef.current === 'video' && media.localStream) {
       try {
         if (initiator) {
-          await webrtc.setupInitiator(socket, roomId, media.localStream, {
+          await webrtc.setupInitiator(socket, channel, media.localStream, {
             onRemoteStream: (stream) => setRemoteStream(stream),
             onConnectionStateChange: (state) => {
               if (state === 'disconnected' || state === 'failed') handleStrangerDisconnected();
@@ -72,10 +82,27 @@ export const App: React.FC = () => {
         console.error('[app] WebRTC setup error:', err);
       }
     }
-  }, [mode, media.localStream, webrtc, socket, handleStrangerDisconnected, chat]);
+  }, [socket, webrtc, media.localStream, chat, cleanupPoll]);
+
+  const handleStrangerDisconnected = useCallback(() => {
+    setConnectionStatus('disconnected');
+    setRemoteStream(null);
+    roomIdRef.current = null;
+    webrtc.cleanup();
+    chat.addSystemMessage('Stranger has disconnected.');
+  }, [webrtc, chat]);
+
+  const handleStrangerTimeout = useCallback(() => {
+    setConnectionStatus('timed-out');
+    setRemoteStream(null);
+    roomIdRef.current = null;
+    webrtc.cleanup();
+    chat.addSystemMessage('Stranger took too long to respond. Finding someone new...');
+    setTimeout(() => startChat(currentModeRef.current as 'video' | 'text'), 1500);
+  }, [webrtc, chat]);
 
   const handleOffer = useCallback(async (offer: RTCSessionDescriptionInit) => {
-    const roomId = webrtc.roomIdRef.current;
+    const roomId = roomIdRef.current;
     if (!roomId || !media.localStream) return;
     try {
       await webrtc.setupReceiver(socket, roomId, media.localStream, offer, {
@@ -91,8 +118,6 @@ export const App: React.FC = () => {
 
   useSocketListeners(socket, {
     onOnlineCount: setOnlineCount,
-    onWaiting: () => setConnectionStatus('searching'),
-    onStrangerFound: handleStrangerFound,
     onOffer: handleOffer,
     onAnswer: webrtc.handleRemoteAnswer,
     onIceCandidate: webrtc.handleRemoteICE,
@@ -104,7 +129,24 @@ export const App: React.FC = () => {
     setConnectionStatus,
   });
 
+  const doPoll = useCallback(async () => {
+    try {
+      const result = await pollMatch();
+      if (result.status === 'matched' && result.channel) {
+        handleMatchFound(result.channel, result.initiator!);
+        return;
+      }
+      const elapsed = Date.now() - pollStartRef.current;
+      const interval = elapsed > SLOW_AFTER_MS ? POLL_SLOW_MS : POLL_FAST_MS;
+      pollTimerRef.current = setTimeout(doPoll, interval);
+    } catch (err) {
+      console.error('[matching] poll error:', err);
+      pollTimerRef.current = setTimeout(doPoll, POLL_SLOW_MS);
+    }
+  }, [handleMatchFound]);
+
   const startChat = useCallback(async (chatMode: 'video' | 'text') => {
+    cleanupPoll();
     setMode(chatMode);
     setConnectionStatus('searching');
     setRemoteStream(null);
@@ -121,35 +163,58 @@ export const App: React.FC = () => {
       }
     }
 
-    socketConnect();
-    socket.emit('find-stranger', { mode: chatMode });
-  }, [settings, media, webrtc, chat, socket, socketConnect]);
+    try {
+      await joinQueue(chatMode);
+      pollStartRef.current = Date.now();
+      doPoll();
+    } catch (err) {
+      console.error('[matching] join error:', err);
+      chat.addSystemMessage('Failed to connect. Please try again.');
+      setConnectionStatus('idle');
+    }
+  }, [settings, media, webrtc, chat, cleanupPoll, doPoll]);
 
-  const handleStop = useCallback(() => {
+  const handleStop = useCallback(async () => {
+    cleanupPoll();
     socket.emit('stop');
+    await leaveQueue();
+    roomIdRef.current = null;
     webrtc.cleanup();
     media.stopMedia();
     setRemoteStream(null);
     setConnectionStatus('idle');
     chat.addSystemMessage('You have disconnected.');
-  }, [socket, webrtc, media, chat]);
+  }, [socket, webrtc, media, chat, cleanupPoll]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
+    cleanupPoll();
     socket.emit('skip');
+    await leaveQueue();
+    roomIdRef.current = null;
     webrtc.cleanup();
     setRemoteStream(null);
     setConnectionStatus('idle');
-    setTimeout(() => startChat(mode as 'video' | 'text'), 300);
-  }, [socket, webrtc, mode, startChat]);
+    setTimeout(() => startChat(currentModeRef.current as 'video' | 'text'), 300);
+  }, [socket, webrtc, chat, cleanupPoll, startChat]);
 
   const handleSendMessage = useCallback((text: string) => {
     chat.addMessage('you', text);
-    const roomId = webrtc.roomIdRef.current;
+    const roomId = roomIdRef.current;
     if (roomId) {
       socket.emit('send-message', { roomId, text });
       socket.emit('message-sent', { roomId });
     }
-  }, [chat, webrtc, socket]);
+  }, [chat, socket]);
+
+  useEffect(() => {
+    getOnlineCount().then(setOnlineCount).catch(() => {});
+    const interval = setInterval(() => {
+      getOnlineCount().then(setOnlineCount).catch(() => {});
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => () => cleanupPoll(), [cleanupPoll]);
 
   const openPage = (page: string) => navigate(`/${page}`);
 
@@ -175,7 +240,7 @@ export const App: React.FC = () => {
                   onSendMessage={handleSendMessage} onNext={handleNext}
                   onStart={() => startChat('text')} mode="text"
                   isStrangerTyping={chat.isStrangerTyping}
-                  onTyping={() => socket.volatile.emit('typing', { roomId: webrtc.roomIdRef.current! })} />
+                  onTyping={() => roomIdRef.current && socket.volatile.emit('typing', { roomId: roomIdRef.current })} />
               </div>
             ) : (
               <div className="chat-layout-grid">
@@ -193,7 +258,7 @@ export const App: React.FC = () => {
                     onSendMessage={handleSendMessage} onNext={handleNext}
                     onStart={() => startChat('video')} mode="video"
                     isStrangerTyping={chat.isStrangerTyping}
-                    onTyping={() => socket.volatile.emit('typing', { roomId: webrtc.roomIdRef.current! })} />
+                    onTyping={() => roomIdRef.current && socket.volatile.emit('typing', { roomId: roomIdRef.current })} />
                 </div>
                 <div className={`mobile-chat-overlay ${mobileChatOpen ? 'open' : ''}`}>
                   <div className="mobile-chat-header">
@@ -204,7 +269,7 @@ export const App: React.FC = () => {
                     onSendMessage={handleSendMessage} onNext={handleNext}
                     onStart={() => startChat('video')} mode="video"
                     isStrangerTyping={chat.isStrangerTyping}
-                    onTyping={() => socket.volatile.emit('typing', { roomId: webrtc.roomIdRef.current! })} />
+                    onTyping={() => roomIdRef.current && socket.volatile.emit('typing', { roomId: roomIdRef.current })} />
                 </div>
               </div>
             )

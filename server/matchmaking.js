@@ -1,46 +1,60 @@
+import crypto from 'crypto';
 import { logInfo } from './utils.js';
 
 const queues = { video: [], text: [] };
+const pendingMatches = new Map();
 
-export function enqueue(socket, mode) {
-  if (!queues[mode]) return;
-  if (!queues[mode].includes(socket.id)) {
-    queues[mode].push(socket.id);
-    logInfo('ENQUEUE', `${socket.id} | mode=${mode} | queue=${queues[mode].length}`);
-  }
+export function joinQueue(userId, mode) {
+  if (!queues[mode]) return false;
+  if (queues[mode].some(e => e.userId === userId)) return false;
+  queues[mode].push({ userId, joinedAt: Date.now() });
+  return true;
 }
 
-export function dequeue(socket, mode) {
-  if (!queues[mode]) return;
-  const idx = queues[mode].indexOf(socket.id);
-  if (idx !== -1) {
-    queues[mode].splice(idx, 1);
-  }
-}
-
-export function dequeueAll(socket) {
+export function leaveQueue(userId) {
   for (const mode of Object.keys(queues)) {
-    const idx = queues[mode].indexOf(socket.id);
-    if (idx !== -1) queues[mode].splice(idx, 1);
+    queues[mode] = queues[mode].filter(e => e.userId !== userId);
   }
 }
 
-export function findMatch(socket, mode, io) {
+export function findAndMatch(userId, mode) {
   if (!queues[mode]) return null;
-  const idx = queues[mode].indexOf(socket.id);
-  if (idx !== -1) queues[mode].splice(idx, 1);
+
+  queues[mode] = queues[mode].filter(e => e.userId !== userId);
 
   while (queues[mode].length > 0) {
-    const candidateId = queues[mode].shift();
-    const candidateSocket = io.sockets.sockets.get(candidateId);
-    if (candidateSocket && candidateSocket.id !== socket.id) {
-      logInfo('MATCH_FOUND', `${socket.id} <-> ${candidateId} | mode=${mode}`);
-      return candidateSocket;
+    const candidate = queues[mode].shift();
+    if (candidate.userId !== userId) {
+      const channel = crypto.randomUUID();
+      pendingMatches.set(userId, { channel, partnerId: candidate.userId, initiator: true });
+      pendingMatches.set(candidate.userId, { channel, partnerId: userId, initiator: false });
+      return { channel, partnerId: candidate.userId, initiator: true };
     }
+  }
+  return null;
+}
+
+export function getMatch(userId) {
+  return pendingMatches.get(userId) || null;
+}
+
+export function destroyMatch(userId) {
+  const match = pendingMatches.get(userId);
+  if (match) {
+    pendingMatches.delete(userId);
+    pendingMatches.delete(match.partnerId);
+    return match;
   }
   return null;
 }
 
 export function getQueueLength(mode) {
   return queues[mode] ? queues[mode].length : 0;
+}
+
+export function cleanupStaleEntries(maxAge = 30000) {
+  const now = Date.now();
+  for (const mode of Object.keys(queues)) {
+    queues[mode] = queues[mode].filter(e => now - e.joinedAt < maxAge);
+  }
 }

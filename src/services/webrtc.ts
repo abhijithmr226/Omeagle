@@ -1,8 +1,3 @@
-/**
- * Real WebRTC + Socket.io signaling service for Omeagle.
- * Handles peer-to-peer video/audio and text chat via RTCPeerConnection.
- */
-
 import { Socket } from 'socket.io-client';
 
 const ICE_SERVERS: RTCConfiguration = {
@@ -10,8 +5,9 @@ const ICE_SERVERS: RTCConfiguration = {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
+    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turns:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
   ],
 };
 
@@ -52,20 +48,11 @@ export function createPeerConnection(
     }
   };
 
-  peerConnection.onnegotiationneeded = () => {
-    console.warn('Peer renegotiation needed — not handled in simplified mode');
-  };
-
   return peerConnection;
 }
 
-export async function addLocalTracks(
-  pc: RTCPeerConnection,
-  stream: MediaStream
-): Promise<void> {
-  stream.getTracks().forEach(track => {
-    pc.addTrack(track, stream);
-  });
+export async function addLocalTracks(pc: RTCPeerConnection, stream: MediaStream): Promise<void> {
+  stream.getTracks().forEach(track => pc.addTrack(track, stream));
 }
 
 export async function createOffer(pc: RTCPeerConnection): Promise<RTCSessionDescriptionInit> {
@@ -84,17 +71,11 @@ export async function handleOffer(
   return pc.localDescription!;
 }
 
-export async function handleAnswer(
-  pc: RTCPeerConnection,
-  answer: RTCSessionDescriptionInit
-): Promise<void> {
+export async function handleAnswer(pc: RTCPeerConnection, answer: RTCSessionDescriptionInit): Promise<void> {
   await pc.setRemoteDescription(new RTCSessionDescription(answer));
 }
 
-export async function handleIceCandidate(
-  pc: RTCPeerConnection,
-  candidate: RTCIceCandidateInit
-): Promise<void> {
+export async function handleIceCandidate(pc: RTCPeerConnection, candidate: RTCIceCandidateInit): Promise<void> {
   if (pc.signalingState === 'closed') return;
   await pc.addIceCandidate(new RTCIceCandidate(candidate));
 }
@@ -104,9 +85,8 @@ export function closePeerConnection(): void {
     peerConnection.onicecandidate = null;
     peerConnection.ontrack = null;
     peerConnection.onconnectionstatechange = null;
-    peerConnection.onnegotiationneeded = null;
-    peerConnection.getTransceivers().forEach(t => { try { t.stop(); } catch (e) {} });
-    peerConnection.getSenders().forEach(s => { try { s.replaceTrack(null); } catch (e) {} });
+    peerConnection.getTransceivers().forEach(t => { try { t.stop(); } catch {} });
+    peerConnection.getSenders().forEach(s => { try { s.replaceTrack(null); } catch {} });
     peerConnection.close();
     peerConnection = null;
   }
@@ -114,13 +94,7 @@ export function closePeerConnection(): void {
 
 export function stopMediaStream(stream: MediaStream | null): void {
   if (stream) {
-    stream.getTracks().forEach(track => {
-      try {
-        track.stop();
-      } catch (e) {
-        console.warn('Error stopping media track:', e);
-      }
-    });
+    stream.getTracks().forEach(track => { try { track.stop(); } catch {} });
   }
 }
 
@@ -130,27 +104,38 @@ export function getPeerConnection(): RTCPeerConnection | null {
 
 export async function getLocalUserMedia(
   videoDeviceId?: string,
-  audioDeviceId?: string
+  audioDeviceId?: string,
+  audioOnly = false
 ): Promise<MediaStream> {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const isPortrait = typeof window !== 'undefined' && window.innerHeight > window.innerWidth;
 
-  const videoConstraints: MediaTrackConstraints = videoDeviceId
-    ? { deviceId: { exact: videoDeviceId } }
-    : isMobile
-      ? { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } }
-      : { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } };
+  const videoConstraints: MediaTrackConstraints | false = audioOnly
+    ? false
+    : videoDeviceId
+      ? { deviceId: { exact: videoDeviceId } }
+      : {
+          facingMode: 'user',
+          width: { ideal: isPortrait ? 720 : 1280 },
+          height: { ideal: isPortrait ? 1280 : 720 },
+          aspectRatio: { ideal: isPortrait ? 9 / 16 : 16 / 9 },
+          frameRate: { ideal: 30 },
+        };
+
+  const audioConstraints: MediaTrackConstraints | boolean = audioDeviceId
+    ? { deviceId: { exact: audioDeviceId } }
+    : { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
 
   const constraints: MediaStreamConstraints = {
     video: videoConstraints,
-    audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    audio: audioConstraints,
   };
 
   try {
     return await navigator.mediaDevices.getUserMedia(constraints);
-  } catch (err) {
-    // Fallback: try with minimal constraints
+  } catch {
     try {
-      return await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      return await navigator.mediaDevices.getUserMedia({ video: !audioOnly, audio: true });
     } catch (fallbackErr) {
       console.warn('Could not get webcam stream:', fallbackErr);
       throw fallbackErr;
@@ -160,12 +145,9 @@ export async function getLocalUserMedia(
 
 export async function getMediaDevices(): Promise<MediaDeviceInfo[]> {
   try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-      return [];
-    }
+    if (!navigator.mediaDevices?.enumerateDevices) return [];
     return await navigator.mediaDevices.enumerateDevices();
-  } catch (err) {
-    console.error('Failed to enumerate devices:', err);
+  } catch {
     return [];
   }
 }

@@ -4,18 +4,23 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { CONFIG, logInfo } from './utils.js';
 import { createSocketServer } from './socket.js';
+import { api } from './api.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 const httpServer = createServer(app);
-createSocketServer(httpServer);
+
+app.use(express.json());
+app.use('/api', api);
+
+const io = createSocketServer(httpServer);
+
+setInterval(() => { global.__onlineCount = io.engine.clientsCount || 1; }, 2000);
 
 app.use(express.static(join(__dirname, '..', 'dist')));
-
-app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
-
-app.get('/{*splat}', (req, res) => res.sendFile(join(__dirname, '..', 'dist', 'index.html')));
+app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/{*splat}', (_req, res) => res.sendFile(join(__dirname, '..', 'dist', 'index.html')));
 
 httpServer.listen(CONFIG.PORT, () => logInfo('SERVER_START', `port=${CONFIG.PORT}`));

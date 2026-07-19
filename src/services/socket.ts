@@ -23,12 +23,6 @@ export function getSocket(): TypedSocket {
       reconnectionDelayMax: 5000,
       timeout: 10000,
     });
-
-    socket.on('connect', () => console.log('[socket] connected:', socket?.id));
-    socket.on('disconnect', (reason: string) => console.warn('[socket] disconnected:', reason));
-    socket.io.on('reconnect', (attempt: number) => console.log('[socket] reconnected after', attempt, 'attempts'));
-    socket.io.on('reconnect_attempt', (attempt: number) => console.log('[socket] reconnect attempt', attempt));
-    socket.on('connect_error', (err: Error) => console.warn('[socket] connect error:', err.message));
   }
   return socket;
 }

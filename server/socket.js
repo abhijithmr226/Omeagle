@@ -1,10 +1,23 @@
 import { Server } from 'socket.io';
 import { CONFIG, logInfo } from './utils.js';
-import { createRoom, getRoom, destroyRoom, getPartnerId, destroyAllRoomsFor } from './rooms.js';
-import { enqueue, findMatch, dequeueAll } from './matchmaking.js';
+import { getPartnerId, destroyRoom, getPartnerRoom } from './rooms.js';
+import { destroyMatch, getMatch } from './matchmaking.js';
 import { registerSignaling } from './signaling.js';
-import { cleanupAndDisconnect, cleanupAndSkip, cleanupAndStop, cleanupAndDisconnectSocket } from './cleanup.js';
-import { checkRateLimit, cleanupRateLimit, getMessageLength, isSpam, sanitizeText } from './rateLimit.js';
+import { checkRateLimit, cleanupRateLimit, sanitizeText, isSpam } from './rateLimit.js';
+
+const socketToUser = new Map();
+const peerTimers = new Map();
+const typingTimers = new Map();
+
+function clearPeerTimeout(socketId) {
+  const timer = peerTimers.get(socketId);
+  if (timer) { clearTimeout(timer); peerTimers.delete(socketId); }
+}
+
+function clearTypingTimeout(socketId) {
+  const timer = typingTimers.get(socketId);
+  if (timer) { clearTimeout(timer); typingTimers.delete(socketId); }
+}
 
 export function createSocketServer(httpServer) {
   const io = new Server(httpServer, {
@@ -14,61 +27,21 @@ export function createSocketServer(httpServer) {
     pingInterval: CONFIG.PING_INTERVAL,
   });
 
-  const peerTimers = new Map();
-  const typingTimers = new Map();
-
-  function startPeerTimeout(socket, partnerSocket) {
-    clearTimeout(peerTimers.get(socket.id));
-    clearTimeout(peerTimers.get(partnerSocket.id));
-
-    peerTimers.set(socket.id, setTimeout(() => {
-      logInfo('TIMEOUT', `${socket.id} (no answer)`);
-      socket.emit('stranger-timeout');
-      cleanupAndDisconnectSocket(socket, io);
-    }, CONFIG.TIMEOUT_MS));
-
-    peerTimers.set(partnerSocket.id, setTimeout(() => {
-      logInfo('TIMEOUT', `${partnerSocket.id} (no answer)`);
-      partnerSocket.emit('stranger-timeout');
-      cleanupAndDisconnectSocket(partnerSocket, io);
-    }, CONFIG.TIMEOUT_MS));
-  }
-
-  function clearPeerTimeout(socketId) {
-    const timer = peerTimers.get(socketId);
-    if (timer) {
-      clearTimeout(timer);
-      peerTimers.delete(socketId);
-    }
-  }
-
-  function clearTypingTimeout(socketId) {
-    const timer = typingTimers.get(socketId);
-    if (timer) {
-      clearTimeout(timer);
-      typingTimers.delete(socketId);
-    }
-  }
-
   io.on('connection', (socket) => {
-    logInfo('CONNECTED', socket.id);
+    logInfo('SOCKET_CONNECTED', socket.id);
     io.emit('online-count', io.engine.clientsCount);
 
-    registerSignaling(socket);
-
-    socket.on('find-stranger', ({ mode }) => {
-      cleanupAndDisconnect(socket);
-      const matched = findMatch(socket, mode, io);
-      if (matched) {
-        const room = createRoom(socket, matched);
-        socket.emit('stranger-found', { roomId: room.id, initiator: true });
-        matched.emit('stranger-found', { roomId: room.id, initiator: false });
-        startPeerTimeout(socket, matched);
-      } else {
-        enqueue(socket, mode);
-        socket.emit('waiting');
-      }
+    socket.on('register', ({ userId }) => {
+      socketToUser.set(socket.id, userId);
+      logInfo('REGISTER', `${socket.id} -> ${userId}`);
     });
+
+    socket.on('join-room', ({ roomId }) => {
+      socket.join(roomId);
+      logInfo('JOIN_ROOM', `${socket.id} -> ${roomId}`);
+    });
+
+    registerSignaling(socket);
 
     socket.on('send-message', ({ roomId, text }) => {
       if (!checkRateLimit(socket.id)) return;
@@ -98,25 +71,72 @@ export function createSocketServer(httpServer) {
       socket.to(roomId).emit('stop-typing', { from: socket.id });
     });
 
-    socket.on('stop', () => {
-      clearPeerTimeout(socket.id);
-      cleanupAndStop(socket);
+    socket.on('skip', () => {
+      const userId = socketToUser.get(socket.id);
+      if (userId) {
+        const match = destroyMatch(userId);
+        if (match) {
+          const partnerSocketId = findSocketByUserId(match.partnerId);
+          if (partnerSocketId) {
+            io.to(partnerSocketId).emit('stranger-disconnected');
+          }
+        }
+      }
+      cleanupSocketRoom(socket);
+      logInfo('SKIP', socket.id);
     });
 
-    socket.on('skip', () => {
-      clearPeerTimeout(socket.id);
-      cleanupAndSkip(socket, io);
+    socket.on('stop', () => {
+      const userId = socketToUser.get(socket.id);
+      if (userId) {
+        const match = destroyMatch(userId);
+        if (match) {
+          const partnerSocketId = findSocketByUserId(match.partnerId);
+          if (partnerSocketId) {
+            io.to(partnerSocketId).emit('stranger-disconnected');
+          }
+        }
+      }
+      cleanupSocketRoom(socket);
+      logInfo('STOP', socket.id);
     });
 
     socket.on('disconnect', () => {
       clearPeerTimeout(socket.id);
       clearTypingTimeout(socket.id);
       cleanupRateLimit(socket.id);
-      cleanupAndDisconnectSocket(socket, io);
+
+      const userId = socketToUser.get(socket.id);
+      if (userId) {
+        const match = destroyMatch(userId);
+        if (match) {
+          const partnerSocketId = findSocketByUserId(match.partnerId);
+          if (partnerSocketId) {
+            io.to(partnerSocketId).emit('stranger-disconnected');
+          }
+        }
+      }
+      cleanupSocketRoom(socket);
+      socketToUser.delete(socket.id);
       io.emit('online-count', io.engine.clientsCount);
-      logInfo('DISCONNECT', socket.id);
+      logInfo('SOCKET_DISCONNECT', socket.id);
     });
   });
+
+  function findSocketByUserId(userId) {
+    for (const [socketId, uid] of socketToUser) {
+      if (uid === userId) return socketId;
+    }
+    return null;
+  }
+
+  function cleanupSocketRoom(socket) {
+    for (const room of socket.rooms) {
+      if (room !== socket.id) {
+        socket.leave(room);
+      }
+    }
+  }
 
   return io;
 }

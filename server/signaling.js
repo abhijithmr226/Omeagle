@@ -10,12 +10,4 @@ export function registerSignaling(socket) {
   socket.on('ice-candidate', ({ roomId, candidate }) => {
     socket.to(roomId).emit('ice-candidate', { candidate, from: socket.id });
   });
-
-  socket.on('typing', ({ roomId }) => {
-    socket.to(roomId).emit('typing', { from: socket.id });
-  });
-
-  socket.on('stop-typing', ({ roomId }) => {
-    socket.to(roomId).emit('stop-typing', { from: socket.id });
-  });
 }
