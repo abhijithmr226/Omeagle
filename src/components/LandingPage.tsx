@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, MessageSquare, Settings2, Globe, Tag, Heart } from 'lucide-react';
+import { Video, MessageSquare, Settings2, Globe, Tag, Heart, Shield, Zap, Users, Smartphone } from 'lucide-react';
 import type { UserSettings } from '../types/chat';
 
 interface LandingPageProps {
@@ -68,6 +68,182 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
           </div>
         </div>
       </section>
+
+      <section className="seo-content">
+        <div className="seo-inner">
+          <h2 className="seo-title">What Is Omeagle?</h2>
+          <p>
+            Omeagle is a <strong>free random video chat platform</strong> that lets you talk to strangers from around the world instantly. Built as a modern alternative to Omegle, Omeagle combines real-time video calling, anonymous text chat, and AI-powered moderation into one seamless experience. No sign up required. No personal data needed. Just click Start and begin a conversation.
+          </p>
+
+          <h2 className="seo-title">How Random Video Chat Works</h2>
+          <p>
+            Random video chat on Omeagle uses <strong>WebRTC</strong> (Web Real-Time Communication) to connect you directly with another user. When you click Start Video Chat, your browser requests camera and microphone access. Once granted, Omeagle's matchmaking system instantly pairs you with a random stranger from its pool of online users. Your video and audio travel peer-to-peer, meaning Omeagle never sees, records, or stores your conversations.
+          </p>
+
+          <div className="seo-features">
+            <div className="seo-feature">
+              <Video size={22} />
+              <div>
+                <strong>Random Video Chat</strong>
+                <p>Instant face-to-face video connections with strangers worldwide. High quality, low latency.</p>
+              </div>
+            </div>
+            <div className="seo-feature">
+              <MessageSquare size={22} />
+              <div>
+                <strong>Anonymous Text Chat</strong>
+                <p>Not ready for video? Text chat gives you the same random stranger experience through typed messages.</p>
+              </div>
+            </div>
+            <div className="seo-feature">
+              <Shield size={22} />
+              <div>
+                <strong>AI Moderation</strong>
+                <p>Real-time content filtering detects and blocks inappropriate behavior before it reaches your screen.</p>
+              </div>
+            </div>
+            <div className="seo-feature">
+              <Globe size={22} />
+              <div>
+                <strong>Country Matching</strong>
+                <p>Filter by country and gender to connect with people from specific regions or match globally.</p>
+              </div>
+            </div>
+            <div className="seo-feature">
+              <Smartphone size={22} />
+              <div>
+                <strong>Mobile-First Design</strong>
+                <p>Works perfectly on any device. No app download needed. Open your browser and start chatting.</p>
+              </div>
+            </div>
+            <div className="seo-feature">
+              <Zap size={22} />
+              <div>
+                <strong>Instant Matching</strong>
+                <p>Get connected to a stranger in under 3 seconds. No waiting around.</p>
+              </div>
+            </div>
+          </div>
+
+          <h2 className="seo-title">Omeagle vs Other Chat Platforms</h2>
+          <p>See how Omeagle compares to other popular random chat alternatives in 2026.</p>
+          <div className="comparison-table-wrapper">
+            <table className="comparison-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th className="highlight-col">Omeagle</th>
+                  <th>Omegle (Legacy)</th>
+                  <th>Chatroulette</th>
+                  <th>OmeTV</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Free to Use</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>✅ Yes</td>
+                  <td>⚠️ Limited</td>
+                  <td>⚠️ Limited</td>
+                </tr>
+                <tr>
+                  <td>No Sign Up Required</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                </tr>
+                <tr>
+                  <td>AI Moderation</td>
+                  <td className="highlight-col">✅ Real-time</td>
+                  <td>❌ None</td>
+                  <td>⚠️ Basic</td>
+                  <td>⚠️ Basic</td>
+                </tr>
+                <tr>
+                  <td>Video Chat</td>
+                  <td className="highlight-col">✅ HD</td>
+                  <td>✅ SD</td>
+                  <td>✅ HD</td>
+                  <td>✅ HD</td>
+                </tr>
+                <tr>
+                  <td>Text Chat</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                </tr>
+                <tr>
+                  <td>Country Filter</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                  <td>✅ Yes</td>
+                </tr>
+                <tr>
+                  <td>Gender Filter</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                  <td>✅ Yes</td>
+                </tr>
+                <tr>
+                  <td>Interest Matching</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                </tr>
+                <tr>
+                  <td>Mobile Optimized</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>⚠️ Partial</td>
+                  <td>⚠️ Partial</td>
+                  <td>✅ Yes</td>
+                </tr>
+                <tr>
+                  <td>End-to-End Encryption</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                </tr>
+                <tr>
+                  <td>18+ Age Gate</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                  <td>⚠️ Partial</td>
+                </tr>
+                <tr>
+                  <td>Report System</td>
+                  <td className="highlight-col">✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>⚠️ Basic</td>
+                  <td>✅ Yes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2 className="seo-title">Why Choose Omeagle Over Omegle?</h2>
+          <p>
+            Since Omegle shut down in 2023, millions of users have been looking for a reliable alternative. Omeagle fills that gap with a platform that is <strong>100% free</strong>, <strong>anonymous by design</strong>, and <strong>protected by AI moderation</strong>. Unlike older random chat platforms that lacked safety controls, Omeagle uses real-time AI to detect and block inappropriate content, making it one of the safest random chat experiences available today.
+          </p>
+
+          <h2 className="seo-title">Talk to Strangers Safely</h2>
+          <p>
+            Talking to strangers online can be exciting, but safety matters. Omeagle protects you with <strong>end-to-end encrypted video</strong>, a <strong>report and block system</strong>, and <strong>AI-powered content moderation</strong> that works 24/7. No personal data is collected. No accounts are required. Your conversations are never recorded or stored. When you close your browser, your session disappears completely.
+          </p>
+
+          <h2 className="seo-title">Start Chatting Now</h2>
+          <p>
+            Hundreds of people are online right now waiting to chat. Whether you want to make a new friend, practice a foreign language, or simply have an interesting conversation with someone new, it all starts with one click. Choose Video Chat for face-to-face conversations or Text Chat for anonymous messaging. Set your preferences for country, gender, and interests to find your ideal match.
+          </p>
+        </div>
+      </section>
       <style>{`
         .landing-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 64px); padding: 2rem 1rem; }
         .hero-section { text-align: center; max-width: 600px; }
@@ -89,6 +265,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
           .hero-title { font-size: 2.4rem; }
           .hero-subtitle { font-size: 1.05rem; }
         }
+        .seo-content { max-width: 720px; margin: 4rem auto 0; padding: 0 1rem; border-top: 1px solid var(--border-color); padding-top: 3rem; }
+        .seo-inner { line-height: 1.75; }
+        .seo-title { font-size: 1.5rem; margin-top: 2.5rem; margin-bottom: 0.75rem; color: var(--text-primary); }
+        .seo-title:first-child { margin-top: 0; }
+        .seo-content p { color: var(--text-secondary); font-size: 1.02rem; margin-bottom: 1rem; }
+        .seo-content p strong { color: var(--text-primary); }
+        .seo-features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1.5rem 0; }
+        .seo-feature { display: flex; gap: 0.85rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.1rem; transition: border-color 0.2s; }
+        .seo-feature:hover { border-color: var(--brand-blue); }
+        .seo-feature svg { flex-shrink: 0; color: var(--brand-blue); margin-top: 0.15rem; }
+        .seo-feature strong { display: block; font-size: 0.95rem; margin-bottom: 0.25rem; }
+        .seo-feature p { font-size: 0.88rem; margin: 0; color: var(--text-muted); line-height: 1.55; }
+        @media (max-width: 640px) {
+          .seo-features { grid-template-columns: 1fr; }
+          .seo-title { font-size: 1.3rem; }
+          .comparison-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .comparison-table { min-width: 600px; }
+        }
+        .comparison-table-wrapper { overflow-x: auto; margin: 1.5rem 0; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+        .comparison-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+        .comparison-table th, .comparison-table td { padding: 0.75rem 1rem; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .comparison-table th { background: var(--bg-surface-secondary); font-weight: 700; color: var(--text-primary); white-space: nowrap; }
+        .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; font-weight: 600; color: var(--text-primary); }
+        .comparison-table td { color: var(--text-secondary); }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        .comparison-table .highlight-col { background: rgba(0, 102, 255, 0.08); color: var(--brand-blue); font-weight: 700; }
+        .comparison-table th.highlight-col { background: var(--brand-blue); color: #fff; }
       `}</style>
     </div>
   );

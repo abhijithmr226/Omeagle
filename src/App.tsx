@@ -8,11 +8,13 @@ import { ChatBox } from './components/Chat/ChatBox';
 import { Footer } from './components/Footer';
 import { SettingsModal } from './components/Modals/SettingsModal';
 import { PreferencesModal } from './components/Modals/PreferencesModal';
+import { AgeGateModal } from './components/Modals/AgeGateModal';
 import { About } from './pages/About';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Contact } from './pages/Contact';
 import { Blog } from './pages/Blog';
+import { Safety } from './pages/Safety';
 import type { ChatMode, ConnectionStatus, PartnerProfile } from './types/chat';
 import { joinQueue, pollMatch, leaveQueue, endCall, cleanupAfterSkip } from './services/queue';
 import { createCallChannel, type CallChannel } from './services/signaling';
@@ -64,6 +66,9 @@ export const App: React.FC = () => {
   const [isPrefsOpen, setIsPrefsOpen] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [partnerProfile, setPartnerProfile] = useState<PartnerProfile | null>(null);
+  const [ageConfirmed, setAgeConfirmed] = useState(() => {
+    return sessionStorage.getItem('omeagle_age_verified') === 'true';
+  });
 
   const roomIdRef = useRef<string | null>(null);
   const callChannelRef = useRef<CallChannel | null>(null);
@@ -420,6 +425,11 @@ export const App: React.FC = () => {
 
   const openPage = (page: string) => navigate(`/${page}`);
 
+  const handleAgeConfirm = useCallback(() => {
+    sessionStorage.setItem('omeagle_age_verified', 'true');
+    setAgeConfirmed(true);
+  }, []);
+
   return (
     <div className="app-container">
       <Header currentMode={mode} onSelectMode={(m) => {
@@ -434,6 +444,7 @@ export const App: React.FC = () => {
           <Route path="/terms" element={<Terms />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/safety" element={<Safety />} />
           <Route path="/*" element={
             mode === 'landing' ? (
               <LandingPage onStartChat={startChat} onlineCount={onlineCount}
@@ -501,6 +512,7 @@ export const App: React.FC = () => {
         settings={settings} onSaveSettings={updateSettings} />
       <PreferencesModal isOpen={isPrefsOpen} onClose={() => setIsPrefsOpen(false)}
         settings={settings} onSave={updateSettings} />
+      {!ageConfirmed && <AgeGateModal onConfirm={handleAgeConfirm} />}
 
       <style>{`
         .chat-layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; margin: 0 auto; position: relative; }
