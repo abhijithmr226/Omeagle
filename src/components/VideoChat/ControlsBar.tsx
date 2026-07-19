@@ -90,18 +90,25 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
         .disabled { opacity: 0.4; cursor: not-allowed; }
 
         /* Mobile controls */
-        .mobile-controls { display: none; grid-template-columns: repeat(5, 1fr); gap: 0.3rem; width: 100%; padding: 0.4rem 0; background: var(--bg-surface); border-top: 1px solid var(--border-color); }
-        .mobile-ctrl { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; background: var(--bg-surface); color: var(--text-primary); padding: 0.5rem 0.2rem; border-radius: var(--radius-md); min-height: 52px; -webkit-tap-highlight-color: transparent; transition: background 0.15s; }
+        .mobile-controls { display: none; grid-template-columns: repeat(5, 1fr); gap: 0.35rem; width: 100%; padding: 0.5rem 0.25rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)); background: var(--bg-surface); border-top: 1px solid var(--border-color); }
+        .mobile-ctrl { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; background: var(--bg-surface); color: var(--text-primary); padding: 0.5rem 0.15rem; border-radius: var(--radius-md); min-height: 56px; -webkit-tap-highlight-color: transparent; transition: background 0.15s; touch-action: manipulation; }
         .mobile-ctrl:active { background: var(--bg-surface-secondary); }
         .mobile-ctrl-lbl { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.02em; }
         .mobile-ctrl.muted { background: var(--status-red-light); color: var(--status-red); }
         .mobile-ctrl.chat-active { background: var(--brand-blue); color: #fff; }
-        .primary-ctrl { background: var(--status-green) !important; color: #fff !important; }
+        .primary-ctrl { background: var(--status-green) !important; color: #fff !important; min-height: 60px; }
         .primary-ctrl:active { background: #059669 !important; }
 
         @media (max-width: 868px) {
           .desktop-controls { display: none; }
           .mobile-controls { display: grid; }
+        }
+
+        @media (max-width: 380px) {
+          .mobile-ctrl { min-height: 50px; }
+          .mobile-ctrl svg { width: 18px; height: 18px; }
+          .primary-ctrl { min-height: 54px; }
+          .primary-ctrl svg { width: 22px; height: 22px; }
         }
       `}</style>
     </div>

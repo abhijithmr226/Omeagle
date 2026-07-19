@@ -270,28 +270,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
         </div>
       </section>
       <style>{`
-        .landing-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 64px); padding: 2rem 1rem; }
-        .hero-section { text-align: center; max-width: 600px; }
+        .landing-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 64px); min-height: calc(100dvh - 64px); padding: 2rem 1rem; }
+        .hero-section { text-align: center; max-width: 600px; width: 100%; }
         .hero-title { font-size: 3.5rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1rem; color: var(--text-primary); }
         .highlight-text { color: var(--brand-blue); }
         .hero-subtitle { font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 2rem; }
-        .cta-group { display: flex; flex-direction: column; gap: 0.9rem; max-width: 340px; margin: 0 auto; }
-        .btn-primary-lg { display: flex; align-items: center; justify-content: center; gap: 0.75rem; background-color: var(--brand-blue); color: #ffffff; padding: 1rem 1.75rem; font-size: 1.1rem; font-weight: 700; border-radius: var(--radius-md); box-shadow: 0 8px 20px -4px rgba(0, 102, 255, 0.4); }
+        .cta-group { display: flex; flex-direction: column; gap: 0.9rem; max-width: 340px; margin: 0 auto; width: 100%; }
+        .btn-primary-lg { display: flex; align-items: center; justify-content: center; gap: 0.75rem; background-color: var(--brand-blue); color: #ffffff; padding: 1rem 1.75rem; font-size: 1.1rem; font-weight: 700; border-radius: var(--radius-md); box-shadow: 0 8px 20px -4px rgba(0, 102, 255, 0.4); min-height: 56px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .btn-primary-lg:active { transform: scale(0.98); }
         .btn-primary-lg:hover { background-color: var(--brand-blue-hover); transform: translateY(-1px); }
-        .btn-secondary-lg { display: flex; align-items: center; justify-content: center; gap: 0.75rem; background-color: var(--bg-surface); border: 2px solid var(--brand-blue); color: var(--brand-blue); padding: 0.9rem 1.75rem; font-size: 1.1rem; font-weight: 700; border-radius: var(--radius-md); }
+        .btn-secondary-lg { display: flex; align-items: center; justify-content: center; gap: 0.75rem; background-color: var(--bg-surface); border: 2px solid var(--brand-blue); color: var(--brand-blue); padding: 0.9rem 1.75rem; font-size: 1.1rem; font-weight: 700; border-radius: var(--radius-md); min-height: 56px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .btn-secondary-lg:active { background-color: var(--brand-blue-light); }
         .btn-secondary-lg:hover { background-color: var(--brand-blue-light); }
-        .prefs-link-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1.25rem; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: var(--radius-md); transition: all 0.2s; background: none; border: 1px solid var(--border-color); }
+        .prefs-link-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1.25rem; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; padding: 0.6rem 1rem; border-radius: var(--radius-md); transition: all 0.2s; background: none; border: 1px solid var(--border-color); min-height: 44px; -webkit-tap-highlight-color: transparent; }
+        .prefs-link-btn:active { background: var(--brand-blue-light); color: var(--brand-blue); }
         .prefs-link-btn:hover { color: var(--brand-blue); border-color: var(--brand-blue); background: var(--brand-blue-light); }
         .prefs-chips-row { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: 1rem; max-width: 380px; margin-left: auto; margin-right: auto; }
         .pref-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.6rem; background: var(--brand-blue-light); color: var(--brand-blue); border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
         .pref-icon { font-size: 0.85rem; }
         .online-badge { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 2.5rem; padding: 0.6rem 1.2rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 0.95rem; color: var(--text-secondary); transition: transform 0.3s, box-shadow 0.3s; }
         .online-badge.pulse { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 102, 255, 0.3); }
-        @media (max-width: 868px) {
-          .hero-title { font-size: 2.4rem; }
-          .hero-subtitle { font-size: 1.05rem; }
-        }
-        .seo-content { max-width: 720px; margin: 4rem auto 0; padding: 0 1rem; border-top: 1px solid var(--border-color); padding-top: 3rem; }
+        .seo-content { max-width: 720px; margin: 4rem auto 0; padding: 0 1rem; border-top: 1px solid var(--border-color); padding-top: 3rem; width: 100%; }
         .seo-inner { line-height: 1.75; }
         .seo-title { font-size: 1.5rem; margin-top: 2.5rem; margin-bottom: 0.75rem; color: var(--text-primary); }
         .seo-title:first-child { margin-top: 0; }
@@ -303,21 +302,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
         .seo-feature svg { flex-shrink: 0; color: var(--brand-blue); margin-top: 0.15rem; }
         .seo-feature strong { display: block; font-size: 0.95rem; margin-bottom: 0.25rem; }
         .seo-feature p { font-size: 0.88rem; margin: 0; color: var(--text-muted); line-height: 1.55; }
-        @media (max-width: 640px) {
-          .seo-features { grid-template-columns: 1fr; }
-          .seo-title { font-size: 1.3rem; }
-          .comparison-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-          .comparison-table { min-width: 600px; }
-        }
-        .comparison-table-wrapper { overflow-x: auto; margin: 1.5rem 0; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
-        .comparison-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+        .comparison-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1.5rem 0; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+        .comparison-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 500px; }
         .comparison-table th, .comparison-table td { padding: 0.75rem 1rem; text-align: center; border-bottom: 1px solid var(--border-color); }
         .comparison-table th { background: var(--bg-surface-secondary); font-weight: 700; color: var(--text-primary); white-space: nowrap; }
-        .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; font-weight: 600; color: var(--text-primary); }
+        .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; font-weight: 600; color: var(--text-primary); position: sticky; left: 0; background: var(--bg-surface); z-index: 1; }
+        .comparison-table th:first-child { background: var(--bg-surface-secondary); }
         .comparison-table td { color: var(--text-secondary); }
         .comparison-table tr:last-child td { border-bottom: none; }
         .comparison-table .highlight-col { background: rgba(0, 102, 255, 0.08); color: var(--brand-blue); font-weight: 700; }
         .comparison-table th.highlight-col { background: var(--brand-blue); color: #fff; }
+
+        @media (max-width: 868px) {
+          .landing-page { min-height: calc(100vh - 56px); min-height: calc(100dvh - 56px); padding: 1.5rem 0.75rem; }
+          .hero-title { font-size: 2.2rem; }
+          .hero-subtitle { font-size: 1rem; margin-bottom: 1.5rem; }
+          .cta-group { gap: 0.75rem; }
+          .btn-primary-lg, .btn-secondary-lg { font-size: 1rem; padding: 0.85rem 1.5rem; }
+          .online-badge { margin-top: 1.5rem; font-size: 0.88rem; }
+        }
+
+        @media (max-width: 640px) {
+          .hero-title { font-size: 1.9rem; }
+          .seo-features { grid-template-columns: 1fr; }
+          .seo-title { font-size: 1.3rem; }
+          .seo-content { margin-top: 2.5rem; padding-top: 2rem; }
+          .seo-feature { padding: 0.9rem; }
+        }
+
+        @media (max-width: 380px) {
+          .hero-title { font-size: 1.65rem; }
+          .hero-subtitle { font-size: 0.92rem; }
+        }
+
+        @media (min-height: 800px) and (min-width: 869px) {
+          .landing-page { padding-top: 4rem; }
+        }
       `}</style>
     </div>
   );

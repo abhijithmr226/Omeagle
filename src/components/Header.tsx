@@ -22,7 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="header-container">
         <div className="header-left">
           <button className="mobile-menu-btn" aria-label="Menu" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <Link to="/" onClick={() => onSelectMode('landing')} className="logo-link">
             <img src="/headerlogo.png" alt="Omeagle" className="header-logo-img" />
@@ -48,17 +48,17 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
       {mobileMenuOpen && (
-        <div className="mobile-nav-drawer" onClick={() => setMobileMenuOpen(false)}>
-          <button className="mobile-drawer-item" onClick={() => { onSelectMode('landing'); navigate('/'); }}>Home</button>
-          <button className="mobile-drawer-item" onClick={() => onSelectMode('video')}><Video size={18} /> Video Chat</button>
-          <button className="mobile-drawer-item" onClick={() => onSelectMode('text')}><MessageSquare size={18} /> Text Chat</button>
+        <div className="mobile-nav-drawer">
+          <button className="mobile-drawer-item" onClick={() => { onSelectMode('landing'); navigate('/'); setMobileMenuOpen(false); }}>Home</button>
+          <button className="mobile-drawer-item" onClick={() => { onSelectMode('video'); setMobileMenuOpen(false); }}><Video size={18} /> Video Chat</button>
+          <button className="mobile-drawer-item" onClick={() => { onSelectMode('text'); setMobileMenuOpen(false); }}><MessageSquare size={18} /> Text Chat</button>
         </div>
       )}
       <style>{`
         .site-header { background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
         .header-container { max-width: 1440px; margin: 0 auto; padding: 0.6rem 1.25rem; display: flex; align-items: center; justify-content: space-between; height: 64px; }
         .header-left { display: flex; align-items: center; gap: 1.5rem; }
-        .mobile-menu-btn { display: none; color: var(--text-primary); padding: 0.4rem; }
+        .mobile-menu-btn { display: none; color: var(--text-primary); padding: 0.5rem; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
         .logo-link { display: flex; align-items: center; text-decoration: none; }
         .header-logo-img { height: 38px; width: auto; object-fit: contain; }
         .desktop-nav { display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; }
@@ -74,9 +74,22 @@ export const Header: React.FC<HeaderProps> = ({
         .theme-toggle-btn:hover { color: var(--brand-blue); }
         .sun-icon { color: #f59e0b; }
         .mobile-nav-drawer { display: none; flex-direction: column; padding: 0.5rem 0.75rem 1rem; border-top: 1px solid var(--border-color); background-color: var(--bg-surface); }
-        .mobile-drawer-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); border-radius: var(--radius-md); }
-        .mobile-drawer-item:hover { background-color: var(--bg-surface-secondary); }
-        @media (max-width: 868px) { .desktop-nav { display: none; } .mobile-menu-btn { display: flex; } .mobile-nav-drawer { display: flex; } .header-container { padding: 0.5rem 0.75rem; } .header-logo-img { height: 32px; } }
+        .mobile-drawer-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); border-radius: var(--radius-md); min-height: 48px; }
+        .mobile-drawer-item:active { background-color: var(--bg-surface-secondary); }
+
+        @media (max-width: 868px) {
+          .desktop-nav { display: none; }
+          .mobile-menu-btn { display: flex; }
+          .mobile-nav-drawer { display: flex; }
+          .header-container { padding: 0.5rem 0.75rem; height: 56px; }
+          .header-logo-img { height: 32px; }
+          .online-label { display: none; }
+          .header-online-badge { padding: 0.35rem 0.6rem; }
+        }
+
+        @media (max-width: 380px) {
+          .header-online-badge { display: none; }
+        }
       `}</style>
     </header>
   );

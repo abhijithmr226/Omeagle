@@ -286,18 +286,25 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         .action-card-text p { font-size: 0.78rem; color: var(--text-secondary); }
         .card-arrow { color: var(--text-muted); }
         @media (max-width: 768px) { .chat-feed-card { height: 380px; } }
-        .report-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        .report-modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 2rem; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+        .report-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; -webkit-overflow-scrolling: touch; }
+        .report-modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 2rem 1.5rem; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; }
         .report-modal h3 { font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-primary); }
         .report-modal p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
         .report-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
-        .report-option { padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary); font-size: 0.95rem; font-weight: 500; text-align: left; cursor: pointer; transition: all 0.2s; }
+        .report-option { padding: 0.85rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary); font-size: 0.95rem; font-weight: 500; text-align: left; cursor: pointer; transition: all 0.2s; min-height: 48px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .report-option:active { border-color: #ef4444; background: rgba(239,68,68,0.05); }
         .report-option:hover { border-color: #ef4444; background: rgba(239,68,68,0.05); color: #ef4444; }
-        .report-cancel { padding: 0.6rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-secondary); font-size: 0.9rem; cursor: pointer; }
-        .report-cancel:hover { border-color: var(--text-secondary); }
+        .report-cancel { padding: 0.7rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-secondary); font-size: 0.9rem; cursor: pointer; min-height: 44px; width: 100%; }
+        .report-cancel:active { border-color: var(--text-secondary); }
         .report-success { padding: 1rem 0; }
         .report-success svg { color: #22c55e; margin-bottom: 0.75rem; }
         .report-success h3 { color: #22c55e; margin-bottom: 0.5rem; }
+
+        @media (max-width: 480px) {
+          .report-modal-overlay { align-items: flex-end; padding: 0; }
+          .report-modal { border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom, 0px)); max-height: 75vh; }
+          .report-option { font-size: 1rem; }
+        }
       `}</style>
     </div>
   );

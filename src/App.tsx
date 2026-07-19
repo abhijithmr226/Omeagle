@@ -520,22 +520,46 @@ export const App: React.FC = () => {
         .chat-column { display: flex; flex-direction: column; }
         .text-chat-layout { display: flex; justify-content: center; width: 100%; max-width: 640px; margin: 0 auto; }
         .mobile-chat-overlay { display: none; }
+        .ad-banner { display: flex; justify-content: center; width: 100%; padding: 0.5rem 0; opacity: 0.85; }
+
         @media (max-width: 1024px) {
           .chat-layout-grid { grid-template-columns: 1fr; gap: 0; }
-          .video-column { height: calc(100dvh - 140px); display: flex; flex-direction: column; justify-content: space-between; }
+          .video-column { height: calc(100dvh - 120px); display: flex; flex-direction: column; justify-content: space-between; }
           .chat-column { display: none; }
           .mobile-chat-overlay {
             display: flex; flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0;
             height: 55vh; background: var(--bg-surface); border-top: 1px solid var(--border-color);
             border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
             z-index: 200; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
           }
           .mobile-chat-overlay.open { transform: translateY(0); }
-          .mobile-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.9rem; flex-shrink: 0; background: var(--bg-surface); }
-          .mobile-chat-close { width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-surface-secondary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--text-primary); }
+          .mobile-chat-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
+            font-weight: 700; font-size: 0.9rem; flex-shrink: 0; background: var(--bg-surface);
+          }
+          .mobile-chat-close {
+            width: 40px; height: 40px; border-radius: var(--radius-full);
+            background: var(--bg-surface-secondary); display: flex; align-items: center;
+            justify-content: center; font-size: 1rem; color: var(--text-primary);
+            min-width: 44px; min-height: 44px; -webkit-tap-highlight-color: transparent;
+          }
+          .mobile-chat-close:active { background: var(--border-color); }
         }
-        .ad-banner { display: flex; justify-content: center; width: 100%; padding: 0.5rem 0; opacity: 0.85; }
-        @media (max-width: 768px) { .ad-banner { display: none; } }
+
+        @media (max-width: 480px) {
+          .mobile-chat-overlay { height: 60vh; }
+        }
+
+        @media (max-width: 768px) {
+          .ad-banner { display: none; }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+          .video-column { height: calc(100dvh - 80px); }
+          .mobile-chat-overlay { height: 50vh; }
+        }
       `}</style>
     </div>
   );
