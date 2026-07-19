@@ -5,31 +5,27 @@ import { VideoGrid } from './components/VideoChat/VideoGrid';
 import { ControlsBar } from './components/VideoChat/ControlsBar';
 import { ChatBox } from './components/Chat/ChatBox';
 import { Footer } from './components/Footer';
-import { SafetyModal } from './components/Modals/SafetyModal';
 import { SettingsModal } from './components/Modals/SettingsModal';
-import { ReportModal } from './components/Modals/ReportModal';
 import { AboutPage } from './components/Pages/AboutPage';
 import { PrivacyPage } from './components/Pages/PrivacyPage';
 import { TermsPage } from './components/Pages/TermsPage';
 import { ContactPage } from './components/Pages/ContactPage';
-
-import { ChatMode, ConnectionStatus, ThemeMode, ChatMessage, StrangerProfile, UserSettings, PageView, UserLocation } from './types/chat';
+import { ChatMode, ConnectionStatus, ThemeMode, ChatMessage, UserSettings } from './types/chat';
 import { getSocket } from './services/socket';
 import {
   createPeerConnection, addLocalTracks, createOffer, handleOffer,
   handleAnswer, handleIceCandidate,
   closePeerConnection, getLocalUserMedia, getPeerConnection,
 } from './services/webrtc';
-import { detectFace } from './services/faceDetect';
-import { getUserLocation, getCountryFlag } from './services/location';
-import { filterMessage } from './services/keywordFilter';
 import { Socket } from 'socket.io-client';
+
+type PageView = 'about' | 'privacy' | 'terms' | 'contact' | null;
 
 export const App: React.FC = () => {
   const [mode, setMode] = useState<ChatMode>('landing');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle');
-  const [onlineCount, setOnlineCount] = useState<number>(300);
+  const [onlineCount, setOnlineCount] = useState(120);
   const [currentPage, setCurrentPage] = useState<PageView>(null);
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -39,28 +35,10 @@ export const App: React.FC = () => {
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [strangerProfile, setStrangerProfile] = useState<StrangerProfile | null>(null);
-
-  const [isSafetyOpen, setIsSafetyOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isReportOpen, setIsReportOpen] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
-  const [settings, setSettings] = useState<UserSettings>({
-    autoNextOnSkip: true,
-    filterByInterest: false,
-    userInterests: [],
-    language: 'en',
-    unmonitoredMode: false,
-    faceCheck: true,
-    keywordFilter: true,
-    blockedKeywords: [],
-    locationSharing: false,
-    countryFilter: '',
-  });
-
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-  const [faceWarning, setFaceWarning] = useState<string | null>(null);
+  const [settings, setSettings] = useState<UserSettings>({});
 
   const socketRef = useRef<Socket | null>(null);
   const roomIdRef = useRef<string | null>(null);
@@ -72,7 +50,6 @@ export const App: React.FC = () => {
   useEffect(() => { settingsRef.current = settings; }, [settings]);
   useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
 
-  // Socket setup
   useEffect(() => {
     const socket = getSocket();
     socketRef.current = socket;
@@ -83,7 +60,6 @@ export const App: React.FC = () => {
     socket.on('stranger-found', async ({ roomId, initiator }: { roomId: string; initiator: boolean }) => {
       roomIdRef.current = roomId;
       setConnectionStatus('connected');
-      setStrangerProfile(null);
       setMessages(prev => [...prev, {
         id: `sys-${Date.now()}`, sender: 'system',
         text: "You're now chatting with a random stranger. Say hi!",
@@ -136,11 +112,6 @@ export const App: React.FC = () => {
     });
 
     socket.on('receive-message', ({ text }: { text: string }) => {
-      // Keyword filter on incoming messages
-      if (settingsRef.current.keywordFilter) {
-        const result = filterMessage(text, settingsRef.current.blockedKeywords);
-        if (!result.allowed) return; // silently drop blocked messages
-      }
       setMessages(prev => [...prev, {
         id: `str-${Date.now()}`, sender: 'stranger', text,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -149,43 +120,22 @@ export const App: React.FC = () => {
 
     socket.on('stranger-disconnected', () => handleStrangerDisconnected());
 
-    socket.on('banned', ({ message }: { message: string }) => {
-      alert(message);
-      handleStop();
-    });
-
-    socket.on('system-message', ({ text }: { text: string }) => {
-      setMessages(prev => [...prev, {
-        id: `sys-${Date.now()}`, sender: 'system', text,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }]);
-    });
-
     return () => {
       socket.off('online-count'); socket.off('waiting'); socket.off('stranger-found');
       socket.off('offer'); socket.off('answer'); socket.off('ice-candidate');
       socket.off('receive-message'); socket.off('stranger-disconnected');
-      socket.off('banned'); socket.off('system-message');
     };
   }, []);
 
   const handleStrangerDisconnected = useCallback(() => {
     setConnectionStatus('disconnected');
     setRemoteStream(null);
-    setStrangerProfile(null);
     setMessages(prev => [...prev, {
       id: `disc-${Date.now()}`, sender: 'system', text: 'Stranger has disconnected.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }]);
     closePeerConnection();
     roomIdRef.current = null;
-
-    // Auto-reconnect
-    if (settingsRef.current.autoNextOnSkip) {
-      setTimeout(() => {
-        if (modeRef.current !== 'landing') handleStart(modeRef.current);
-      }, 2000);
-    }
   }, []);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
@@ -196,55 +146,29 @@ export const App: React.FC = () => {
     modeRef.current = activeMode;
     setConnectionStatus('searching');
     setMessages([]);
-    setStrangerProfile(null);
     setRemoteStream(null);
-    setFaceWarning(null);
     closePeerConnection();
 
     if (activeMode === 'video') {
       try {
-        const stream = await getLocalUserMedia(settings.videoDeviceId, settings.audioDeviceId);
+        const stream = await getLocalUserMedia(settingsRef.current.videoDeviceId, settingsRef.current.audioDeviceId);
         setLocalStream(stream);
         localStreamRef.current = stream;
-
-        // Face check (if enabled and not unmonitored)
-        if (settings.faceCheck && !settings.unmonitoredMode) {
-          const result = await detectFace(stream);
-          if (!result.faceDetected) {
-            setFaceWarning('No face detected. Make sure your face is visible in the camera. You can disable this in Settings.');
-          }
-        }
       } catch (err) {
         console.error('Camera error:', err);
       }
     }
 
-    // Get location (if enabled)
-    if (settings.locationSharing && !userLocation) {
-      const loc = await getUserLocation();
-      if (loc) setUserLocation(loc);
-    }
-
     const socket = socketRef.current || getSocket();
     socketRef.current = socket;
-    socket.emit('find-stranger', {
-      mode: activeMode,
-      interests: settings.filterByInterest ? settings.userInterests : [],
-      language: settings.language || '',
-      country: settings.countryFilter || '',
-      location: settings.locationSharing && userLocation ? {
-        country: userLocation.country,
-        countryCode: userLocation.countryCode,
-      } : null,
-    });
-  }, [mode, settings.videoDeviceId, settings.audioDeviceId, settings.userInterests, settings.filterByInterest, settings.language, settings.faceCheck, settings.unmonitoredMode, settings.locationSharing, settings.countryFilter, userLocation]);
+    socket.emit('find-stranger', { mode: activeMode });
+  }, [mode]);
 
   const handleStop = useCallback(() => {
     socketRef.current?.emit('stop');
     closePeerConnection();
     setRemoteStream(null);
     setConnectionStatus('disconnected');
-    setStrangerProfile(null);
     setMessages(prev => [...prev, {
       id: `stop-${Date.now()}`, sender: 'system', text: 'You have disconnected.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -257,24 +181,11 @@ export const App: React.FC = () => {
     closePeerConnection();
     setRemoteStream(null);
     setConnectionStatus('idle');
-    setStrangerProfile(null);
     roomIdRef.current = null;
     setTimeout(() => handleStart(modeRef.current), 300);
   }, [handleStart]);
 
   const handleSendMessage = useCallback((text: string) => {
-    // Keyword filter check
-    if (settingsRef.current.keywordFilter) {
-      const result = filterMessage(text, settingsRef.current.blockedKeywords);
-      if (!result.allowed) {
-        setMessages(prev => [...prev, {
-          id: `sys-${Date.now()}`, sender: 'system',
-          text: `Message blocked: ${result.reason}`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        }]);
-        return;
-      }
-    }
     const socket = socketRef.current;
     const roomId = roomIdRef.current;
     setMessages(prev => [...prev, {
@@ -316,14 +227,11 @@ export const App: React.FC = () => {
     } catch (err) { console.error('Flip failed:', err); }
   }, [localStream, facingMode]);
 
-  // Static pages
   if (currentPage) {
     return (
       <div className="app-container">
         <Header currentMode={mode} onSelectMode={(m) => { setCurrentPage(null); setMode(m); }}
-          onlineCount={onlineCount} theme={theme} language={settings.language} onToggleTheme={toggleTheme}
-          onOpenSafety={() => setIsSafetyOpen(true)} onOpenHelp={() => setIsSafetyOpen(true)}
-          onLanguageChange={(code) => setSettings(s => ({ ...s, language: code }))} />
+          onlineCount={onlineCount} theme={theme} onToggleTheme={toggleTheme} />
         <main className="main-content">
           <div className="page-view">
             {currentPage === 'about' && <AboutPage onBack={() => setCurrentPage(null)} />}
@@ -342,27 +250,22 @@ export const App: React.FC = () => {
       <Header currentMode={mode} onSelectMode={(newMode) => {
         setMode(newMode);
         if (newMode !== 'landing' && connectionStatus === 'idle') handleStart(newMode);
-      }} onlineCount={onlineCount} theme={theme} language={settings.language} onToggleTheme={toggleTheme}
-        onOpenSafety={() => setIsSafetyOpen(true)} onOpenHelp={() => setIsSafetyOpen(true)}
-        onLanguageChange={(code) => setSettings(s => ({ ...s, language: code }))} />
+      }} onlineCount={onlineCount} theme={theme} onToggleTheme={toggleTheme} />
 
       <main className="main-content">
         {mode === 'landing' ? (
-          <LandingPage onStartChat={(m) => { setMode(m); handleStart(m); }}
-            onlineCount={onlineCount} onOpenSafety={() => setIsSafetyOpen(true)} />
+          <LandingPage onStartChat={(m) => { setMode(m); handleStart(m); }} onlineCount={onlineCount} />
         ) : mode === 'text' ? (
           <div className="text-chat-layout">
-            <ChatBox messages={messages} connectionStatus={connectionStatus} strangerProfile={strangerProfile}
-              onlineCount={onlineCount} language={settings.language || 'en'} onSendMessage={handleSendMessage} onNext={handleNext}
-              onStart={() => handleStart('text')} onOpenReport={() => setIsReportOpen(true)}
-              onOpenSafety={() => setIsSafetyOpen(true)} mode="text" />
+            <ChatBox messages={messages} connectionStatus={connectionStatus}
+              onSendMessage={handleSendMessage} onNext={handleNext}
+              onStart={() => handleStart('text')} mode="text" />
           </div>
         ) : (
           <div className="chat-layout-grid">
             <div className="video-column">
-              <VideoGrid localStream={localStream} remoteStream={remoteStream} connectionStatus={connectionStatus}
-                strangerProfile={strangerProfile} isMuted={isMuted} isVideoOff={isVideoOff}
-                onOpenReport={() => setIsReportOpen(true)} onOpenSafety={() => setIsSafetyOpen(true)}
+              <VideoGrid localStream={localStream} remoteStream={remoteStream}
+                connectionStatus={connectionStatus} isMuted={isMuted} isVideoOff={isVideoOff}
                 onFlipCamera={flipCamera} />
               <ControlsBar connectionStatus={connectionStatus} isMuted={isMuted} isVideoOff={isVideoOff}
                 onStart={() => handleStart('video')} onStop={handleStop} onNext={handleNext}
@@ -370,36 +273,26 @@ export const App: React.FC = () => {
                 onFlipCamera={flipCamera} mobileChatOpen={mobileChatOpen} onToggleChat={() => setMobileChatOpen(!mobileChatOpen)} />
             </div>
             <div className="chat-column">
-              <ChatBox messages={messages} connectionStatus={connectionStatus} strangerProfile={strangerProfile}
-                onlineCount={onlineCount} language={settings.language || 'en'} onSendMessage={handleSendMessage} onNext={handleNext}
-                onStart={() => handleStart('video')} onOpenReport={() => setIsReportOpen(true)}
-                onOpenSafety={() => setIsSafetyOpen(true)} mode="video" />
+              <ChatBox messages={messages} connectionStatus={connectionStatus}
+                onSendMessage={handleSendMessage} onNext={handleNext}
+                onStart={() => handleStart('video')} mode="video" />
             </div>
-            {/* Mobile chat overlay */}
             <div className={`mobile-chat-overlay ${mobileChatOpen ? 'open' : ''}`}>
               <div className="mobile-chat-header">
                 <span>Text Chat</span>
                 <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)}>✕</button>
               </div>
-              <ChatBox messages={messages} connectionStatus={connectionStatus} strangerProfile={strangerProfile}
-                onlineCount={onlineCount} language={settings.language || 'en'} onSendMessage={handleSendMessage} onNext={handleNext}
-                onStart={() => handleStart('video')} onOpenReport={() => setIsReportOpen(true)}
-                onOpenSafety={() => setIsSafetyOpen(true)} mode="video" />
+              <ChatBox messages={messages} connectionStatus={connectionStatus}
+                onSendMessage={handleSendMessage} onNext={handleNext}
+                onStart={() => handleStart('video')} mode="video" />
             </div>
           </div>
         )}
       </main>
 
       <Footer onOpenPage={(p) => setCurrentPage(p as PageView)} />
-      <SafetyModal isOpen={isSafetyOpen} onClose={() => setIsSafetyOpen(false)} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}
         settings={settings} onSaveSettings={setSettings} />
-      <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} onConfirmReport={(reason) => {
-        const socket = socketRef.current;
-        const roomId = roomIdRef.current;
-        if (socket && roomId) socket.emit('report', { roomId, reason });
-        handleNext();
-      }} />
 
       <style>{`
         .chat-layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; margin: 0 auto; position: relative; }
@@ -407,56 +300,20 @@ export const App: React.FC = () => {
         .chat-column { display: flex; flex-direction: column; }
         .text-chat-layout { display: flex; justify-content: center; width: 100%; max-width: 640px; margin: 0 auto; }
         .page-view { max-width: 720px; margin: 0 auto; }
-
-        /* Mobile chat overlay — hidden on desktop */
         .mobile-chat-overlay { display: none; }
-
         @media (max-width: 1024px) {
           .chat-layout-grid { grid-template-columns: 1fr; gap: 0; }
           .video-column { min-height: calc(100dvh - 140px); }
           .chat-column { display: none; }
           .mobile-chat-overlay {
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 55vh;
-            background: var(--bg-surface);
-            border-top: 1px solid var(--border-color);
-            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-            box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
-            z-index: 100;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
+            display: flex; flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0;
+            height: 55vh; background: var(--bg-surface); border-top: 1px solid var(--border-color);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
+            z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
           }
-          .mobile-chat-overlay.open {
-            transform: translateY(0);
-          }
-          .mobile-chat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 700;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-            background: var(--bg-surface);
-          }
-          .mobile-chat-close {
-            width: 30px;
-            height: 30px;
-            border-radius: var(--radius-full);
-            background: var(--bg-surface-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            color: var(--text-primary);
-          }
+          .mobile-chat-overlay.open { transform: translateY(0); }
+          .mobile-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.9rem; flex-shrink: 0; background: var(--bg-surface); }
+          .mobile-chat-close { width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-surface-secondary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--text-primary); }
         }
       `}</style>
     </div>
