@@ -25,53 +25,36 @@ export async function joinQueue(
   const userId = getCurrentUserId();
   if (!userId) throw new Error('Not authenticated');
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('No active session');
-
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-
-  const res = await fetch(`${supabaseUrl}/functions/v1/match-users`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
-      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-    },
-    body: JSON.stringify({ mode, preferences: preferences || {} }),
+  const { data, error } = await supabase.rpc('match_users_in_queue', {
+    p_user_id: userId,
+    p_mode: mode,
+    p_preferences: preferences || {},
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(err.error || `HTTP ${res.status}`);
+  if (error) {
+    console.error('[queue] RPC error:', error);
+    throw new Error(error.message || 'Matchmaking failed');
   }
 
-  return res.json();
+  return data as MatchResult;
 }
 
 export async function pollMatch(): Promise<MatchResult> {
   const userId = getCurrentUserId();
   if (!userId) throw new Error('Not authenticated');
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('No active session');
-
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-
-  const res = await fetch(`${supabaseUrl}/functions/v1/match-users`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
-      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-    },
-    body: JSON.stringify({ mode: 'video', preferences: {} }),
+  const { data, error } = await supabase.rpc('match_users_in_queue', {
+    p_user_id: userId,
+    p_mode: 'video',
+    p_preferences: {},
   });
 
-  if (!res.ok) {
+  if (error) {
+    console.error('[queue] pollMatch error:', error);
     return { status: 'waiting' };
   }
 
-  return res.json();
+  return (data as MatchResult) || { status: 'waiting' };
 }
 
 export async function leaveQueue(): Promise<void> {

@@ -241,7 +241,8 @@ export const App: React.FC = () => {
       doPoll();
     } catch (err) {
       console.error('[matching] join error:', err);
-      chat.addSystemMessage('Failed to connect. Please try again.');
+      const msg = err instanceof Error ? err.message : String(err);
+      chat.addSystemMessage(`Failed to connect: ${msg}`);
       setConnectionStatus('idle');
     }
   }, [settings, media, webrtc, chat, cleanupPoll, cleanupCallChannel, doPoll]);
