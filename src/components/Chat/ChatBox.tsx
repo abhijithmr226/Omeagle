@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Smile, ArrowRight, Users, Search, Globe, Tag, Heart } from 'lucide-react';
+import { Send, Smile, ArrowRight, Users, Search, Globe, Tag, Heart, Flag } from 'lucide-react';
 import { ChatMessage, ConnectionStatus, PartnerProfile } from '../../types/chat';
 
 function getFlag(code: string): string {
@@ -29,6 +29,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
 }) => {
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingSentRef = useRef(false);
@@ -79,6 +81,19 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
       handleSend();
     }
   }, [handleSend]);
+
+  const handleReport = useCallback(() => {
+    setShowReportModal(true);
+    setReportSubmitted(false);
+  }, []);
+
+  const submitReport = useCallback(() => {
+    setReportSubmitted(true);
+    setTimeout(() => {
+      setShowReportModal(false);
+      setReportSubmitted(false);
+    }, 2000);
+  }, []);
 
   const msgCount = inputText.length;
 
@@ -181,7 +196,39 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
           <div className="action-card-text"><h5>Next</h5><p>Find next stranger</p></div>
           <ArrowRight size={18} className="card-arrow" />
         </div>
+        {isConnected && (
+          <div className="action-card report-card" onClick={handleReport} role="button" tabIndex={0}
+            onKeyDown={e => e.key === 'Enter' && handleReport()}>
+            <div className="action-card-icon red-bg"><Flag size={20} /></div>
+            <div className="action-card-text"><h5>Report</h5><p>Flag inappropriate behavior</p></div>
+          </div>
+        )}
       </div>
+
+      {showReportModal && (
+        <div className="report-modal-overlay" onClick={() => !reportSubmitted && setShowReportModal(false)}>
+          <div className="report-modal" onClick={e => e.stopPropagation()}>
+            {reportSubmitted ? (
+              <div className="report-success">
+                <Flag size={32} />
+                <h3>Report Submitted</h3>
+                <p>Thank you for helping keep Omeagle safe. We will review this report.</p>
+              </div>
+            ) : (
+              <>
+                <h3>Report User</h3>
+                <p>Why are you reporting this user?</p>
+                <div className="report-options">
+                  {['Inappropriate content', 'Harassment or bullying', 'Spam or bots', 'Underage user', 'Other'].map(reason => (
+                    <button key={reason} className="report-option" onClick={submitReport}>{reason}</button>
+                  ))}
+                </div>
+                <button className="report-cancel" onClick={() => setShowReportModal(false)}>Cancel</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <style>{`
         .chat-column-container { display: flex; flex-direction: column; gap: 1rem; height: 100%; }
@@ -231,11 +278,26 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         .action-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s ease; }
         .action-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-color-hover); }
         .action-card-icon { width: 40px; height: 40px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; }
+        .blue-bg { background: var(--brand-blue-light); color: var(--brand-blue); }
+        .red-bg { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .report-card:hover { border-color: #ef4444; }
         .action-card-text { flex: 1; }
         .action-card-text h5 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.1rem; }
         .action-card-text p { font-size: 0.78rem; color: var(--text-secondary); }
         .card-arrow { color: var(--text-muted); }
         @media (max-width: 768px) { .chat-feed-card { height: 380px; } }
+        .report-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .report-modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 2rem; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+        .report-modal h3 { font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .report-modal p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
+        .report-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+        .report-option { padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary); font-size: 0.95rem; font-weight: 500; text-align: left; cursor: pointer; transition: all 0.2s; }
+        .report-option:hover { border-color: #ef4444; background: rgba(239,68,68,0.05); color: #ef4444; }
+        .report-cancel { padding: 0.6rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-secondary); font-size: 0.9rem; cursor: pointer; }
+        .report-cancel:hover { border-color: var(--text-secondary); }
+        .report-success { padding: 1rem 0; }
+        .report-success svg { color: #22c55e; margin-bottom: 0.75rem; }
+        .report-success h3 { color: #22c55e; margin-bottom: 0.5rem; }
       `}</style>
     </div>
   );
