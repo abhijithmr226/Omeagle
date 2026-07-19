@@ -7,6 +7,13 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ onOpenPage }) => {
   return (
     <footer className="site-footer">
+      {/* 728x90 Banner — desktop only, above footer links */}
+      <div className="footer-ad-wrapper">
+        <script>
+          {`if(!window._adLoaded){window._adLoaded=true;window.atOptions={key:'8bdddf8feba87229589bd6c56db45ecd',format:'iframe',height:90,width:728,params:{}};var s=document.createElement('script');s.src='https://www.highperformanceformat.com/8bdddf8feba87229589bd6c56db45ecd/invoke.js';s.async=true;document.head.appendChild(s);}`}
+        </script>
+      </div>
+
       <div className="footer-container">
         <div className="footer-disclaimer">
           By using Omeagle, you agree to our{' '}
@@ -20,6 +27,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPage }) => {
             <a href="#" onClick={(e) => { e.preventDefault(); onOpenPage?.('privacy'); }}>Privacy Policy</a>
             <a href="#" onClick={(e) => { e.preventDefault(); onOpenPage?.('terms'); }}>Terms of Service</a>
             <a href="#" onClick={(e) => { e.preventDefault(); onOpenPage?.('contact'); }}>Contact</a>
+            <a href="https://www.effectivecpmnetwork.com/pjupecfk3?key=068e35e2084ac983648f9b4a872e3b38" target="_blank" rel="noreferrer sponsored">Sponsored</a>
           </div>
         </div>
 
@@ -86,7 +94,16 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPage }) => {
         .footer-developer a:hover {
           text-decoration: underline;
         }
+        .footer-ad-wrapper {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 1rem;
+          min-height: 90px;
+        }
         @media (max-width: 768px) {
+          .footer-ad-wrapper {
+            display: none;
+          }
           .footer-container {
             flex-direction: column;
             text-align: center;

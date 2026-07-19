@@ -1,6 +1,7 @@
 {
   "short_name": "Omeagle",
-  "name": "Omeagle — Talk to Strangers Anywhere",
+  "name": "Omeagle — Talk to Strangers Online",
+  "description": "Free, safe & anonymous random video chat and text chat with strangers worldwide.",
   "icons": [
     {
       "src": "favicon.png",
@@ -10,11 +11,17 @@
     {
       "src": "headerlogo.png",
       "sizes": "192x192 512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
+  "scope": "/",
   "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "display": "standalone"
+  "theme_color": "#0066ff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["social", "communication"],
+  "lang": "en",
+  "dir": "ltr"
 }

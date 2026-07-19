@@ -7,3 +7,5 @@ server/reports.json
 server/bans.json
 .DS_Store
 Thumbs.db
+
+.vercel

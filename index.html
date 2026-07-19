@@ -2,20 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/headerlogo.png" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#0066ff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-title" content="Omeagle" />
+
+    <!-- Google Site Verification -->
+    <meta name="google-site-verification" content="yseHS_Ozr9kHCMJ3rQ8H45jEmKuEFof6GH9RGOvt4vk" />
+
+    <!-- Google Tag Manager (deferred - non-render-blocking) -->
+    <script defer src="https://www.googletagmanager.com/gtm.js?id=GTM-KGJZ3QD7"></script>
+    <script>window.dataLayer = window.dataLayer || [];</script>
+    <!-- End Google Tag Manager -->
 
     <!-- Primary Meta Tags -->
     <title>Omeagle — Talk to Strangers Online | Free Video Chat & Text Chat</title>
     <meta name="title" content="Omeagle — Talk to Strangers Online | Free Video Chat & Text Chat" />
     <meta name="description" content="Meet new people from around the world instantly on Omeagle. Free, safe & anonymous random video chat and text chat. No sign up required. Talk to strangers now!" />
-    <meta name="keywords" content="omeagle, omegle, video chat, talk to strangers, anonymous chat, random video chat, free chat, text chat, random chat, chatroulette, stranger chat, online chat, meet people" />
+    <meta name="keywords" content="omeagle, omegle alternative, video chat, talk to strangers, anonymous chat, random video chat, free chat, text chat, random chat, chatroulette, stranger chat, online chat, meet people, random chat app" />
     <meta name="author" content="abhijithmr226" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="https://omeagle.online/" />
 
     <!-- Open Graph / Facebook -->
@@ -23,7 +34,10 @@
     <meta property="og:url" content="https://omeagle.online/" />
     <meta property="og:title" content="Omeagle — Talk to Strangers Online" />
     <meta property="og:description" content="Free, safe & anonymous random video chat and text chat. Meet people from around the world. No sign up required." />
-    <meta property="og:image" content="/headerlogo.png" />
+    <meta property="og:image" content="https://omeagle.online/headerlogo.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Omeagle - Random Video Chat" />
     <meta property="og:site_name" content="Omeagle" />
     <meta property="og:locale" content="en_US" />
 
@@ -32,9 +46,10 @@
     <meta name="twitter:url" content="https://omeagle.online/" />
     <meta name="twitter:title" content="Omeagle — Talk to Strangers Online" />
     <meta name="twitter:description" content="Free, safe & anonymous random video chat and text chat. Meet people from around the world." />
-    <meta name="twitter:image" content="/headerlogo.png" />
+    <meta name="twitter:image" content="https://omeagle.online/headerlogo.png" />
+    <meta name="twitter:image:alt" content="Omeagle - Random Video Chat" />
 
-    <!-- Structured Data -->
+    <!-- Structured Data: WebApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -53,17 +68,127 @@
         "@type": "Person",
         "name": "abhijithmr226",
         "url": "https://github.com/abhijithmr226"
-      }
+      },
+      "featureList": [
+        "Random video chat with strangers",
+        "Text chat with strangers",
+        "Real-time translation",
+        "Face detection moderation",
+        "Keyword filtering",
+        "Country-based matching",
+        "Mobile-first design"
+      ]
     }
     </script>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Omeagle",
+      "url": "https://omeagle.online",
+      "logo": "https://omeagle.online/headerlogo.png",
+      "sameAs": [
+        "https://github.com/abhijithmr226"
+      ]
+    }
+    </script>
+
+    <!-- Structured Data: FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Omeagle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Omeagle is a free, anonymous random video chat and text chat platform where you can talk to strangers from around the world. No sign up required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Omeagle free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Omeagle is completely free. There are no hidden fees or subscriptions."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to create an account?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, Omeagle requires no sign up. You can start chatting with strangers instantly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Omeagle safe?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Omeagle includes face detection moderation, keyword filtering, and a report system to keep conversations safe. Users can also enable unmonitored mode if they prefer."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Preload LCP image (WebP, tiny) -->
+    <link rel="preload" as="image" href="/girl.webp" type="image/webp" />
+
+    <!-- Fonts loaded async via JS (non-render-blocking) -->
+    <script>
+      (function(){
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap';
+        document.head.appendChild(link);
+      })();
+    </script>
   </head>
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KGJZ3QD7"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Popunder: loads AFTER page load, only fires on first click (non-intrusive) -->
+    <script>
+      (function(){
+        var loaded = false;
+        var script = document.createElement('script');
+        script.src = 'https://pl30431394.effectivecpmnetwork.com/16/2d/53/162d533784b517b12792569b6bb8ef9f.js';
+        script.async = true;
+        function loadOnInteraction(){
+          if(!loaded){
+            loaded = true;
+            document.body.appendChild(script);
+            document.removeEventListener('click', loadOnInteraction);
+          }
+        }
+        document.addEventListener('click', loadOnInteraction);
+      })();
+    </script>
+
+    <!-- Social Bar: deferred, loads after main content -->
+    <script>
+      (function(){
+        var s = document.createElement('script');
+        s.src = 'https://pl30431397.effectivecpmnetwork.com/c9/74/85/c9748579a4a0eab5454872cce277fce0.js';
+        s.async = true;
+        if(document.readyState === 'complete'){
+          document.body.appendChild(s);
+        } else {
+          window.addEventListener('load', function(){ document.body.appendChild(s); });
+        }
+      })();
+    </script>
   </body>
 </html>

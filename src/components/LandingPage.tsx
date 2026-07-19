@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Video, MessageSquare, ShieldCheck, Globe, ShieldOff, Lock, Users, Star, ChevronRight, Home, Heart, User } from 'lucide-react';
 import { ChatMode } from '../types/chat';
 
@@ -13,6 +13,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onlineCount,
   onOpenSafety
 }) => {
+  const adRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (adRef.current && !adRef.current.dataset.loaded) {
+      adRef.current.dataset.loaded = 'true';
+      const s = document.createElement('script');
+      s.src = 'https://pl30431395.effectivecpmnetwork.com/1b8f39848ef48014d2c1645ee86941c1/invoke.js';
+      s.async = true;
+      (s as any).dataset.cfasync = 'false';
+      document.body.appendChild(s);
+    }
+  }, []);
+
   return (
     <div className="landing-page">
       {/* Hero Container */}
@@ -44,20 +57,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="visual-wrapper">
             {/* Top Avatar Card */}
             <div className="avatar-card avatar-top">
-              <img 
-                src="/girl.png" 
-                alt="Stranger profile female" 
-                className="avatar-img"
-              />
+              <picture>
+                <source srcSet="/girl.webp" type="image/webp" />
+                <img 
+                  src="/girl.png" 
+                  alt="Stranger profile female" 
+                  className="avatar-img"
+                  width="220"
+                  height="240"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              </picture>
             </div>
 
             {/* Bottom Avatar Card */}
             <div className="avatar-card avatar-bottom">
-              <img 
-                src="/boy.png" 
-                alt="Stranger profile male" 
-                className="avatar-img"
-              />
+              <picture>
+                <source srcSet="/boy.webp" type="image/webp" />
+                <img 
+                  src="/boy.png" 
+                  alt="Stranger profile male" 
+                  className="avatar-img"
+                  width="210"
+                  height="220"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              </picture>
               <div className="floating-globe-badge">
                 <Globe size={24} className="globe-icon-spin" />
               </div>
@@ -116,6 +143,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <p>AI moderation and reporting system</p>
           </div>
         </div>
+      </section>
+
+      {/* Native Banner Ad */}
+      <section className="native-ad-section">
+        <div ref={adRef} id="container-1b8f39848ef48014d2c1645ee86941c1"></div>
       </section>
 
       {/* Live Online Users Card */}
@@ -530,6 +562,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         .btn-add-now:hover {
           background-color: var(--brand-blue);
           color: #ffffff;
+        }
+
+        /* Native Ad Section */
+        .native-ad-section {
+          min-height: 100px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .native-ad-section:empty {
+          display: none;
         }
 
         /* Mobile Bottom Nav */
