@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 interface FooterProps {
@@ -6,26 +6,8 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenPage }) => {
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !(window as any)._adLoaded) {
-      (window as any)._adLoaded = true;
-      (window as any).atOptions = {
-        key: '8bdddf8feba87229589bd6c56db45ecd',
-        format: 'iframe',
-        height: 90,
-        width: 728,
-        params: {}
-      };
-      const s = document.createElement('script');
-      s.src = 'https://www.highperformanceformat.com/8bdddf8feba87229589bd6c56db45ecd/invoke.js';
-      s.async = true;
-      document.head.appendChild(s);
-    }
-  }, []);
-
   return (
     <footer className="site-footer">
-      <div className="footer-ad-wrapper" id="footer-ad-container" />
       <div className="footer-container">
         <div className="footer-disclaimer">
           By using Omeagle, you agree to our{' '}
@@ -38,7 +20,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPage }) => {
             <Link to="/privacy">Privacy Policy</Link>
             <Link to="/terms">Terms of Service</Link>
             <Link to="/contact">Contact</Link>
-            <a href="https://www.effectivecpmnetwork.com/pjupecfk3?key=068e35e2084ac983648f9b4a872e3b38" target="_blank" rel="noreferrer sponsored">Sponsored</a>
           </div>
         </div>
         <div className="footer-developer">
@@ -59,8 +40,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPage }) => {
         .footer-developer { font-size: 0.82rem; color: var(--text-muted); }
         .footer-developer a { color: var(--brand-blue); text-decoration: none; font-weight: 600; }
         .footer-developer a:hover { text-decoration: underline; }
-        .footer-ad-wrapper { display: flex; justify-content: center; margin-bottom: 1rem; min-height: 90px; }
-        @media (max-width: 768px) { .footer-ad-wrapper { display: none; } .footer-container { flex-direction: column; text-align: center; } .text-links { justify-content: center; } }
+        @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .text-links { justify-content: center; } }
       `}</style>
     </footer>
   );

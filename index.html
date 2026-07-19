@@ -158,37 +158,5 @@
 
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-
-    <!-- Popunder: loads AFTER page load, only fires on first click (non-intrusive) -->
-    <script>
-      (function(){
-        var loaded = false;
-        var script = document.createElement('script');
-        script.src = 'https://pl30431394.effectivecpmnetwork.com/16/2d/53/162d533784b517b12792569b6bb8ef9f.js';
-        script.async = true;
-        function loadOnInteraction(){
-          if(!loaded){
-            loaded = true;
-            document.body.appendChild(script);
-            document.removeEventListener('click', loadOnInteraction);
-          }
-        }
-        document.addEventListener('click', loadOnInteraction);
-      })();
-    </script>
-
-    <!-- Social Bar: deferred, loads after main content -->
-    <script>
-      (function(){
-        var s = document.createElement('script');
-        s.src = 'https://pl30431397.effectivecpmnetwork.com/c9/74/85/c9748579a4a0eab5454872cce277fce0.js';
-        s.async = true;
-        if(document.readyState === 'complete'){
-          document.body.appendChild(s);
-        } else {
-          window.addEventListener('load', function(){ document.body.appendChild(s); });
-        }
-      })();
-    </script>
   </body>
 </html>
