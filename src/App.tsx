@@ -55,35 +55,6 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  const handleMatchFound = useCallback(async (channel: string, initiator: boolean) => {
-    cleanupPoll();
-    roomIdRef.current = channel;
-    chat.clearMessages();
-    chat.addSystemMessage("You're now chatting with a random stranger. Say hi!");
-    setConnectionStatus('connecting');
-
-    connectSocket();
-    socket.emit('register', { userId: getUserId() });
-    socket.emit('join-room', { roomId: channel });
-
-    setConnectionStatus('connected');
-
-    if (currentModeRef.current === 'video' && media.localStream) {
-      try {
-        if (initiator) {
-          await webrtc.setupInitiator(socket, channel, media.localStream, {
-            onRemoteStream: (stream) => setRemoteStream(stream),
-            onConnectionStateChange: (state) => {
-              if (state === 'disconnected' || state === 'failed') handleStrangerDisconnected();
-            },
-          });
-        }
-      } catch (err) {
-        console.error('[app] WebRTC setup error:', err);
-      }
-    }
-  }, [socket, webrtc, media.localStream, chat, cleanupPoll]);
-
   const handleStrangerDisconnected = useCallback(() => {
     setConnectionStatus('disconnected');
     setRemoteStream(null);
@@ -115,6 +86,45 @@ export const App: React.FC = () => {
       console.error('[app] handleOffer error:', err);
     }
   }, [webrtc, media.localStream, socket, handleStrangerDisconnected]);
+
+  const handleMatchFound = useCallback(async (channel: string, initiator: boolean) => {
+    cleanupPoll();
+    roomIdRef.current = channel;
+    chat.clearMessages();
+    chat.addSystemMessage("You're now chatting with a random stranger. Say hi!");
+    setConnectionStatus('connecting');
+
+    const s = connectSocket();
+
+    const onConnect = () => {
+      s.emit('register', { userId: getUserId() });
+      s.emit('join-room', { roomId: channel });
+      setConnectionStatus('connected');
+
+      if (currentModeRef.current === 'video' && media.localStream) {
+        (async () => {
+          try {
+            if (initiator) {
+              await webrtc.setupInitiator(s, channel, media.localStream!, {
+                onRemoteStream: (stream) => setRemoteStream(stream),
+                onConnectionStateChange: (state) => {
+                  if (state === 'disconnected' || state === 'failed') handleStrangerDisconnected();
+                },
+              });
+            }
+          } catch (err) {
+            console.error('[app] WebRTC setup error:', err);
+          }
+        })();
+      }
+    };
+
+    if (s.connected) {
+      onConnect();
+    } else {
+      s.once('connect', onConnect);
+    }
+  }, [socket, webrtc, media.localStream, chat, cleanupPoll, handleStrangerDisconnected]);
 
   useSocketListeners(socket, {
     onOnlineCount: setOnlineCount,
