@@ -194,5 +194,6 @@ CREATE INDEX IF NOT EXISTS idx_messages_call ON messages(call_id, created_at);
 -- 8. ENABLE REALTIME
 -- ============================================================
 
-ALTER PUBLICATION supabase_realtime ADD TABLE calls;
-ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+-- Realtime already enabled on these tables (checked via dashboard)
+-- ALTER PUBLICATION supabase_realtime ADD TABLE calls;
+-- ALTER PUBLICATION supabase_realtime ADD TABLE messages;

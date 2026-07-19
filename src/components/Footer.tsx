@@ -17,6 +17,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPage }) => {
         <div className="footer-links-group">
           <div className="text-links">
             <Link to="/about">About</Link>
+            <Link to="/blog">Blog</Link>
             <Link to="/privacy">Privacy Policy</Link>
             <Link to="/terms">Terms of Service</Link>
             <Link to="/contact">Contact</Link>
