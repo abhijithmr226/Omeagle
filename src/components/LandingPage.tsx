@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Video, MessageSquare, Settings2, Globe, Tag, Heart, Shield, Zap, Users, Smartphone } from 'lucide-react';
 import type { UserSettings } from '../types/chat';
 
@@ -21,6 +21,31 @@ function getFlag(code: string): string {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCount, settings, onOpenPrefs }) => {
   const hasPrefs = settings.country || settings.gender || (settings.interests && settings.interests.length > 0) || settings.preferredGender;
+  const [displayCount, setDisplayCount] = useState(onlineCount);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const prevCountRef = useRef(onlineCount);
+
+  useEffect(() => {
+    if (onlineCount !== prevCountRef.current) {
+      setIsAnimating(true);
+      const diff = onlineCount - prevCountRef.current;
+      const steps = Math.min(Math.abs(diff), 20);
+      const stepSize = diff / steps;
+      let step = 0;
+      const interval = setInterval(() => {
+        step++;
+        if (step >= steps) {
+          setDisplayCount(onlineCount);
+          clearInterval(interval);
+          setTimeout(() => setIsAnimating(false), 300);
+        } else {
+          setDisplayCount(Math.round(prevCountRef.current + stepSize * step));
+        }
+      }, 30);
+      prevCountRef.current = onlineCount;
+      return () => clearInterval(interval);
+    }
+  }, [onlineCount]);
 
   return (
     <div className="landing-page">
@@ -62,9 +87,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
               )}
             </div>
           )}
-          <div className="online-badge">
+          <div className={`online-badge ${isAnimating ? 'pulse' : ''}`}>
             <span className="pulse-dot-green"></span>
-            <span><strong>{onlineCount.toLocaleString()}</strong> people online now</span>
+            <span><strong>{displayCount.toLocaleString()}</strong> people online now</span>
           </div>
         </div>
       </section>
@@ -260,7 +285,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
         .prefs-chips-row { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: 1rem; max-width: 380px; margin-left: auto; margin-right: auto; }
         .pref-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.6rem; background: var(--brand-blue-light); color: var(--brand-blue); border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
         .pref-icon { font-size: 0.85rem; }
-        .online-badge { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 2.5rem; padding: 0.6rem 1.2rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 0.95rem; color: var(--text-secondary); }
+        .online-badge { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 2.5rem; padding: 0.6rem 1.2rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 0.95rem; color: var(--text-secondary); transition: transform 0.3s, box-shadow 0.3s; }
+        .online-badge.pulse { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 102, 255, 0.3); }
         @media (max-width: 868px) {
           .hero-title { font-size: 2.4rem; }
           .hero-subtitle { font-size: 1.05rem; }
