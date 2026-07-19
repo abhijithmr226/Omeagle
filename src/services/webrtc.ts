@@ -28,6 +28,10 @@ export function createPeerConnection(
   roomId: string,
   callbacks: ConnectionCallbacks
 ): RTCPeerConnection {
+  if (peerConnection) {
+    peerConnection.close();
+    peerConnection = null;
+  }
   peerConnection = new RTCPeerConnection(ICE_SERVERS);
 
   peerConnection.onicecandidate = (event) => {

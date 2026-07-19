@@ -66,7 +66,7 @@ export const App: React.FC = () => {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }]);
 
-      if (modeRef.current === 'video') {
+      if (modeRef.current === 'video' && initiator) {
         const stream = localStreamRef.current;
         if (stream) {
           const pc = createPeerConnection(socket, roomId, {
@@ -77,10 +77,8 @@ export const App: React.FC = () => {
             onIceCandidate: () => {},
           });
           await addLocalTracks(pc, stream);
-          if (initiator) {
-            const offer = await createOffer(pc);
-            socket.emit('offer', { roomId, offer });
-          }
+          const offer = await createOffer(pc);
+          socket.emit('offer', { roomId, offer });
         }
       }
     });
