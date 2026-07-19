@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 const SERVER_URL = import.meta.env.VITE_SERVER_URL
   || (window.location.hostname === 'localhost'
     ? `http://${window.location.hostname}:3001`
-    : window.location.origin);
+    : 'https://omeagle-production.up.railway.app');
 
 let socket: Socket | null = null;
 
