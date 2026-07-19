@@ -12,6 +12,7 @@ import { About } from './pages/About';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Contact } from './pages/Contact';
+import { Blog } from './pages/Blog';
 import type { ChatMode, ConnectionStatus, PartnerProfile } from './types/chat';
 import { joinQueue, pollMatch, leaveQueue, endCall, cleanupAfterSkip } from './services/queue';
 import { createCallChannel, type CallChannel } from './services/signaling';
@@ -415,6 +416,7 @@ export const App: React.FC = () => {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/blog" element={<Blog />} />
           <Route path="/*" element={
             mode === 'landing' ? (
               <LandingPage onStartChat={startChat} onlineCount={onlineCount}
@@ -497,7 +499,7 @@ export const App: React.FC = () => {
             display: flex; flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0;
             height: 55vh; background: var(--bg-surface); border-top: 1px solid var(--border-color);
             border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
-            z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
+            z-index: 200; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
           }
           .mobile-chat-overlay.open { transform: translateY(0); }
           .mobile-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.9rem; flex-shrink: 0; background: var(--bg-surface); }

@@ -79,10 +79,10 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
         .controls-bar { flex-shrink: 0; }
         .desktop-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; width: 100%; margin-top: 0.5rem; }
         .ctrl-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 0.85rem; font-weight: 700; font-size: 0.95rem; border-radius: var(--radius-md); border: 1px solid transparent; transition: all 0.2s ease; }
-        .btn-start { background-color: #d1fae5; color: #059669; border-color: #a7f3d0; }
-        .btn-start:hover:not(.disabled) { background-color: #a7f3d0; }
-        .btn-stop { background-color: #fee2e2; color: #dc2626; border-color: #fca5a5; }
-        .btn-stop:hover:not(.disabled) { background-color: #fca5a5; }
+        .btn-start { background-color: var(--status-green-light); color: var(--status-green); border-color: var(--status-green-light); }
+        .btn-start:hover:not(.disabled) { background-color: var(--status-green); color: #fff; }
+        .btn-stop { background-color: var(--status-red-light); color: var(--status-red); border-color: var(--status-red-light); }
+        .btn-stop:hover:not(.disabled) { background-color: var(--status-red); color: #fff; }
         .btn-utility { background-color: var(--bg-surface); color: var(--text-primary); border-color: var(--border-color); }
         .btn-utility:hover { background-color: var(--bg-surface-secondary); border-color: var(--border-color-hover); }
         .active-utility { background-color: var(--status-red-light); border-color: #fca5a5; }

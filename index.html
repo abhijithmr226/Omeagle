@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://bhrsheykwaduhpxiyqlw.supabase.co" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/headerlogo.png" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0066ff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -106,7 +109,7 @@
           "name": "What is Omeagle?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Omeagle is a free, anonymous random video chat and text chat platform where you can talk to strangers from around the world. No sign up required."
+            "text": "Omeagle is a free, anonymous random video chat and text chat platform where you can talk to strangers from around the world instantly. No sign up required."
           }
         },
         {
@@ -114,7 +117,7 @@
           "name": "Is Omeagle free to use?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, Omeagle is completely free. There are no hidden fees or subscriptions."
+            "text": "Yes, Omeagle is completely free. There are no hidden fees, subscriptions, or premium tiers. You get full access to video chat and text chat features at no cost."
           }
         },
         {
@@ -122,7 +125,7 @@
           "name": "Do I need to create an account?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No, Omeagle requires no sign up. You can start chatting with strangers instantly."
+            "text": "No, Omeagle requires no sign up. You can start chatting with strangers instantly without providing any personal information."
           }
         },
         {
@@ -130,15 +133,76 @@
           "name": "Is Omeagle safe?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Omeagle includes face detection moderation, keyword filtering, and a report system to keep conversations safe. Users can also enable unmonitored mode if they prefer."
+            "text": "Omeagle includes AI-powered moderation, keyword filtering, and a report system to keep conversations safe. You can also block any user at any time."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does random matching work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When you click Start, Omeagle's system instantly matches you with another available user based on your preferences. If you want a different match, simply click Next."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I report users on Omeagle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, you can report any user who violates our community guidelines. Click the report button during or after a chat to flag inappropriate behavior."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I block users on Omeagle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, you can block any user at any time. Click the block button to prevent them from being matched with you again."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my identity anonymous on Omeagle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Omeagle is completely anonymous. No personal information is shared with other users. You control what you reveal during conversations."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What browsers work best with Omeagle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Omeagle works best on the latest versions of Google Chrome, Mozilla Firefox, Microsoft Edge, and Safari. A stable internet connection is recommended for video chat."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use Omeagle on my phone?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Omeagle is fully mobile-responsive and works on any smartphone with a web browser. No app download required."
           }
         }
       ]
     }
     </script>
 
-    <!-- Preload LCP image (WebP, tiny) -->
-    <link rel="preload" as="image" href="/girl.webp" type="image/webp" />
+    <!-- Structured Data: BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://omeagle.online/"
+        }
+      ]
+    }
+    </script>
 
     <!-- Fonts loaded async via JS (non-render-blocking) -->
     <script>
