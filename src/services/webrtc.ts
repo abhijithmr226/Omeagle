@@ -52,6 +52,10 @@ export function createPeerConnection(
     }
   };
 
+  peerConnection.onnegotiationneeded = () => {
+    console.warn('Peer renegotiation needed — not handled in simplified mode');
+  };
+
   return peerConnection;
 }
 
@@ -67,7 +71,7 @@ export async function addLocalTracks(
 export async function createOffer(pc: RTCPeerConnection): Promise<RTCSessionDescriptionInit> {
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
-  return offer;
+  return pc.localDescription!;
 }
 
 export async function handleOffer(
@@ -77,7 +81,7 @@ export async function handleOffer(
   await pc.setRemoteDescription(new RTCSessionDescription(offer));
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
-  return answer;
+  return pc.localDescription!;
 }
 
 export async function handleAnswer(
@@ -91,11 +95,18 @@ export async function handleIceCandidate(
   pc: RTCPeerConnection,
   candidate: RTCIceCandidateInit
 ): Promise<void> {
+  if (pc.signalingState === 'closed') return;
   await pc.addIceCandidate(new RTCIceCandidate(candidate));
 }
 
 export function closePeerConnection(): void {
   if (peerConnection) {
+    peerConnection.onicecandidate = null;
+    peerConnection.ontrack = null;
+    peerConnection.onconnectionstatechange = null;
+    peerConnection.onnegotiationneeded = null;
+    peerConnection.getTransceivers().forEach(t => t.stop());
+    peerConnection.getSenders().forEach(s => s.replaceTrack(null));
     peerConnection.close();
     peerConnection = null;
   }
