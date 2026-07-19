@@ -17,7 +17,8 @@ import { ChatMode, ConnectionStatus, ThemeMode, ChatMessage, StrangerProfile, Us
 import { getSocket } from './services/socket';
 import {
   createPeerConnection, addLocalTracks, createOffer, handleOffer,
-  closePeerConnection, getLocalUserMedia,
+  handleAnswer, handleIceCandidate,
+  closePeerConnection, getLocalUserMedia, getPeerConnection,
 } from './services/webrtc';
 import { detectFace } from './services/faceDetect';
 import { getUserLocation, getCountryFlag } from './services/location';
@@ -122,6 +123,16 @@ export const App: React.FC = () => {
       if (stream) await addLocalTracks(pc, stream);
       const answer = await handleOffer(pc, offer);
       socket.emit('answer', { roomId, answer });
+    });
+
+    socket.on('answer', async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
+      const pc = getPeerConnection();
+      if (pc) await handleAnswer(pc, answer);
+    });
+
+    socket.on('ice-candidate', async ({ candidate }: { candidate: RTCIceCandidateInit }) => {
+      const pc = getPeerConnection();
+      if (pc) await handleIceCandidate(pc, candidate);
     });
 
     socket.on('receive-message', ({ text }: { text: string }) => {

@@ -97,6 +97,10 @@ export function closePeerConnection(): void {
   }
 }
 
+export function getPeerConnection(): RTCPeerConnection | null {
+  return peerConnection;
+}
+
 export async function getLocalUserMedia(
   videoDeviceId?: string,
   audioDeviceId?: string
