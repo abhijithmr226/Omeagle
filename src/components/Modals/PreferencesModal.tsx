@@ -170,12 +170,22 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({ isOpen, onCl
         </div>
       </div>
       <style>{`
-        .prefs-modal { max-width: 480px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-card { background: var(--bg-surface); border-radius: var(--radius-lg); width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-xl); }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 700; }
+        .modal-close-btn { color: var(--text-secondary); padding: 0.25rem; }
+        .modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.75rem; }
+        .setting-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .setting-group label { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.9rem; }
         .setting-group select { padding: 0.6rem 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.9rem; background: var(--bg-surface); color: var(--text-primary); width: 100%; }
-        .field-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: -0.25rem; }
+        .btn-primary { background: var(--brand-blue); color: #fff; font-weight: 700; padding: 0.6rem 1.5rem; border-radius: var(--radius-md); }
+        .btn-primary:hover { background: var(--brand-blue-hover); }
         .btn-secondary { background: var(--bg-surface-secondary); color: var(--text-primary); font-weight: 600; padding: 0.6rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
         .btn-secondary:hover { background: var(--border-color); }
-        .modal-footer { gap: 0.75rem; }
+        .prefs-modal { max-width: 480px; }
+        .field-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: -0.25rem; }
       `}</style>
     </div>
   );
