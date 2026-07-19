@@ -17,8 +17,9 @@ export async function initializeAuth(): Promise<User> {
 
   if (session?.user) {
     cachedUser = session.user;
-    await upsertProfile(session.user.id);
-    await setOnlineStatus(session.user.id, true);
+    // Fire-and-forget: don't block page load for profile/status updates
+    upsertProfile(session.user.id).catch(() => {});
+    setOnlineStatus(session.user.id, true).catch(() => {});
     return session.user;
   }
 
@@ -27,8 +28,9 @@ export async function initializeAuth(): Promise<User> {
   if (!data.user) throw new Error('Failed to create anonymous user');
 
   cachedUser = data.user;
-  await upsertProfile(data.user.id);
-  await setOnlineStatus(data.user.id, true);
+  // Fire-and-forget: don't block page load for profile/status updates
+  upsertProfile(data.user.id).catch(() => {});
+  setOnlineStatus(data.user.id, true).catch(() => {});
   return data.user;
 }
 

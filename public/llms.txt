@@ -1,0 +1,53 @@
+# Omeagle
+
+> Omeagle is a free, anonymous random video chat and text chat platform that connects strangers worldwide. No sign up required.
+
+## What is Omeagle?
+
+Omeagle is a modern Omegle alternative offering random video chat and text chat with strangers online. The platform provides AI-powered moderation, anonymous connections, and instant matching — all completely free with no account required.
+
+## Core Features
+
+- **Random Video Chat**: Instant video connections with strangers worldwide
+- **Text Chat**: Anonymous text-based conversations
+- **AI Moderation**: Real-time content filtering for safety
+- **Anonymous**: No sign up, no profiles, no personal data required
+- **Country Matching**: Filter by preferred countries
+- **Interest Tags**: Match based on shared interests
+- **Mobile-First**: Works on any device, no app download needed
+- **Report & Block**: Full safety controls during conversations
+
+## Key Pages
+
+- Homepage: https://omeagle.online/
+- About: https://omeagle.online/about
+- Blog: https://omeagle.online/blog
+- Safety: https://omeagle.online/safety
+- Privacy Policy: https://omeagle.online/privacy
+- Terms of Service: https://omeagle.online/terms
+- Contact: https://omeagle.online/contact
+
+## Technology
+
+- Frontend: React, TypeScript, TailwindCSS
+- Backend: Supabase (auth, database, real-time)
+- Video: WebRTC with TURN/STUN servers
+- Deployment: Vercel
+
+## How It Works
+
+1. Visit omeagle.online
+2. Click "Start" on Video Chat or Text Chat
+3. Grant camera/microphone permission (video only)
+4. Get instantly matched with a random stranger
+5. Chat via video or text
+6. Click "Next" for a new match or "Stop" to end
+
+## Safety
+
+Omeagle uses AI-powered moderation, keyword filtering, and a report/block system. All conversations are encrypted via WebRTC and never recorded or stored.
+
+## Contact
+
+- Website: https://omeagle.online
+- Developer: https://github.com/abhijithmr226
