@@ -1,16 +1,19 @@
-import { supabase } from './supabase';
+import { supabase, supabaseReady } from './supabase';
 import type { User } from '@supabase/supabase-js';
 
 let cachedUser: User | null = null;
 
-// Keep cachedUser in sync with Supabase auth state changes (e.g. token refresh)
-supabase.auth.onAuthStateChange((event, session) => {
-  if (session?.user) {
-    cachedUser = session.user;
-  } else if (event === 'SIGNED_OUT') {
-    cachedUser = null;
-  }
-});
+// Keep cachedUser in sync with Supabase auth state changes (e.g. token refresh).
+// Guard against missing credentials — supabase is null when env vars aren't set.
+if (supabaseReady) {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+      cachedUser = session.user;
+    } else if (event === 'SIGNED_OUT') {
+      cachedUser = null;
+    }
+  });
+}
 
 export async function initializeAuth(): Promise<User> {
   const { data: { session } } = await supabase.auth.getSession();
@@ -32,8 +35,9 @@ export async function initializeAuth(): Promise<User> {
   return data.user;
 }
 
-// Active heartbeat to update last_seen timestamp every 20 seconds
-if (typeof window !== 'undefined') {
+// Active heartbeat to update last_seen timestamp every 20 seconds.
+// Only starts when Supabase is configured.
+if (typeof window !== 'undefined' && supabaseReady) {
   setInterval(() => {
     if (cachedUser?.id) {
       setOnlineStatus(cachedUser.id, true).catch(() => {});

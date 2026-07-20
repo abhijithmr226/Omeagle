@@ -1,39 +1,46 @@
 # Omeagle
 
-An Omegle-style random video + text chat app.
+An Omegle-style random video + text chat app built with React 18 + TypeScript + Vite,
+using Supabase for auth, real-time matchmaking, and WebRTC signaling.
 
 ## Stack
-- **Frontend:** React 18 + TypeScript, Vite
-- **Backend:** Express 5 + Socket.io 4
-- **Video:** WebRTC (peer-to-peer)
+- **Frontend:** React 18 + TypeScript, Vite (port 5000)
+- **Backend:** Supabase (auth, PostgreSQL, Realtime broadcast, Edge Functions)
+- **Video:** WebRTC peer-to-peer via Supabase Realtime signaling
 
 ## Structure
 - `src/` — React/TypeScript frontend
-- `server/` — Express + Socket.io backend
-- `dist/` — Pre-built frontend (served by the backend)
-- `public/` — Static assets (images, manifest, etc.)
+  - `components/` — UI components (VideoChat, Chat, Modals, Header, Footer, etc.)
+  - `contexts/` — React contexts (Supabase auth, theme, settings)
+  - `hooks/` — Custom hooks (useWebRTC, useMedia, useChat)
+  - `lib/` — Supabase client & auth helpers
+  - `services/` — Queue/matchmaking, signaling, WebRTC, GTM, sounds
+  - `pages/` — Static pages (About, Privacy, Terms, Contact, Blog, Safety)
+  - `types/` — Shared TypeScript types
+- `supabase/` — Supabase schema SQL, migrations, and Edge Functions
+- `public/` — Static assets (manifest, icons, images)
 
-## Running the app
+## Required secrets
+Set these in the Replit Secrets panel (🔒) before starting:
+
+| Secret | Description |
+|--------|-------------|
+| `VITE_SUPABASE_URL` | Your Supabase project URL (e.g. `https://xxx.supabase.co`) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Your Supabase anon/publishable API key |
+
+Both are found in your Supabase project under **Settings → API**.
+
+The app renders a setup screen until both secrets are present.
+
+## Running
 ```bash
-# Start the backend (serves pre-built frontend from dist/)
-node server/index.js
+npm run dev    # Vite dev server on port 5000 (hot reload)
+npm run build  # Production build → dist/
 ```
 
-The server listens on `PORT` (defaults to `3001`).
-
-To rebuild the frontend after making changes:
-```bash
-npm run build   # tsc + vite build → outputs to dist/
-```
-
-To run the frontend dev server separately (hot reload):
-```bash
-npm run dev     # Vite dev server (--host)
-```
-
-## Notes
-- No external API keys required — fully self-contained
-- WebRTC signaling is handled via Socket.io rooms
-- Matchmaking uses a polling-based REST API (`/api/...`) + Socket.io events
+## Database
+Apply `supabase/schema.sql` in the Supabase SQL Editor to create all tables, RLS
+policies, and RPCs. See `supabase/migrations/` for incremental migrations and
+`supabase/functions/` for Edge Functions.
 
 ## User preferences
