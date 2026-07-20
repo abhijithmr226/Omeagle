@@ -182,6 +182,7 @@ CREATE TRIGGER trg_cleanup_signals
 -- 6. FIX get_online_count (no artificial +1)
 -- ============================================================
 
+DROP FUNCTION IF EXISTS get_online_count();
 CREATE OR REPLACE FUNCTION get_online_count()
 RETURNS INT AS $$
   SELECT COUNT(*)::INT FROM users WHERE online = true AND last_seen > now() - interval '45 seconds';

@@ -142,6 +142,7 @@ CREATE POLICY "Reports: insert own" ON reports FOR INSERT WITH CHECK (auth.uid()
 -- ============================================================
 
 -- Online User Counter RPC
+DROP FUNCTION IF EXISTS get_online_count();
 CREATE OR REPLACE FUNCTION get_online_count()
 RETURNS INT AS $$
   SELECT COUNT(*)::INT FROM users WHERE online = true AND last_seen > now() - interval '45 seconds';
