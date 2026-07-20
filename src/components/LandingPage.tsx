@@ -52,10 +52,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
-            Talk to <span className="highlight-text">strangers</span> anywhere
+            <span className="highlight-text">Free Video Chat</span> with Strangers
           </h1>
           <p className="hero-subtitle">
-            Meet new people from around the world instantly
+            Talk to strangers worldwide — no sign up, no registration required. The best Omegle alternative.
           </p>
           <div className="cta-group">
             <button className="btn-primary-lg" onClick={() => onStartChat('video')}>
@@ -96,57 +96,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
 
       <section className="seo-content">
         <div className="seo-inner">
-          <h2 className="seo-title">What Is Omeagle?</h2>
+          <h2 className="seo-title">What Is Omeagle? The Best Omegle Alternative</h2>
           <p>
-            Omeagle is a <strong>free random video chat platform</strong> that lets you talk to strangers from around the world instantly. Built as a modern alternative to Omegle, Omeagle combines real-time video calling, anonymous text chat, and AI-powered moderation into one seamless experience. No sign up required. No personal data needed. Just click Start and begin a conversation.
+            Omeagle is a <strong>free video chat app</strong> that lets you <strong>talk to strangers</strong> from around the world — instantly and anonymously. As the top <strong>Omegle alternative</strong> (also searched as <em>omeegle</em>, <em>omegale</em>, or <em>omeagle</em>), it offers live random video chat with no registration required. Just open the site, click Start, and you're connected to a random stranger in seconds. It's the easiest way to <strong>video chat without registration</strong>.
           </p>
 
-          <h2 className="seo-title">How Random Video Chat Works</h2>
+          <h2 className="seo-title">Free Video Chat App — No Registration Required</h2>
           <p>
-            Random video chat on Omeagle uses <strong>WebRTC</strong> (Web Real-Time Communication) to connect you directly with another user. When you click Start Video Chat, your browser requests camera and microphone access. Once granted, Omeagle's matchmaking system instantly pairs you with a random stranger from its pool of online users. Your video and audio travel peer-to-peer, meaning Omeagle never sees, records, or stores your conversations.
+            Unlike other random chat apps, Omeagle is <strong>100% free video chat</strong>. There are no coins, no credits, no subscriptions. Every feature — including <strong>Omeagle TV</strong>-style live video matching, text chat, and gender/country filters — is available for free. Start a <strong>video chat link</strong> session with any stranger, anytime, from any device.
+          </p>
+
+          <h2 className="seo-title">How to Video Chat with Strangers on Omeagle</h2>
+          <p>
+            Random <strong>video chat with strangers</strong> on Omeagle works using WebRTC (Web Real-Time Communication). When you click Start Video Chat, your browser requests camera and microphone access. Omeagle's matchmaking system instantly pairs you with a random user based on your preferences. Your video and audio travel peer-to-peer — we never record or store your conversations.
           </p>
 
           <div className="seo-features">
             <div className="seo-feature">
               <Video size={22} />
               <div>
-                <strong>Random Video Chat</strong>
-                <p>Instant face-to-face video connections with strangers worldwide. High quality, low latency.</p>
+                <strong>Omeagle TV — Live Video Chat</strong>
+                <p>Random live video connections with strangers worldwide. HD quality, ultra-low latency — like Omegle TV but better.</p>
               </div>
             </div>
             <div className="seo-feature">
               <MessageSquare size={22} />
               <div>
-                <strong>Anonymous Text Chat</strong>
-                <p>Not ready for video? Text chat gives you the same random stranger experience through typed messages.</p>
+                <strong>Free Text Chat — No Sign Up</strong>
+                <p>Prefer typing? Text chat mode gives you anonymous random stranger chat without a camera — totally free.</p>
               </div>
             </div>
             <div className="seo-feature">
               <Shield size={22} />
               <div>
-                <strong>AI Moderation</strong>
-                <p>Real-time content filtering detects and blocks inappropriate behavior before it reaches your screen.</p>
+                <strong>Safe & Moderated</strong>
+                <p>Real-time AI moderation detects and blocks inappropriate behavior before it reaches your screen.</p>
               </div>
             </div>
             <div className="seo-feature">
               <Globe size={22} />
               <div>
-                <strong>Country Matching</strong>
-                <p>Filter by country and gender to connect with people from specific regions or match globally.</p>
+                <strong>Talk with People Worldwide</strong>
+                <p>Filter by country to meet people from specific regions, or match globally for maximum variety.</p>
               </div>
             </div>
             <div className="seo-feature">
               <Smartphone size={22} />
               <div>
-                <strong>Mobile-First Design</strong>
-                <p>Works perfectly on any device. No app download needed. Open your browser and start chatting.</p>
+                <strong>Mobile Video Chat App</strong>
+                <p>The best mobile <strong>video chat app</strong> — works on any smartphone or tablet, no download needed.</p>
               </div>
             </div>
             <div className="seo-feature">
               <Zap size={22} />
               <div>
-                <strong>Instant Matching</strong>
-                <p>Get connected to a stranger in under 3 seconds. No waiting around.</p>
+                <strong>Instant Matching — Under 3 Seconds</strong>
+                <p>Get connected to a random stranger in under 3 seconds. Hit Next to skip and find a new match instantly.</p>
               </div>
             </div>
           </div>
@@ -253,19 +258,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
             </table>
           </div>
 
-          <h2 className="seo-title">Why Choose Omeagle Over Omegle?</h2>
+          <h2 className="seo-title">Why Omeagle Is the Best Omegle Alternative in 2026</h2>
           <p>
-            Since Omegle shut down in 2023, millions of users have been looking for a reliable alternative. Omeagle fills that gap with a platform that is <strong>100% free</strong>, <strong>anonymous by design</strong>, and <strong>protected by AI moderation</strong>. Unlike older random chat platforms that lacked safety controls, Omeagle uses real-time AI to detect and block inappropriate content, making it one of the safest random chat experiences available today.
+            Since Omegle shut down in 2023, millions of users searching for <em>omegle live</em>, <em>omegle video call</em>, <em>omegle free</em>, or <em>omegle chat with strangers</em> have been looking for a reliable replacement. Omeagle fills that gap perfectly — it is <strong>100% free</strong>, <strong>anonymous by design</strong>, and built on modern WebRTC technology. Whether you search for <em>omeegle</em>, <em>omegale</em>, or <em>omeagle</em>, this is where you end up.
           </p>
 
-          <h2 className="seo-title">Talk to Strangers Safely</h2>
+          <h2 className="seo-title">Video Chat with Strangers — Safely & Anonymously</h2>
           <p>
-            Talking to strangers online can be exciting, but safety matters. Omeagle protects you with <strong>end-to-end encrypted video</strong>, a <strong>report and block system</strong>, and <strong>AI-powered content moderation</strong> that works 24/7. No personal data is collected. No accounts are required. Your conversations are never recorded or stored. When you close your browser, your session disappears completely.
+            Every <strong>video chat with strangers</strong> session on Omeagle is protected by end-to-end encryption, a report &amp; block system, and 24/7 AI-powered content moderation. No personal data is collected. No accounts are required. When you close your browser, your session disappears completely. <strong>Talk with strangers</strong> from any country — all you need is a browser.
           </p>
 
-          <h2 className="seo-title">Start Chatting Now</h2>
+          <h2 className="seo-title">Start Your Free Video Chat Now</h2>
           <p>
-            Hundreds of people are online right now waiting to chat. Whether you want to make a new friend, practice a foreign language, or simply have an interesting conversation with someone new, it all starts with one click. Choose Video Chat for face-to-face conversations or Text Chat for anonymous messaging. Set your preferences for country, gender, and interests to find your ideal match.
+            Thousands of people are online right now ready to chat. Whether you want to make a new friend, practice a language, or just have an interesting conversation, it starts with one click. Choose <strong>Video Chat</strong> for face-to-face or <strong>Text Chat</strong> for anonymous messaging. Set preferences for country, gender, and interests to find your ideal match.
           </p>
         </div>
       </section>
