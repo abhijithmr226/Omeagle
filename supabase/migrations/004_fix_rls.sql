@@ -183,8 +183,8 @@ CREATE TRIGGER trg_cleanup_signals
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION get_online_count()
-RETURNS BIGINT AS $$
-  SELECT count(*)::bigint FROM users WHERE online = true;
+RETURNS INT AS $$
+  SELECT COUNT(*)::INT FROM users WHERE online = true AND last_seen > now() - interval '45 seconds';
 $$ LANGUAGE sql SECURITY DEFINER;
 
 -- ============================================================

@@ -144,7 +144,7 @@ CREATE POLICY "Reports: insert own" ON reports FOR INSERT WITH CHECK (auth.uid()
 -- Online User Counter RPC
 CREATE OR REPLACE FUNCTION get_online_count()
 RETURNS INT AS $$
-  SELECT COUNT(*)::INT FROM users WHERE online = true AND last_seen > now() - interval '5 minutes';
+  SELECT COUNT(*)::INT FROM users WHERE online = true AND last_seen > now() - interval '45 seconds';
 $$ LANGUAGE sql SECURITY DEFINER;
 
 -- Match Users In Queue RPC Function
@@ -160,6 +160,11 @@ DECLARE
   partner_profile JSONB;
   is_initiator BOOLEAN;
 BEGIN
+  -- Ensure user row exists in users table to prevent FK constraint violations
+  INSERT INTO users (id, online, last_seen)
+  VALUES (p_user_id, true, now())
+  ON CONFLICT (id) DO UPDATE SET online = true, last_seen = now();
+
   -- End any previous active call for this user
   UPDATE calls SET status = 'ended', ended_at = now()
   WHERE (user1_id = p_user_id OR user2_id = p_user_id) AND status = 'active';
