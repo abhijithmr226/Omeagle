@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Video, MessageSquare, Moon, Sun, Menu, X, Home, Shield, Info, Mail } from 'lucide-react';
 import { ChatMode, ThemeMode } from '../types/chat';
+import headerLogo from '../assets/headerlogo.png';
 
 interface HeaderProps {
   currentMode: ChatMode;
@@ -41,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
           <Link to="/" onClick={() => onSelectMode('landing')} className="logo-link">
-            <img src="/headerlogo.png" alt="Omeagle" className="header-logo-img" />
+            <img src={headerLogo} alt="Omeagle" className="header-logo-img" />
           </Link>
           <nav className="desktop-nav">
             <button className={`nav-tab ${currentMode === 'video' ? 'active' : ''}`} onClick={() => onSelectMode('video')}>
