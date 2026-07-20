@@ -1,16 +1,96 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Users, Shield, Globe, Video, MessageCircle, Smartphone, Zap } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Users, Shield, Globe, Video, MessageCircle, Smartphone, Zap, ChevronRight } from 'lucide-react';
 
 interface BlogPageProps {
   onBack?: () => void;
 }
 
 export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
+  const [activeArticle, setActiveArticle] = useState<'index' | 'article1' | 'article2' | 'article3'>('index');
+
+  const articles = [
+    {
+      id: 'article1' as const,
+      tag: 'Guide',
+      date: 'July 19, 2026',
+      readTime: '12 min read',
+      title: 'Omeagle: The Best Free Random Video Chat Platform to Talk to Strangers Online in 2026',
+      description: 'Discover how Omeagle connects you with strangers worldwide through free random video chat and text chat. No sign up. No fees. Just real conversations.',
+    },
+    {
+      id: 'article2' as const,
+      tag: 'Comparison',
+      date: 'July 20, 2026',
+      readTime: '9 min read',
+      title: 'Top 10 Omegle Alternatives in 2026 — Free Video Chat Apps That Actually Work',
+      description: 'Omegle shut down in 2023. Here are the best alternatives for random video chat with strangers, ranked by features, safety, and ease of use.',
+    },
+    {
+      id: 'article3' as const,
+      tag: 'Safety',
+      date: 'July 20, 2026',
+      readTime: '7 min read',
+      title: 'How to Video Chat with Strangers Safely: 10 Essential Tips for 2026',
+      description: 'Stay safe while talking to strangers online. Learn the 10 essential rules for anonymous video chat — from protecting your identity to handling bad actors.',
+    },
+  ];
+
+  if (activeArticle === 'index') {
+    return (
+      <div className="page-container blog-page">
+        <button className="back-btn" onClick={onBack}>
+          <ArrowLeft size={18} /> Back
+        </button>
+
+        <div className="blog-index">
+          <h1 className="blog-index-title">Omeagle Blog</h1>
+          <p className="blog-index-sub">Guides, tips, and insights on video chat, online safety, and meeting people online.</p>
+
+          <div className="blog-card-grid">
+            {articles.map((article) => (
+              <button
+                key={article.id}
+                className="blog-card"
+                onClick={() => setActiveArticle(article.id)}
+              >
+                <div className="blog-card-meta">
+                  <span className="blog-tag">{article.tag}</span>
+                  <span className="blog-date"><Calendar size={12} /> {article.date}</span>
+                  <span className="blog-reading"><Clock size={12} /> {article.readTime}</span>
+                </div>
+                <h2 className="blog-card-title">{article.title}</h2>
+                <p className="blog-card-desc">{article.description}</p>
+                <span className="blog-card-cta">Read article <ChevronRight size={14} /></span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <style>{`
+          .blog-index { max-width: 860px; margin: 0 auto; padding: 1rem 0 3rem; }
+          .blog-index-title { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+          .blog-index-sub { color: var(--text-muted); margin-bottom: 2rem; }
+          .blog-card-grid { display: grid; gap: 1.25rem; }
+          .blog-card {
+            text-align: left; background: var(--bg-surface); border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg); padding: 1.5rem; cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
+          }
+          .blog-card:hover { border-color: var(--brand-blue); box-shadow: 0 4px 24px rgba(99,102,241,0.12); }
+          .blog-card-meta { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+          .blog-card-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1.35; }
+          .blog-card-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
+          .blog-card-cta { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; font-weight: 600; color: var(--brand-blue); }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container blog-page">
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Back
+      <button className="back-btn" onClick={() => setActiveArticle('index')}>
+        <ArrowLeft size={18} /> All Articles
       </button>
 
       <article className="blog-article" itemScope itemType="https://schema.org/Article">
@@ -678,6 +758,234 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
           .blog-table th, .blog-table td { padding: 0.5rem 0.75rem; }
         }
       `}</style>
+
+      {/* Article 2 & 3 rendered inside same wrapper */}
+      {activeArticle === 'article2' && (
+        <article className="blog-article" itemScope itemType="https://schema.org/Article">
+          <header className="blog-header">
+            <div className="blog-meta">
+              <span className="blog-tag">Comparison</span>
+              <span className="blog-date"><Calendar size={14} /> July 20, 2026</span>
+              <span className="blog-reading"><Clock size={14} /> 9 min read</span>
+            </div>
+            <h1 itemProp="headline">Top 10 Omegle Alternatives in 2026 — Free Video Chat Apps That Actually Work</h1>
+            <p className="blog-subtitle" itemProp="description">
+              Omegle shut down in 2023. Here are the best alternatives for random video chat with strangers, ranked by features, safety, and ease of use.
+            </p>
+          </header>
+
+          <section className="blog-section" itemProp="articleBody">
+            <h2>Why Everyone Is Looking for an Omegle Alternative</h2>
+            <p>
+              In November 2023, Omegle — the original random video chat platform — shut down permanently after 14 years. Its founder cited the unbearable cost of moderation and legal pressure. Millions of users suddenly found themselves searching for <strong>omegle alternatives</strong>, <em>omegle tv</em>, <em>omeegle</em>, <em>omegale</em>, and anything that could replicate the experience of connecting with a random stranger online.
+            </p>
+            <p>
+              The good news: several platforms stepped up to fill the gap. Here is our definitive ranked list of the <strong>best Omegle alternatives in 2026</strong> — all free, all working, with honest reviews of each.
+            </p>
+
+            <h2>1. Omeagle — Best Overall Omegle Alternative</h2>
+            <div className="blog-highlight">
+              <Zap size={20} />
+              <div>
+                <strong>Our Pick: #1 Omegle Alternative</strong>
+                <p>Free, no registration, AI-moderated, end-to-end encrypted. Works on all devices.</p>
+              </div>
+            </div>
+            <p>
+              <strong>Omeagle</strong> (<Link to="/">omeagle.online</Link>) is the top-rated Omegle alternative in 2026. Built from the ground up with modern WebRTC technology, it offers everything Omegle had — plus the features it was missing: real-time AI moderation, gender and country filters, interest matching, end-to-end encrypted video, and a fully mobile-optimized design.
+            </p>
+            <p><strong>Key features:</strong></p>
+            <ul>
+              <li>✅ 100% free — no coins, no credits, no premium tiers</li>
+              <li>✅ No registration or sign up required</li>
+              <li>✅ Both video chat and text chat modes</li>
+              <li>✅ AI-powered content moderation</li>
+              <li>✅ Country, gender, and interest-based matching</li>
+              <li>✅ End-to-end encrypted peer-to-peer video</li>
+              <li>✅ Works on iPhone, Android, and desktop browsers</li>
+            </ul>
+            <p><strong>Verdict:</strong> The closest thing to Omegle — done properly. If you only try one alternative, make it Omeagle.</p>
+
+            <h2>2. OmeTV</h2>
+            <p>
+              OmeTV is a popular Omegle alternative with a large user base. It requires a Facebook or Google login to use, which some users dislike. It has basic moderation and works well on mobile. The free version includes ads and limited daily connections. Gender filtering requires a paid subscription.
+            </p>
+            <p><strong>Verdict:</strong> Good option if you don't mind signing in with a social account and seeing ads.</p>
+
+            <h2>3. Chatroulette</h2>
+            <p>
+              Chatroulette was one of the original random video chat platforms, launched in 2009. After years of struggling with inappropriate content, it implemented AI-based face detection to reduce NSFW sessions. Today it's cleaner but requires account creation and has limited free features.
+            </p>
+            <p><strong>Verdict:</strong> A nostalgic choice, but registration is required and the free tier is limited.</p>
+
+            <h2>4. Chatspin</h2>
+            <p>
+              Chatspin offers random video chat with filters for country and gender. The free plan is quite restricted — most useful features like AR face masks and gender filters require a paid subscription. It does have a large user base which means faster matching times.
+            </p>
+            <p><strong>Verdict:</strong> Good matching speed, but pays walls limit the experience.</p>
+
+            <h2>5. Emerald Chat</h2>
+            <p>
+              Emerald Chat positions itself as the "clean" Omegle alternative with community-driven karma scores and interest-based matching. Users earn karma by rating conversations positively. It's free to use with a registration, and has text, video, and group chat options.
+            </p>
+            <p><strong>Verdict:</strong> Unique karma system makes the community feel more engaged, but registration is required.</p>
+
+            <h2>6. Camsurf</h2>
+            <p>
+              Camsurf is a moderated video chat platform with over 400 million sessions logged. It's free to use without registration and available in 200+ countries. The interface is simple and clean. However, gender filtering and advanced features require a premium subscription.
+            </p>
+            <p><strong>Verdict:</strong> Good global reach and free to start, but advanced filters cost extra.</p>
+
+            <h2>7. Shagle</h2>
+            <p>
+              Shagle offers random video chat with a gender mask feature, allowing users to appear as a different gender in video. It has a large user base and supports country-based filtering. Free users can connect to 3 strangers per day — additional connections require a premium membership.
+            </p>
+            <p><strong>Verdict:</strong> Interesting gender mask feature, but the 3-connection daily limit makes free use impractical.</p>
+
+            <h2>8. Holla</h2>
+            <p>
+              Holla is a mobile-first random video chat app available on iOS and Android. It uses a coin-based system where you earn or buy coins to access features. The live streaming feature sets it apart, but the coin economy makes it feel more like a social media app than a pure random chat tool.
+            </p>
+            <p><strong>Verdict:</strong> Good for mobile users who like livestreaming, but the coin economy is a barrier.</p>
+
+            <h2>9. Fruzo</h2>
+            <p>
+              Fruzo combines random video chat with a social network — you can add matches as friends, follow users, and build a profile. It's free to use with registration. If you want something closer to a social app than pure anonymous chat, Fruzo fills that niche.
+            </p>
+            <p><strong>Verdict:</strong> More of a social network than a random chat app. Good if you want persistent connections.</p>
+
+            <h2>10. Bazoocam</h2>
+            <p>
+              Bazoocam is a French random video chat platform with a loyal European user base. It's completely free with no registration. Features include country filtering and a few built-in multiplayer games you can play with your chat partner. Moderation is light compared to other platforms.
+            </p>
+            <p><strong>Verdict:</strong> Fun European alternative with games, but lighter moderation than Omeagle.</p>
+
+            <h2>Our Recommendation</h2>
+            <p>
+              For the best free, no-registration <strong>Omegle alternative</strong> experience in 2026, <strong>Omeagle</strong> is the clear winner. It matches the original Omegle experience while fixing everything that made Omegle frustrating — no account required, genuine AI moderation, and full mobile support with a beautiful interface.
+            </p>
+            <div className="blog-cta">
+              <h2>Ready to Try the Best Omegle Alternative?</h2>
+              <p>No sign up. No download. Just click Start and meet someone new in seconds.</p>
+              <div className="blog-cta-buttons">
+                <Link to="/" className="blog-btn-primary"><Video size={18} style={{marginRight:'0.5rem'}} /> Start Video Chat Free</Link>
+              </div>
+            </div>
+          </section>
+        </article>
+      )}
+
+      {activeArticle === 'article3' && (
+        <article className="blog-article" itemScope itemType="https://schema.org/Article">
+          <header className="blog-header">
+            <div className="blog-meta">
+              <span className="blog-tag">Safety</span>
+              <span className="blog-date"><Calendar size={14} /> July 20, 2026</span>
+              <span className="blog-reading"><Clock size={14} /> 7 min read</span>
+            </div>
+            <h1 itemProp="headline">How to Video Chat with Strangers Safely: 10 Essential Tips for 2026</h1>
+            <p className="blog-subtitle" itemProp="description">
+              Stay safe while talking to strangers online. Learn the 10 essential rules for anonymous video chat — from protecting your identity to handling bad actors.
+            </p>
+          </header>
+
+          <section className="blog-section" itemProp="articleBody">
+            <h2>Is It Safe to Video Chat with Strangers?</h2>
+            <p>
+              <strong>Video chat with strangers</strong> can be a genuinely rewarding experience — you meet people from different cultures, practice languages, and have conversations you'd never have otherwise. But like anything online, it comes with risks. The good news: most risks are easily managed with the right habits.
+            </p>
+            <p>
+              This guide covers the <strong>10 essential safety tips</strong> for anyone using random video chat platforms like Omeagle, OmeTV, or Chatroulette in 2026.
+            </p>
+
+            <h2>1. Never Share Personal Information</h2>
+            <p>
+              This is rule #1. Never share your real name, home address, school, workplace, phone number, social media handles, or email address with a stranger in a random video chat. No matter how friendly or trustworthy someone seems, keep personal details private. The best platforms — including Omeagle — are designed so you never <em>need</em> to share any of this.
+            </p>
+            <div className="blog-highlight">
+              <Shield size={20} />
+              <div>
+                <strong>Omeagle Never Asks</strong>
+                <p>Omeagle requires zero personal information to use. You don't even need an email address.</p>
+              </div>
+            </div>
+
+            <h2>2. Use a Virtual Background or Blur Your Background</h2>
+            <p>
+              Your background can reveal more than you think — your neighborhood, home layout, or personal items. If your device supports it, use a virtual background or simply sit in front of a plain wall. This prevents strangers from identifying where you live based on visual clues.
+            </p>
+
+            <h2>3. Cover Identifiable Features in Your Environment</h2>
+            <p>
+              Before starting a video chat, look around. Are there any visible family photos, school logos, address labels on packages, or other items that could identify you? A moment of preparation prevents information leakage you didn't intend to share.
+            </p>
+
+            <h2>4. Trust Your Gut — Disconnect Immediately</h2>
+            <p>
+              If a conversation makes you uncomfortable, disconnect instantly. You don't owe anyone a goodbye. On Omeagle, the <strong>Stop</strong> button ends the session immediately. Never feel obligated to continue a conversation that doesn't feel right. Trust your instincts — they exist for a reason.
+            </p>
+
+            <h2>5. Use the Report Button</h2>
+            <p>
+              Reputable platforms have reporting systems. On Omeagle, you can report any user with a single tap. Reporting inappropriate behavior not only protects you — it protects every other user the same person might try to connect with. Use it. You're doing the entire community a service.
+            </p>
+
+            <h2>6. Be Careful with Screenshots and Screen Recording</h2>
+            <p>
+              Never assume your video feed is private. Anyone can take a screenshot or record their screen during a video chat. Behave accordingly — don't do anything on camera you wouldn't want preserved permanently. This applies both ways: don't screenshot or record others without consent.
+            </p>
+
+            <h2>7. Use a Platform with Real Moderation</h2>
+            <p>
+              Not all random chat platforms are equal. Choose platforms that actively moderate content using AI and human review. Omeagle uses <strong>real-time AI moderation</strong> that detects and blocks inappropriate content before it appears on your screen. Unmoderated platforms expose you to far higher risk.
+            </p>
+
+            <h2>8. Keep Your Device's Camera Permissions Tight</h2>
+            <p>
+              Only grant camera access to sites you trust. After a video chat session, check your browser's camera permissions and revoke access from any site you don't regularly use. In Chrome: Settings → Privacy and Security → Site Settings → Camera.
+            </p>
+
+            <h2>9. Don't Meet Strangers In Person</h2>
+            <p>
+              This seems obvious but needs saying: <strong>never agree to meet a random video chat stranger in person</strong>, especially alone. If you've built a genuine connection with someone, use established social platforms with identity verification for any real-world interaction. Anonymous video chat strangers are exactly that — anonymous.
+            </p>
+
+            <h2>10. If You're Under 18, Use Supervised Platforms Only</h2>
+            <p>
+              Random video chat with strangers is designed for adults. Omeagle enforces an 18+ age gate for this reason. If you are under 18, or if you are a parent of someone who is, please use age-appropriate supervised platforms instead. Parental controls at the router and device level add an extra layer of protection.
+            </p>
+
+            <h2>Summary: Stay Safe While Video Chatting</h2>
+            <table className="blog-table">
+              <thead>
+                <tr>
+                  <th>Rule</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Personal Info</td><td>Never share name, address, phone, social handles</td></tr>
+                <tr><td>Background</td><td>Use virtual background or plain wall</td></tr>
+                <tr><td>Discomfort</td><td>Disconnect immediately, no explanation needed</td></tr>
+                <tr><td>Bad Actors</td><td>Use the Report button every time</td></tr>
+                <tr><td>Camera</td><td>Revoke camera permissions after sessions</td></tr>
+                <tr><td>In-Person</td><td>Never meet random chat strangers alone</td></tr>
+                <tr><td>Platform Choice</td><td>Use moderated platforms like Omeagle</td></tr>
+              </tbody>
+            </table>
+
+            <div className="blog-cta">
+              <h2>Chat Safely on Omeagle</h2>
+              <p>Omeagle is designed with your safety first. AI moderation, anonymous by default, end-to-end encrypted. No registration required.</p>
+              <div className="blog-cta-buttons">
+                <Link to="/" className="blog-btn-primary"><Video size={18} style={{marginRight:'0.5rem'}} /> Start Safe Video Chat</Link>
+                <Link to="/safety" className="blog-btn-secondary"><Shield size={18} style={{marginRight:'0.5rem'}} /> Read Safety Guide</Link>
+              </div>
+            </div>
+          </section>
+        </article>
+      )}
     </div>
   );
 };
+

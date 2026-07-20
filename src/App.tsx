@@ -28,6 +28,8 @@ import { getOnlineCount } from './lib/auth';
 import { supabase } from './lib/supabase';
 import { getCurrentUserId } from './lib/auth';
 import { trackChatStart, trackMatchFound, trackChatEnd, trackSkipNext } from './services/gtm';
+import { playMatchFound, playMessageReceived, unlockAudio } from './services/sounds';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 
 // Polling fallback intervals (used only when Realtime match detection is unavailable)
 const POLL_FAST_MS = 4000;
@@ -171,6 +173,7 @@ export const App: React.FC = () => {
     setConnectionStatus('connecting');
 
     trackMatchFound(currentModeRef.current);
+    playMatchFound();
 
     const channel = createCallChannel(callId, {
       onOffer: handleOffer,
@@ -179,7 +182,10 @@ export const App: React.FC = () => {
       onStrangerDisconnected: handleStrangerDisconnected,
       onStrangerTyping: chat.handleStrangerTyping,
       onStrangerStopTyping: chat.handleStrangerStopTyping,
-      onReceiveMessage: chat.addMessage.bind(null, 'stranger'),
+      onReceiveMessage: (msg: string) => {
+        chat.addMessage('stranger', msg);
+        playMessageReceived();
+      },
       onChannelStatus: (status) => {
         if (status !== 'SUBSCRIBED') return;
         if (initiator && currentModeRef.current === 'video') {
@@ -425,7 +431,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="app-container">
+    <div className="app-container" onClick={unlockAudio} onTouchStart={unlockAudio}>
       <Header currentMode={mode} onSelectMode={(m) => {
         setMode(m);
         if (m !== 'landing' && connectionStatus === 'idle') startChat(m as 'video' | 'text');
@@ -547,6 +553,7 @@ export const App: React.FC = () => {
       <PreferencesModal isOpen={isPrefsOpen} onClose={() => setIsPrefsOpen(false)}
         settings={settings} onSave={updateSettings} />
       {!ageConfirmed && <AgeGateModal onConfirm={handleAgeConfirm} />}
+      <PWAInstallPrompt />
 
       <style>{`
         .chat-layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; margin: 0 auto; position: relative; }
