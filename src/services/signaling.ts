@@ -23,9 +23,21 @@ export interface CallChannel {
   cleanup: () => void;
 }
 
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function createCallChannel(callId: string, callbacks: CallChannelCallbacks): CallChannel {
   const userId = getCurrentUserId();
   const processedSignalIds = new Set<string>();
+  const processedMessageIds = new Set<string>();
 
   const processSignal = (type: string, data: any, senderId: string, signalId?: string) => {
     if (senderId === userId) return;
@@ -35,6 +47,14 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
     if (type === 'offer') callbacks.onOffer(data, senderId);
     else if (type === 'answer') callbacks.onAnswer(data, senderId);
     else if (type === 'ice-candidate') callbacks.onIceCandidate(data, senderId);
+  };
+
+  const processMessage = (text: string, senderId: string, msgId?: string) => {
+    if (senderId === userId) return;
+    if (msgId && processedMessageIds.has(msgId)) return;
+    if (msgId) processedMessageIds.add(msgId);
+
+    callbacks.onReceiveMessage(text);
   };
 
   // 1. Setup Realtime Broadcast channel (for instant low-latency delivery)
@@ -60,7 +80,7 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
       if (payload.senderId !== userId) callbacks.onStrangerStopTyping();
     })
     .on('broadcast', { event: 'message' }, ({ payload }) => {
-      if (payload.senderId !== userId) callbacks.onReceiveMessage(payload.text);
+      processMessage(payload.text, payload.senderId, payload.msgId);
     })
     .subscribe((status) => {
       callbacks.onChannelStatus?.(status);
@@ -70,7 +90,7 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
       }
     });
 
-  // 2. Setup Realtime Postgres changes listener on 'signals' table (100% delivery backup)
+  // 2. Setup Realtime Postgres changes listener on 'signals' table (100% signal delivery backup)
   const dbSignalsChannel = supabase
     .channel(`signals:${callId}`)
     .on(
@@ -84,6 +104,24 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
       (payload) => {
         const row = payload.new as { id: string; sender_id: string; type: string; data: any };
         processSignal(row.type, row.data, row.sender_id, row.id);
+      }
+    )
+    .subscribe();
+
+  // 3. Setup Realtime Postgres changes listener on 'messages' table (100% message delivery backup)
+  const dbMessagesChannel = supabase
+    .channel(`dbmessages:${callId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `call_id=eq.${callId}`,
+      },
+      (payload) => {
+        const row = payload.new as { id: string; sender_id: string; message: string };
+        processMessage(row.message, row.sender_id, row.id);
       }
     )
     .subscribe();
@@ -105,7 +143,7 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
 
   return {
     sendOffer: async (offer: RTCSessionDescriptionInit) => {
-      const signalId = crypto.randomUUID();
+      const signalId = generateUUID();
       // Broadcast immediately
       broadcastChannel.send({
         type: 'broadcast',
@@ -115,18 +153,20 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
 
       // Persist to DB for guarantee
       if (userId) {
-        await supabase.from('signals').insert({
+        supabase.from('signals').insert({
           id: signalId,
           call_id: callId,
           sender_id: userId,
           type: 'offer',
           data: offer,
+        }).then(({ error }) => {
+          if (error) console.warn('[signaling] signals insert warning:', error.message);
         });
       }
     },
 
     sendAnswer: async (answer: RTCSessionDescriptionInit) => {
-      const signalId = crypto.randomUUID();
+      const signalId = generateUUID();
       broadcastChannel.send({
         type: 'broadcast',
         event: 'answer',
@@ -134,18 +174,20 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
       }).catch(() => {});
 
       if (userId) {
-        await supabase.from('signals').insert({
+        supabase.from('signals').insert({
           id: signalId,
           call_id: callId,
           sender_id: userId,
           type: 'answer',
           data: answer,
+        }).then(({ error }) => {
+          if (error) console.warn('[signaling] signals insert warning:', error.message);
         });
       }
     },
 
     sendIceCandidate: async (candidate: RTCIceCandidateInit) => {
-      const signalId = crypto.randomUUID();
+      const signalId = generateUUID();
       broadcastChannel.send({
         type: 'broadcast',
         event: 'ice-candidate',
@@ -153,12 +195,14 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
       }).catch(() => {});
 
       if (userId) {
-        await supabase.from('signals').insert({
+        supabase.from('signals').insert({
           id: signalId,
           call_id: callId,
           sender_id: userId,
           type: 'ice-candidate',
           data: candidate,
+        }).then(({ error }) => {
+          if (error) console.warn('[signaling] signals insert warning:', error.message);
         });
       }
     },
@@ -190,30 +234,32 @@ export function createCallChannel(callId: string, callbacks: CallChannelCallback
     },
 
     sendMessage: async (text: string) => {
-      if (userId) {
-        const { error } = await supabase
-          .from('messages')
-          .insert({
-            call_id: callId,
-            sender_id: userId,
-            message: text,
-          });
+      const msgId = generateUUID();
 
-        if (error) {
-          console.error('[signaling] sendMessage error:', error);
-        }
-      }
-
-      await broadcastChannel.send({
+      // 1. Broadcast immediately for instant UI update on receiver
+      broadcastChannel.send({
         type: 'broadcast',
         event: 'message',
-        payload: { text, senderId: userId },
+        payload: { text, senderId: userId, msgId },
       }).catch(() => {});
+
+      // 2. Async DB persistence backup
+      if (userId) {
+        supabase.from('messages').insert({
+          id: msgId,
+          call_id: callId,
+          sender_id: userId,
+          message: text,
+        }).then(({ error }) => {
+          if (error) console.warn('[signaling] message insert warning:', error.message);
+        });
+      }
     },
 
     cleanup: () => {
       supabase.removeChannel(broadcastChannel);
       supabase.removeChannel(dbSignalsChannel);
+      supabase.removeChannel(dbMessagesChannel);
     },
   };
 }
