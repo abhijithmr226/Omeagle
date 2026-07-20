@@ -15,14 +15,19 @@ function getCtx(): AudioContext {
 /**
  * Play a pleasant 2-tone "match found" chime (rising major third).
  */
-export function playMatchFound(): void {
+export async function playMatchFound(): Promise<void> {
   try {
     const ctx = getCtx();
+    // Resume AudioContext (required on mobile after browser auto-suspend)
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
     const now = ctx.currentTime;
 
     const tones = [
-      { freq: 523.25, start: 0, dur: 0.18 },   // C5
-      { freq: 659.25, start: 0.15, dur: 0.25 },  // E5
+      { freq: 523.25, start: 0,    dur: 0.22 },  // C5
+      { freq: 659.25, start: 0.18, dur: 0.30 },  // E5
+      { freq: 783.99, start: 0.36, dur: 0.35 },  // G5 — added third note for richer chime
     ];
 
     tones.forEach(({ freq, start, dur }) => {
@@ -33,7 +38,7 @@ export function playMatchFound(): void {
       osc.frequency.value = freq;
 
       gain.gain.setValueAtTime(0, now + start);
-      gain.gain.linearRampToValueAtTime(0.35, now + start + 0.02);
+      gain.gain.linearRampToValueAtTime(0.38, now + start + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, now + start + dur);
 
       osc.connect(gain);
@@ -50,9 +55,12 @@ export function playMatchFound(): void {
 /**
  * Play a soft single-tone "message received" ping.
  */
-export function playMessageReceived(): void {
+export async function playMessageReceived(): Promise<void> {
   try {
     const ctx = getCtx();
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
     const now = ctx.currentTime;
 
     const osc = ctx.createOscillator();

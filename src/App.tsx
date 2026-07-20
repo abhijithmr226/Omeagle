@@ -302,6 +302,8 @@ export const App: React.FC = () => {
     cleanupPoll();
     cleanupMatchChannel();
     await cleanupCallChannel();
+    // Unlock AudioContext on user gesture so match chime works on mobile
+    unlockAudio();
     setMode(chatMode);
     setConnectionStatus('searching');
     setRemoteStream(null);

@@ -16,17 +16,29 @@ interface VideoGridProps {
 export const VideoGrid: React.FC<VideoGridProps> = ({
   localStream, remoteStream, connectionStatus, isMuted, isVideoOff, onFlipCamera, onReportStranger, onOpenSafety
 }) => {
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  // Desktop refs
+  const localVideoDesktopRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoDesktopRef = useRef<HTMLVideoElement>(null);
+  // Mobile refs — separate so they work when desktop is display:none
+  const localVideoMobileRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoMobileRef = useRef<HTMLVideoElement>(null);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Attach streams to ALL video elements (both mobile and desktop)
   useEffect(() => {
-    if (localVideoRef.current && localStream) localVideoRef.current.srcObject = localStream;
+    if (localStream) {
+      if (localVideoDesktopRef.current) localVideoDesktopRef.current.srcObject = localStream;
+      if (localVideoMobileRef.current)  localVideoMobileRef.current.srcObject = localStream;
+    }
   }, [localStream]);
 
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) remoteVideoRef.current.srcObject = remoteStream;
+    if (remoteStream) {
+      if (remoteVideoDesktopRef.current) remoteVideoDesktopRef.current.srcObject = remoteStream;
+      if (remoteVideoMobileRef.current)  remoteVideoMobileRef.current.srcObject = remoteStream;
+    }
   }, [remoteStream]);
 
   const toggleFullscreen = () => {
@@ -45,7 +57,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
 
   return (
     <div className="vg-wrapper" ref={containerRef}>
-      {/* Mobile Stacked 2-Card Layout (reference design) */}
+      {/* Mobile Stacked 2-Card Layout */}
       <div className="vg-mobile-stack">
         {/* Top Card: Stranger Video */}
         <div className="vg-card vg-card-stranger">
@@ -59,14 +71,19 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
             </button>
           </div>
 
-          {remoteStream ? (
-            <video ref={remoteVideoRef} autoPlay playsInline className="vg-feed-video" />
-          ) : (
+          {/* Always render video — hide with CSS when no stream */}
+          <video
+            ref={remoteVideoMobileRef}
+            autoPlay
+            playsInline
+            className={`vg-feed-video ${remoteStream ? '' : 'vg-hidden'}`}
+          />
+          {!remoteStream && (
             <div className="vg-placeholder">
               {isSearching ? <RefreshCw size={44} className="spin-icon" /> :
                isConnected ? <UserCheck size={44} /> :
                <CameraOff size={44} />}
-              <p>{isSearching ? 'Looking for someone to chat with...' : isConnected ? 'Connected' : 'Start video chat'}</p>
+              <p>{isSearching ? 'Looking for someone...' : isConnected ? 'Connected' : 'Start video chat'}</p>
             </div>
           )}
 
@@ -91,7 +108,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           </div>
         </div>
 
-        {/* Bottom Card: You Video */}
+        {/* Bottom Card: Your Video */}
         <div className="vg-card vg-card-you">
           <div className="vg-card-header-overlay">
             <div className="vg-badge badge-you">
@@ -103,12 +120,18 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
             </button>
           </div>
 
-          {localStream && !isVideoOff ? (
-            <video ref={localVideoRef} autoPlay playsInline muted className="vg-feed-video vg-self-video" />
-          ) : (
+          {/* Always render video — hide with CSS when no stream */}
+          <video
+            ref={localVideoMobileRef}
+            autoPlay
+            playsInline
+            muted
+            className={`vg-feed-video vg-self-video ${localStream && !isVideoOff ? '' : 'vg-hidden'}`}
+          />
+          {(!localStream || isVideoOff) && (
             <div className="vg-placeholder">
               <CameraOff size={36} />
-              <p>{isVideoOff ? 'Camera turns off' : 'Connecting camera...'}</p>
+              <p>{isVideoOff ? 'Camera off' : 'Connecting camera...'}</p>
             </div>
           )}
 
@@ -126,7 +149,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
       <div className="vg-desktop-view">
         <div className="vg-remote-wrap">
           {remoteStream ? (
-            <video ref={remoteVideoRef} autoPlay playsInline className="vg-remote-video" />
+            <video ref={remoteVideoDesktopRef} autoPlay playsInline className="vg-remote-video" />
           ) : (
             <div className="vg-placeholder">
               {isSearching ? <RefreshCw size={48} className="spin-icon" /> :
@@ -144,13 +167,14 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         </div>
         {localStream && (
           <div className="vg-pip-wrap">
-            <video ref={localVideoRef} autoPlay playsInline muted className="vg-pip-video vg-self-video" />
+            <video ref={localVideoDesktopRef} autoPlay playsInline muted className="vg-pip-video vg-self-video" />
           </div>
         )}
       </div>
 
       <style>{`
         .vg-wrapper { width: 100%; position: relative; }
+        .vg-hidden { display: none !important; }
 
         /* Desktop Layout */
         .vg-desktop-view { display: flex; position: relative; width: 100%; border-radius: var(--radius-lg); overflow: hidden; background: #0c0f14; aspect-ratio: 16/9; animation: scaleIn 0.3s ease; border: 1px solid rgba(255,255,255,0.1); }
@@ -165,11 +189,21 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .vg-pip-video { width: 100%; height: 100%; object-fit: cover; }
         .vg-self-video { transform: scaleX(-1); }
 
-        /* Mobile Stacked View (matches reference design) */
+        /* Mobile Stacked View */
         .vg-mobile-stack { display: none; flex-direction: column; gap: 0.75rem; width: 100%; }
-        .vg-card { position: relative; width: 100%; height: 260px; min-height: 220px; background: #12161f; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .vg-feed-video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-        
+        .vg-card {
+          position: relative; width: 100%; height: 260px; min-height: 220px;
+          background: #12161f; border-radius: 16px; overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.08);
+          display: flex; flex-direction: column; justify-content: space-between;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .vg-feed-video {
+          width: 100%; height: 100%; object-fit: cover;
+          position: absolute; inset: 0; z-index: 1;
+          display: block;
+        }
+
         .vg-card-header-overlay { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 5; pointer-events: none; }
         .vg-card-header-overlay * { pointer-events: auto; }
         .vg-badge { display: flex; align-items: center; gap: 0.4rem; background: rgba(18,22,31,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.82rem; font-weight: 600; color: #fff; border: 1px solid rgba(255,255,255,0.12); }
@@ -196,7 +230,11 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         }
 
         @media (max-width: 480px) {
-          .vg-card { height: calc((100dvh - 270px) / 2); min-height: 200px; max-height: 280px; }
+          .vg-card { height: calc((100dvh - 290px) / 2); min-height: 185px; max-height: 270px; }
+        }
+
+        @media (max-height: 700px) and (max-width: 1024px) {
+          .vg-card { height: 175px; min-height: 160px; }
         }
       `}</style>
     </div>
