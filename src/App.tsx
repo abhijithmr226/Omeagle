@@ -433,7 +433,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="app-container" onClick={unlockAudio} onTouchStart={unlockAudio}>
+    <div className={`app-container${mode === 'video' ? ' chatting' : ''}`} onClick={unlockAudio} onTouchStart={unlockAudio}>
       <Header currentMode={mode} onSelectMode={(m) => {
         setMode(m);
         if (m !== 'landing' && connectionStatus === 'idle') startChat(m as 'video' | 'text');
@@ -558,47 +558,119 @@ export const App: React.FC = () => {
       <PWAInstallPrompt />
 
       <style>{`
-        .chat-layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; margin: 0 auto; position: relative; }
-        .video-column { display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; }
-        .chat-column { display: flex; flex-direction: column; }
-        .text-chat-layout { display: flex; justify-content: center; width: 100%; max-width: 640px; margin: 0 auto; }
-        .mobile-chat-overlay { display: none; }
+        /* ── Ad banner (desktop only) ──────────────────────── */
         .ad-banner { display: flex; justify-content: center; width: 100%; max-width: 100vw; overflow: hidden; padding: 0.5rem 0; opacity: 0.85; }
 
+        /* ── Text chat (centered column) ───────────────────── */
+        .text-chat-layout { display: flex; justify-content: center; width: 100%; max-width: 640px; margin: 0 auto; }
+
+        /* ── Desktop video-chat layout ──────────────────────── */
+        .chat-layout-wrapper {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          padding: 0.75rem;
+          gap: 0;
+        }
+        .chat-layout-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.25rem;
+          width: 100%;
+          align-items: start;
+        }
+        /* Video column — fixed height on desktop so VideoGrid flex-fills it */
+        .video-column {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          height: 580px;
+        }
+        .chat-column { display: flex; flex-direction: column; }
+
+        /* ── Mobile chat slide-up overlay ───────────────────── */
+        .mobile-chat-overlay { display: none; }
+
+        /* ────────────────────────────────────────────────────
+           MOBILE  ≤ 1024px
+           Full-screen video layout: panels fill the viewport
+           below the sticky header with controls at bottom.
+        ──────────────────────────────────────────────────── */
         @media (max-width: 1024px) {
-          .ad-banner { display: none; }
-          .chat-layout-grid { grid-template-columns: 1fr; gap: 0; }
-          .video-column { height: calc(100dvh - 120px); display: flex; flex-direction: column; justify-content: space-between; }
+          /* Wrapper fills everything below the 64px header */
+          .chat-layout-wrapper {
+            padding: 0;
+            gap: 0;
+            height: calc(100dvh - 64px);
+            overflow: hidden;
+          }
+
+          /* Status banner and footer cards are desktop-only extras */
+          .mobile-status-banner { display: none !important; }
+          .mobile-footer-cards  { display: none !important; }
+
+          /* Single column — fills the wrapper height */
+          .chat-layout-grid {
+            grid-template-columns: 1fr;
+            gap: 0;
+            flex: 1;
+            height: 100%;
+            min-height: 0;
+          }
+
+          /* Video column fills grid cell height */
+          .video-column {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            overflow: hidden;
+          }
+
+          /* Desktop chat panel is hidden; chat accessible via overlay */
           .chat-column { display: none; }
+
+          /* Slide-up chat overlay */
           .mobile-chat-overlay {
-            display: flex; flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0;
-            height: 55vh; background: var(--bg-surface); border-top: 1px solid var(--border-color);
-            border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
-            z-index: 200; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 56vh;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.35);
+            z-index: 200;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
             padding-bottom: env(safe-area-inset-bottom, 0px);
           }
           .mobile-chat-overlay.open { transform: translateY(0); }
           .mobile-chat-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
-            font-weight: 700; font-size: 0.9rem; flex-shrink: 0; background: var(--bg-surface);
+            font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+            background: var(--bg-surface);
           }
           .mobile-chat-close {
-            width: 40px; height: 40px; border-radius: var(--radius-full);
+            width: 44px; height: 44px; border-radius: var(--radius-full);
             background: var(--bg-surface-secondary); display: flex; align-items: center;
-            justify-content: center; font-size: 1rem; color: var(--text-primary);
-            min-width: 44px; min-height: 44px; -webkit-tap-highlight-color: transparent;
+            justify-content: center; font-size: 1.1rem; color: var(--text-primary);
+            -webkit-tap-highlight-color: transparent;
           }
           .mobile-chat-close:active { background: var(--border-color); }
         }
 
         @media (max-width: 480px) {
-          .mobile-chat-overlay { height: 60vh; }
+          .mobile-chat-overlay { height: 62vh; }
         }
 
+        /* Landscape phone — keep videos as tall as possible */
         @media (max-height: 500px) and (orientation: landscape) {
-          .video-column { height: calc(100dvh - 80px); }
-          .mobile-chat-overlay { height: 50vh; }
+          .chat-layout-wrapper { height: calc(100dvh - 56px); }
+          .mobile-chat-overlay { height: 70vw; }
         }
       `}</style>
     </div>

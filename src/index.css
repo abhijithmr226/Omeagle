@@ -230,10 +230,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   .main-content { padding: 0.25rem; }
 }
 
-/* Hide footer during video chat on mobile */
-@media (max-width: 1024px) {
-  .app-container.chatting .site-footer { display: none; }
-  .app-container.chatting .main-content { padding-bottom: 0; }
+/* Video chat mode — strip all main-content padding so panels reach edge */
+.app-container.chatting .site-footer { display: none; }
+.app-container.chatting .ad-banner   { display: none; }
+.app-container.chatting .main-content {
+  padding: 0 !important;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 /* Smooth page transitions */
