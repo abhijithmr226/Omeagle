@@ -1,6 +1,6 @@
 import React from 'react';
-import { Video, Square, Mic, MicOff, Settings, RefreshCw, Camera, CameraOff, SkipForward, MessageCircle } from 'lucide-react';
-import { ConnectionStatus } from '../../types/chat';
+import { Video, Square, Mic, MicOff, Settings, Camera, SkipForward, MessageCircle } from 'lucide-react';
+import type { ConnectionStatus } from '../../types/chat';
 
 interface ControlsBarProps {
   connectionStatus: ConnectionStatus;

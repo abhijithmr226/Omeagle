@@ -93,6 +93,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
         <ArrowLeft size={18} /> All Articles
       </button>
 
+      {activeArticle === 'article1' && (
       <article className="blog-article" itemScope itemType="https://schema.org/Article">
         <header className="blog-header">
           <div className="blog-meta">
@@ -692,6 +693,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
           </div>
         </section>
       </article>
+      )}
 
       <style>{`
         .blog-page { max-width: 820px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }

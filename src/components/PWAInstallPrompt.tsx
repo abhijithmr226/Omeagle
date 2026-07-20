@@ -26,14 +26,17 @@ export const PWAInstallPrompt: React.FC = () => {
       setTimeout(() => setShow(true), 8000);
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
-    window.addEventListener('appinstalled', () => {
+    const installedHandler = () => {
       setInstalled(true);
       setShow(false);
-    });
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', installedHandler);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
     };
   }, [dismissed]);
 

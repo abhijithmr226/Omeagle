@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { RefreshCw, UserCheck, CameraOff, Maximize2, Minimize2, Flag, Shield, ChevronRight } from 'lucide-react';
-import { ConnectionStatus } from '../../types/chat';
+import type { ConnectionStatus } from '../../types/chat';
 
 interface VideoGridProps {
   localStream: MediaStream | null;
@@ -183,7 +183,6 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .vg-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; gap: 0.75rem; text-align: center; padding: 1rem; }
         .vg-placeholder p { font-size: 0.95rem; font-weight: 500; }
         .spin-icon { animation: spin 1.5s linear infinite; color: var(--brand-blue); }
-        @keyframes spin { to { transform: rotate(360deg); } }
         .vg-status-bar { position: absolute; top: 14px; left: 14px; display: flex; align-items: center; gap: 0.5rem; background: rgba(12,15,20,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; padding: 0.45rem 0.9rem; border-radius: var(--radius-full); font-size: 0.82rem; font-weight: 600; z-index: 2; border: 1px solid rgba(255,255,255,0.12); }
         .vg-pip-wrap { position: absolute; bottom: 16px; right: 16px; width: 220px; height: 165px; border-radius: var(--radius-lg); overflow: hidden; border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 3; animation: scaleIn 0.3s ease; }
         .vg-pip-video { width: 100%; height: 100%; object-fit: cover; }

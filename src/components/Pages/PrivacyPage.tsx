@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface PrivacyPageProps { onBack: () => void; }
 export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => (
@@ -21,6 +22,6 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => (
     <h2>Changes to This Policy</h2>
     <p>We may update this privacy policy from time to time. Continued use of the platform constitutes acceptance of the updated policy.</p>
     <h2>Contact</h2>
-    <p>For privacy-related inquiries, visit our <a href="#" onClick={e => { e.preventDefault(); }}>Contact page</a>.</p>
+    <p>For privacy-related inquiries, visit our <Link to="/contact">Contact page</Link>.</p>
   </div>
 );

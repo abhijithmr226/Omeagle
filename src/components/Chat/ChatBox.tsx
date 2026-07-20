@@ -259,7 +259,6 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
         .spin-icon { animation: spin 1.5s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
         .emoji-picker-popover { position: absolute; bottom: 70px; right: 90px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.3rem; box-shadow: var(--shadow-lg); z-index: 50; animation: scaleIn 0.15s ease; }
         .emoji-btn { font-size: 1.4rem; padding: 0.3rem; border-radius: var(--radius-sm); transition: transform 0.1s; }
         .emoji-btn:active { transform: scale(1.3); background-color: var(--bg-surface-secondary); }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Video, MessageSquare, Moon, Sun, Menu, X, Home, Shield, Info, Mail } from 'lucide-react';
-import { ChatMode, ThemeMode } from '../types/chat';
+import type { ChatMode, ThemeMode } from '../types/chat';
 import headerLogo from '../assets/headerlogo.png';
 
 interface HeaderProps {
