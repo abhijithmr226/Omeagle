@@ -1,13 +1,27 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const ALLOWED_ORIGIN = "https://omeagle.online";
+// Production domain — also allow any localhost and *.replit.dev for local dev
+const ALLOWED_ORIGINS = new Set([
+  "https://omeagle.online",
+  "https://www.omeagle.online",
+]);
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("Origin") ?? "";
+  // Allow exact production origins, any localhost port, and Replit dev previews
+  const allowed =
+    ALLOWED_ORIGINS.has(origin) ||
+    /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+    /^https:\/\/[a-z0-9-]+(\.replit\.dev|\.repl\.co)$/.test(origin);
+
+  return {
+    "Access-Control-Allow-Origin": allowed ? origin : "https://omeagle.online",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+}
 
 // Simple in-memory rate limiter: 1 request per 2s per user
 const rateLimitMap = new Map<string, number>();
@@ -27,6 +41,8 @@ function isRateLimited(userId: string): boolean {
 }
 
 serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });

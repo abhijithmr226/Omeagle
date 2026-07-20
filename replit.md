@@ -1,46 +1,66 @@
 # Omeagle
 
-An Omegle-style random video + text chat app built with React 18 + TypeScript + Vite,
-using Supabase for auth, real-time matchmaking, and WebRTC signaling.
+An Omegle-style random video + text chat app.
 
-## Stack
-- **Frontend:** React 18 + TypeScript, Vite (port 5000)
-- **Backend:** Supabase (auth, PostgreSQL, Realtime broadcast, Edge Functions)
-- **Video:** WebRTC peer-to-peer via Supabase Realtime signaling
+## Production stack
+| Layer | Service |
+|-------|---------|
+| Frontend hosting | **Vercel** — auto-deploys from GitHub on push to `main` |
+| Source control | **GitHub** |
+| Auth + database + realtime | **Supabase** (anonymous auth, PostgreSQL, Realtime broadcast) |
+| Video | WebRTC peer-to-peer; signaling via Supabase Realtime |
 
-## Structure
-- `src/` — React/TypeScript frontend
-  - `components/` — UI components (VideoChat, Chat, Modals, Header, Footer, etc.)
-  - `contexts/` — React contexts (Supabase auth, theme, settings)
-  - `hooks/` — Custom hooks (useWebRTC, useMedia, useChat)
-  - `lib/` — Supabase client & auth helpers
-  - `services/` — Queue/matchmaking, signaling, WebRTC, GTM, sounds
-  - `pages/` — Static pages (About, Privacy, Terms, Contact, Blog, Safety)
-  - `types/` — Shared TypeScript types
-- `supabase/` — Supabase schema SQL, migrations, and Edge Functions
-- `public/` — Static assets (manifest, icons, images)
+Replit is used as the **development environment only** — not for hosting or deployment.
 
-## Required secrets
-Set these in the Replit Secrets panel (🔒) before starting:
+## Frontend stack
+- React 18 + TypeScript
+- Vite (dev server on port 5000 for Replit preview)
+- react-router-dom v7 (SPA, all routes rewritten to `/index.html` by `vercel.json`)
 
-| Secret | Description |
-|--------|-------------|
-| `VITE_SUPABASE_URL` | Your Supabase project URL (e.g. `https://xxx.supabase.co`) |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Your Supabase anon/publishable API key |
+## Required environment variables
+Set in **Replit Secrets** (🔒) for local dev, and in **Vercel → Project → Settings → Environment Variables** for production.
 
-Both are found in your Supabase project under **Settings → API**.
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Supabase project URL (Settings → API → Project URL) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key (Settings → API → anon public) |
 
-The app renders a setup screen until both secrets are present.
+See `.env.example` for reference.
 
-## Running
-```bash
-npm run dev    # Vite dev server on port 5000 (hot reload)
-npm run build  # Production build → dist/
+## Project structure
+```
+src/
+  components/   UI (VideoChat, Chat, Modals, Header, Footer, …)
+  contexts/     React contexts (auth, theme, settings)
+  hooks/        useWebRTC, useMedia, useChat
+  lib/          Supabase client & auth helpers
+  services/     Matchmaking queue, WebRTC signaling, GTM, sounds
+  pages/        Static pages (About, Privacy, Terms, Contact, Blog, Safety)
+  types/        Shared TypeScript types
+supabase/
+  schema.sql        Full schema — run once in Supabase SQL Editor
+  migrations/       Incremental migration files
+  functions/        Supabase Edge Functions (match-users)
+public/             Static assets, manifest, sitemap, robots.txt
+vercel.json         SPA rewrites + security headers for Vercel
 ```
 
-## Database
-Apply `supabase/schema.sql` in the Supabase SQL Editor to create all tables, RLS
-policies, and RPCs. See `supabase/migrations/` for incremental migrations and
-`supabase/functions/` for Edge Functions.
+## Running locally (Replit)
+```bash
+npm run dev      # Vite dev server → http://localhost:5000
+```
+Requires `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in Replit Secrets.
+The app shows a setup screen until both secrets are present.
+
+## Database setup
+1. Create a Supabase project at https://supabase.com
+2. Run `supabase/schema.sql` in the Supabase SQL Editor
+3. Run migration files in order (`001_` → `004_`) if not already applied
+4. Deploy `supabase/functions/match-users/` via `supabase functions deploy match-users`
+
+## Deploying to Vercel
+1. Push to `main` on GitHub → Vercel auto-deploys
+2. Or trigger manually in the Vercel dashboard
+3. Ensure both env vars are set in Vercel before deploying
 
 ## User preferences
