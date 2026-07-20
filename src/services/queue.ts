@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { getCurrentUserId } from '../lib/auth';
+import { getCurrentUserId, initializeAuth } from '../lib/auth';
 import type { PartnerProfile } from '../types/chat';
 
 export interface MatchResult {
@@ -22,8 +22,11 @@ export async function joinQueue(
   mode: 'video' | 'text',
   preferences?: QueuePreferences
 ): Promise<MatchResult> {
-  const userId = getCurrentUserId();
-  if (!userId) throw new Error('Not authenticated');
+  let userId = getCurrentUserId();
+  if (!userId) {
+    const user = await initializeAuth();
+    userId = user.id;
+  }
 
   // Mark any prior active calls as ended so user doesn't get stuck in ghost room
   await supabase
@@ -47,12 +50,19 @@ export async function joinQueue(
 }
 
 export async function pollMatch(mode: 'video' | 'text'): Promise<MatchResult> {
-  const userId = getCurrentUserId();
-  if (!userId) throw new Error('Not authenticated');
+  let userId = getCurrentUserId();
+  if (!userId) {
+    try {
+      const user = await initializeAuth();
+      userId = user.id;
+    } catch {
+      return { status: 'waiting' };
+    }
+  }
 
   const { data, error } = await supabase.rpc('match_users_in_queue', {
     p_user_id: userId,
-    p_mode: mode,        // ← FIX: was hardcoded 'video', now accepts the real mode
+    p_mode: mode,
     p_preferences: {},
   });
 
