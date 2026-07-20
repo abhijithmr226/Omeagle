@@ -157,13 +157,15 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;   /* show full frame — no face cropping */
+          background: #0d1117;
           opacity: 0;
           transition: opacity 0.35s ease;
           display: block;
         }
         .vg-video-on { opacity: 1; }
-        .vg-mirror   { transform: scaleX(-1); }
+        /* Local feed: cover + mirror looks natural in the small panel */
+        .vg-mirror   { transform: scaleX(-1); object-fit: cover; }
 
         /* ── Placeholder ───────────────────────────────────── */
         .vg-placeholder {

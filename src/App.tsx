@@ -28,7 +28,7 @@ import { getOnlineCount } from './lib/auth';
 import { supabase } from './lib/supabase';
 import { getCurrentUserId } from './lib/auth';
 import { trackChatStart, trackMatchFound, trackChatEnd, trackSkipNext } from './services/gtm';
-import { playMatchFound, playMessageReceived, unlockAudio } from './services/sounds';
+import { playMatchFound, playMessageReceived, playStrangerConnected, unlockAudio } from './services/sounds';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 
 // Polling fallback intervals (used only when Realtime match detection is unavailable)
@@ -73,6 +73,15 @@ export const App: React.FC = () => {
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
     return sessionStorage.getItem('omeagle_age_verified') === 'true';
   });
+
+  // Play a distinct chime the moment WebRTC video goes live
+  const prevStatusRef = useRef<ConnectionStatus>('idle');
+  useEffect(() => {
+    if (connectionStatus === 'connected' && prevStatusRef.current !== 'connected') {
+      playStrangerConnected();
+    }
+    prevStatusRef.current = connectionStatus;
+  }, [connectionStatus]);
 
   const roomIdRef = useRef<string | null>(null);
   const callChannelRef = useRef<CallChannel | null>(null);
@@ -579,12 +588,13 @@ export const App: React.FC = () => {
           width: 100%;
           align-items: start;
         }
-        /* Video column — fixed height on desktop so VideoGrid flex-fills it */
+        /* Video column — responsive height: caps at 580px but shrinks on
+           shorter screens so nothing scrolls off-screen on a laptop */
         .video-column {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
-          height: 580px;
+          height: min(580px, calc(100dvh - 140px));
         }
         .chat-column { display: flex; flex-direction: column; }
 

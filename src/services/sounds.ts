@@ -84,6 +84,43 @@ export async function playMessageReceived(): Promise<void> {
 }
 
 /**
+ * Play a short "stranger is live" chime when WebRTC actually connects.
+ * Different timbre from playMatchFound so users can distinguish the two events.
+ */
+export async function playStrangerConnected(): Promise<void> {
+  try {
+    const ctx = getCtx();
+    if (ctx.state === 'suspended') await ctx.resume();
+    const now = ctx.currentTime;
+
+    // A quick rising two-tone using a triangle wave — softer, warmer feel
+    const tones = [
+      { freq: 698.46, start: 0,    dur: 0.18 },  // F5
+      { freq: 880.00, start: 0.14, dur: 0.28 },  // A5
+    ];
+
+    tones.forEach(({ freq, start, dur }) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+
+      gain.gain.setValueAtTime(0, now + start);
+      gain.gain.linearRampToValueAtTime(0.28, now + start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + start + dur);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + start);
+      osc.stop(now + start + dur + 0.05);
+    });
+  } catch {
+    // Silently fail
+  }
+}
+
+/**
  * Resume AudioContext after user gesture (required by browsers).
  * Call this on any user interaction.
  */
