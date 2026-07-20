@@ -3,8 +3,9 @@ const ICE_SERVERS: RTCConfiguration = {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
-    // NOTE: These are public TURN credentials for development.
-    // For production, replace with a dedicated TURN service (e.g. Metered, Twilio).
+    { urls: 'stun:stun3.l.google.com:19302' },
+    { urls: 'stun:stun4.l.google.com:19302' },
+    { urls: 'stun:global.stun.twilio.com:3478' },
     { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
     { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
     { urls: 'turns:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
@@ -22,10 +23,9 @@ export type ConnectionCallbacks = {
   onConnectionStateChange: (state: RTCPeerConnectionState) => void;
 };
 
-// FIX: Use a class-based instance instead of a module-level singleton.
-// The old pattern (`let peerConnection: RTCPeerConnection | null`) was shared
-// across the entire module lifetime, causing corruption in React StrictMode
-// and during rapid skip/reconnect cycles.
+// Queue and deduplicate ICE candidates until remote description is set
+const pendingIceCandidatesMap = new WeakMap<RTCPeerConnection, RTCIceCandidateInit[]>();
+const processedCandidateKeysMap = new WeakMap<RTCPeerConnection, Set<string>>();
 
 export class PeerConnectionManager {
   private pc: RTCPeerConnection | null = null;
@@ -38,6 +38,9 @@ export class PeerConnectionManager {
 
     const pc = new RTCPeerConnection(ICE_SERVERS);
     this.pc = pc;
+
+    pendingIceCandidatesMap.set(pc, []);
+    processedCandidateKeysMap.set(pc, new Set());
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
@@ -74,6 +77,8 @@ export class PeerConnectionManager {
       this.pc.onicecandidate = null;
       this.pc.ontrack = null;
       this.pc.onconnectionstatechange = null;
+      pendingIceCandidatesMap.delete(this.pc);
+      processedCandidateKeysMap.delete(this.pc);
       try { this.pc.getTransceivers().forEach(t => { try { t.stop(); } catch {} }); } catch {}
       try { this.pc.getSenders().forEach(s => { try { s.replaceTrack(null); } catch {} }); } catch {}
       try { this.pc.close(); } catch {}
@@ -82,7 +87,7 @@ export class PeerConnectionManager {
   }
 }
 
-// Shared helpers (pure functions, no global state)
+// Shared helpers
 export async function addLocalTracks(pc: RTCPeerConnection, stream: MediaStream): Promise<void> {
   stream.getTracks().forEach(track => pc.addTrack(track, stream));
 }
@@ -93,23 +98,62 @@ export async function createOffer(pc: RTCPeerConnection): Promise<RTCSessionDesc
   return pc.localDescription!;
 }
 
+async function flushPendingIceCandidates(pc: RTCPeerConnection): Promise<void> {
+  const pending = pendingIceCandidatesMap.get(pc) || [];
+  pendingIceCandidatesMap.set(pc, []);
+  for (const candidate of pending) {
+    try {
+      await pc.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (e) {
+      console.warn('[webrtc] Error flushing ICE candidate:', e);
+    }
+  }
+}
+
 export async function handleOffer(
   pc: RTCPeerConnection,
   offer: RTCSessionDescriptionInit
 ): Promise<RTCSessionDescriptionInit> {
+  if (pc.signalingState !== 'stable' && pc.signalingState !== 'have-local-offer') {
+    console.warn('[webrtc] handleOffer ignored, current signaling state:', pc.signalingState);
+  }
   await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  await flushPendingIceCandidates(pc);
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
   return pc.localDescription!;
 }
 
 export async function handleAnswer(pc: RTCPeerConnection, answer: RTCSessionDescriptionInit): Promise<void> {
+  if (pc.signalingState !== 'have-local-offer') {
+    console.warn('[webrtc] handleAnswer ignored, current signaling state:', pc.signalingState);
+    return;
+  }
   await pc.setRemoteDescription(new RTCSessionDescription(answer));
+  await flushPendingIceCandidates(pc);
 }
 
 export async function handleIceCandidate(pc: RTCPeerConnection, candidate: RTCIceCandidateInit): Promise<void> {
   if (pc.signalingState === 'closed') return;
-  await pc.addIceCandidate(new RTCIceCandidate(candidate));
+
+  const key = `${candidate.candidate}_${candidate.sdpMid}_${candidate.sdpMLineIndex}`;
+  const processed = processedCandidateKeysMap.get(pc) || new Set();
+  if (processed.has(key)) return;
+  processed.add(key);
+  processedCandidateKeysMap.set(pc, processed);
+
+  if (!pc.remoteDescription || !pc.remoteDescription.type) {
+    const pending = pendingIceCandidatesMap.get(pc) || [];
+    pending.push(candidate);
+    pendingIceCandidatesMap.set(pc, pending);
+    return;
+  }
+
+  try {
+    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+  } catch (e) {
+    console.warn('[webrtc] addIceCandidate error:', e);
+  }
 }
 
 export function stopMediaStream(stream: MediaStream | null): void {

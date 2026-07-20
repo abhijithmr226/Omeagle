@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, Square, Mic, MicOff, Settings, RefreshCw, Camera, CameraOff, SkipForward, MessageCircle } from 'lucide-react';
+import { Video, Square, Mic, MicOff, Settings, RefreshCw, Camera, CameraOff, SkipForward, MessageCircle, Phone, PhoneOff } from 'lucide-react';
 import { ConnectionStatus } from '../../types/chat';
 
 interface ControlsBarProps {
@@ -47,20 +47,27 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
         </button>
       </div>
 
-      {/* Mobile */}
+      {/* Mobile - App-like bottom bar */}
       <div className="mobile-controls">
         <button className={`mobile-ctrl ${isMuted ? 'muted' : ''}`} onClick={onToggleMute} title="Mute">
           {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
           <span className="mobile-ctrl-lbl">{isMuted ? 'Unmute' : 'Mute'}</span>
         </button>
-        <button className="mobile-ctrl" onClick={onToggleVideo} title="Toggle Camera">
+        <button className={`mobile-ctrl ${isVideoOff ? 'muted' : ''}`} onClick={onToggleVideo} title="Toggle Camera">
           {isVideoOff ? <CameraOff size={20} /> : <Camera size={20} />}
           <span className="mobile-ctrl-lbl">{isVideoOff ? 'Off' : 'Cam'}</span>
         </button>
-        <button className="mobile-ctrl primary-ctrl" onClick={isConnected ? onNext : onStart} title={isConnected ? 'Next' : 'Start'}>
-          {isConnected ? <SkipForward size={24} /> : <Video size={24} />}
-          <span className="mobile-ctrl-lbl">{isConnected ? 'Next' : 'Start'}</span>
-        </button>
+        {isConnected ? (
+          <button className="mobile-ctrl primary-ctrl next-ctrl" onClick={onNext} title="Next">
+            <SkipForward size={24} />
+            <span className="mobile-ctrl-lbl">Next</span>
+          </button>
+        ) : (
+          <button className="mobile-ctrl primary-ctrl start-ctrl" onClick={onStart} title="Start">
+            <Video size={24} />
+            <span className="mobile-ctrl-lbl">{isSearching ? '...' : 'Start'}</span>
+          </button>
+        )}
         {onFlipCamera && (
           <button className="mobile-ctrl" onClick={onFlipCamera} title="Flip Camera">
             <RefreshCw size={20} />
@@ -89,17 +96,22 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
         .red-icon { color: var(--status-red); }
         .disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* Mobile controls */
-        .mobile-controls { display: none; grid-template-columns: repeat(5, 1fr); gap: 0.35rem; width: 100%; padding: 0.5rem 0.25rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)); background: var(--bg-surface); border-top: 1px solid var(--border-color); }
-        .mobile-ctrl { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; background: var(--bg-surface); color: var(--text-primary); padding: 0.5rem 0.15rem; border-radius: var(--radius-md); min-height: 56px; -webkit-tap-highlight-color: transparent; transition: background 0.15s; touch-action: manipulation; }
-        .mobile-ctrl:active { background: var(--bg-surface-secondary); }
-        .mobile-ctrl-lbl { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.02em; }
-        .mobile-ctrl.muted { background: var(--status-red-light); color: var(--status-red); }
-        .mobile-ctrl.chat-active { background: var(--brand-blue); color: #fff; }
-        .primary-ctrl { background: var(--status-green) !important; color: #fff !important; min-height: 60px; }
-        .primary-ctrl:active { background: #059669 !important; }
+        /* Mobile controls - App-like bottom bar */
+        .mobile-controls { display: none; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; width: 100%; padding: 0.6rem 0.5rem; padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px)); background: var(--bg-surface); border-top: 1px solid var(--border-color); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        [data-theme='dark'] .mobile-controls { background: rgba(21,28,40,0.9); }
+        .mobile-ctrl { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; background: transparent; color: var(--text-secondary); padding: 0.4rem 0.15rem; border-radius: var(--radius-md); min-height: 56px; -webkit-tap-highlight-color: transparent; transition: all 0.15s ease; touch-action: manipulation; position: relative; overflow: hidden; }
+        .mobile-ctrl:active { background: var(--bg-surface-secondary); transform: scale(0.92); }
+        .mobile-ctrl-lbl { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
+        .mobile-ctrl.muted { color: var(--status-red); }
+        .mobile-ctrl.muted::after { content: ''; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--status-red); }
+        .mobile-ctrl.chat-active { background: var(--brand-blue); color: #fff; border-radius: var(--radius-md); }
+        .primary-ctrl { min-height: 60px; border-radius: var(--radius-full); margin-top: -8px; }
+        .start-ctrl { background: var(--status-green) !important; color: #fff !important; box-shadow: 0 4px 16px rgba(16,185,129,0.4); }
+        .start-ctrl:active { background: #059669 !important; transform: scale(0.93) !important; }
+        .next-ctrl { background: var(--brand-blue) !important; color: #fff !important; box-shadow: 0 4px 16px rgba(0,102,255,0.4); }
+        .next-ctrl:active { background: var(--brand-blue-hover) !important; transform: scale(0.93) !important; }
 
-        @media (max-width: 868px) {
+        @media (max-width: 1024px) {
           .desktop-controls { display: none; }
           .mobile-controls { display: grid; }
         }

@@ -313,7 +313,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
         .comparison-table .highlight-col { background: rgba(0, 102, 255, 0.08); color: var(--brand-blue); font-weight: 700; }
         .comparison-table th.highlight-col { background: var(--brand-blue); color: #fff; }
 
-        @media (max-width: 868px) {
+        @media (max-width: 1024px) {
           .landing-page { min-height: calc(100vh - 56px); min-height: calc(100dvh - 56px); padding: 1.5rem 0.75rem; }
           .hero-title { font-size: 2.2rem; }
           .hero-subtitle { font-size: 1rem; margin-bottom: 1.5rem; }

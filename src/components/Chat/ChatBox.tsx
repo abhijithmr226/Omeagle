@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Smile, ArrowRight, Users, Search, Globe, Tag, Heart, Flag } from 'lucide-react';
 import { ChatMessage, ConnectionStatus, PartnerProfile } from '../../types/chat';
+import { trackSendMessage } from '../../services/gtm';
 
 function getFlag(code: string): string {
   if (!code) return '';
@@ -61,10 +62,11 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
     e?.preventDefault();
     if (!inputText.trim() || !isConnected) return;
     onSendMessage(inputText);
+    trackSendMessage(mode);
     setInputText('');
     setShowEmojiPicker(false);
     typingSentRef.current = false;
-  }, [inputText, isConnected, onSendMessage]);
+  }, [inputText, isConnected, onSendMessage, mode]);
 
   const handleInputChange = useCallback((value: string) => {
     if (value.length > MAX_MSG) return;
@@ -232,14 +234,14 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
 
       <style>{`
         .chat-column-container { display: flex; flex-direction: column; gap: 1rem; height: 100%; }
-        .chat-feed-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: flex; flex-direction: column; height: 480px; position: relative; overflow: hidden; }
+        .chat-feed-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: flex; flex-direction: column; height: 480px; position: relative; overflow: hidden; animation: scaleIn 0.25s ease; }
         .system-banner { background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); padding: 1rem 1.25rem; }
         .sys-headline { font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
-        .partner-info-bar { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.5rem 1.25rem; background: var(--brand-blue-light); border-bottom: 1px solid var(--border-color); }
+        .partner-info-bar { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.5rem 1.25rem; background: var(--brand-blue-light); border-bottom: 1px solid var(--border-color); animation: slideDown 0.2s ease; }
         .partner-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; color: var(--brand-blue); white-space: nowrap; }
         .interests-chip { color: var(--text-primary); background: var(--bg-surface-secondary); }
-        .messages-list { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
-        .message-row { display: flex; width: 100%; }
+        .messages-list { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+        .message-row { display: flex; width: 100%; animation: slideUp 0.2s ease; }
         .message-row.you { justify-content: flex-end; }
         .message-row.stranger { justify-content: flex-start; }
         .message-row.system { justify-content: center; }
@@ -258,25 +260,25 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
         .spin-icon { animation: spin 1.5s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .emoji-picker-popover { position: absolute; bottom: 70px; right: 90px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.3rem; box-shadow: var(--shadow-lg); z-index: 50; }
-        .emoji-btn { font-size: 1.4rem; padding: 0.3rem; border-radius: var(--radius-sm); }
-        .emoji-btn:hover { background-color: var(--bg-surface-secondary); }
+        .emoji-picker-popover { position: absolute; bottom: 70px; right: 90px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.3rem; box-shadow: var(--shadow-lg); z-index: 50; animation: scaleIn 0.15s ease; }
+        .emoji-btn { font-size: 1.4rem; padding: 0.3rem; border-radius: var(--radius-sm); transition: transform 0.1s; }
+        .emoji-btn:active { transform: scale(1.3); background-color: var(--bg-surface-secondary); }
         .chat-start-area { display: flex; align-items: center; justify-content: center; padding: 2rem; border-top: 1px solid var(--border-color); background-color: var(--bg-surface); }
-        .chat-start-btn { display: flex; align-items: center; gap: 0.6rem; background-color: var(--status-green); color: #fff; font-weight: 700; font-size: 1rem; padding: 0.85rem 2rem; border-radius: var(--radius-md); }
-        .chat-start-btn:hover { background-color: #059669; }
+        .chat-start-btn { display: flex; align-items: center; gap: 0.6rem; background-color: var(--status-green); color: #fff; font-weight: 700; font-size: 1rem; padding: 0.85rem 2rem; border-radius: var(--radius-md); box-shadow: 0 4px 16px rgba(16,185,129,0.3); }
+        .chat-start-btn:active { transform: scale(0.97); background-color: #059669; }
         .chat-input-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); background-color: var(--bg-surface); }
-        .chat-input-field { flex: 1; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.65rem 1rem; font-size: 0.95rem; outline: none; background-color: var(--bg-surface); color: var(--text-primary); }
+        .chat-input-field { flex: 1; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.65rem 1rem; font-size: 0.95rem; outline: none; background-color: var(--bg-surface); color: var(--text-primary); transition: border-color 0.15s; }
         .chat-input-field:focus { border-color: var(--brand-blue); }
-        .emoji-toggle-btn { color: var(--text-secondary); padding: 0.5rem; border-radius: var(--radius-md); }
-        .emoji-toggle-btn:hover { color: var(--brand-blue); background-color: var(--bg-surface-secondary); }
-        .send-message-btn { display: flex; align-items: center; justify-content: center; background-color: var(--brand-blue); color: #ffffff; padding: 0.65rem 1rem; border-radius: var(--radius-md); }
-        .send-message-btn:hover:not(:disabled) { background-color: var(--brand-blue-hover); }
+        .emoji-toggle-btn { color: var(--text-secondary); padding: 0.5rem; border-radius: var(--radius-md); min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+        .emoji-toggle-btn:active { color: var(--brand-blue); background-color: var(--bg-surface-secondary); }
+        .send-message-btn { display: flex; align-items: center; justify-content: center; background-color: var(--brand-blue); color: #ffffff; padding: 0.65rem 1rem; border-radius: var(--radius-md); min-width: 44px; min-height: 44px; transition: all 0.15s; }
+        .send-message-btn:active:not(:disabled) { transform: scale(0.92); background-color: var(--brand-blue-hover); }
         .send-message-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .msg-counter { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
         .msg-counter.near-limit { color: var(--status-red); font-weight: 600; }
         .action-cards-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
-        .action-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s ease; }
-        .action-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-color-hover); }
+        .action-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.15s ease; }
+        .action-card:active { transform: scale(0.98); background: var(--bg-surface-secondary); }
         .action-card-icon { width: 40px; height: 40px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; }
         .blue-bg { background: var(--brand-blue-light); color: var(--brand-blue); }
         .red-bg { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
@@ -286,23 +288,23 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         .action-card-text p { font-size: 0.78rem; color: var(--text-secondary); }
         .card-arrow { color: var(--text-muted); }
         @media (max-width: 768px) { .chat-feed-card { height: 380px; } }
-        .report-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; -webkit-overflow-scrolling: touch; }
-        .report-modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 2rem 1.5rem; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; }
+        .report-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease; }
+        .report-modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 2rem 1.5rem; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; animation: scaleIn 0.2s ease; }
         .report-modal h3 { font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-primary); }
         .report-modal p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
         .report-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
-        .report-option { padding: 0.85rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary); font-size: 0.95rem; font-weight: 500; text-align: left; cursor: pointer; transition: all 0.2s; min-height: 48px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        .report-option:active { border-color: #ef4444; background: rgba(239,68,68,0.05); }
+        .report-option { padding: 0.85rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary); font-size: 0.95rem; font-weight: 500; text-align: left; cursor: pointer; transition: all 0.15s; min-height: 48px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .report-option:active { border-color: #ef4444; background: rgba(239,68,68,0.05); transform: scale(0.98); }
         .report-option:hover { border-color: #ef4444; background: rgba(239,68,68,0.05); color: #ef4444; }
         .report-cancel { padding: 0.7rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-secondary); font-size: 0.9rem; cursor: pointer; min-height: 44px; width: 100%; }
-        .report-cancel:active { border-color: var(--text-secondary); }
+        .report-cancel:active { border-color: var(--text-secondary); transform: scale(0.98); }
         .report-success { padding: 1rem 0; }
         .report-success svg { color: #22c55e; margin-bottom: 0.75rem; }
         .report-success h3 { color: #22c55e; margin-bottom: 0.5rem; }
 
         @media (max-width: 480px) {
           .report-modal-overlay { align-items: flex-end; padding: 0; }
-          .report-modal { border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom, 0px)); max-height: 75vh; }
+          .report-modal { border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom, 0px)); max-height: 75vh; animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
           .report-option { font-size: 1rem; }
         }
       `}</style>

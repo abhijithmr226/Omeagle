@@ -26,6 +26,7 @@ import { useThemeContext } from './contexts/ThemeContext';
 import { getOnlineCount } from './lib/auth';
 import { supabase } from './lib/supabase';
 import { getCurrentUserId } from './lib/auth';
+import { trackChatStart, trackMatchFound, trackChatEnd, trackSkipNext } from './services/gtm';
 
 // Polling fallback intervals (used only when Realtime match detection is unavailable)
 const POLL_FAST_MS = 4000;
@@ -168,9 +169,7 @@ export const App: React.FC = () => {
     chat.addSystemMessage(buildPartnerMessage(profile));
     setConnectionStatus('connecting');
 
-    // GTM Data Layer event
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: 'match_found', chat_mode: currentModeRef.current });
+    trackMatchFound(currentModeRef.current);
 
     const channel = createCallChannel(callId, {
       onOffer: handleOffer,
@@ -303,9 +302,7 @@ export const App: React.FC = () => {
     chat.clearMessages();
     webrtc.cleanup();
 
-    // GTM Data Layer event
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: 'chat_start', chat_mode: chatMode });
+    trackChatStart(chatMode);
 
     if (chatMode === 'video') {
       const result = await media.startMedia(settings);
@@ -365,9 +362,7 @@ export const App: React.FC = () => {
     setConnectionStatus('idle');
     chat.addSystemMessage('You have disconnected.');
 
-    // GTM Data Layer event
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: 'chat_end', chat_mode: currentModeRef.current });
+    trackChatEnd(currentModeRef.current);
   }, [webrtc, media, chat, cleanupPoll, cleanupMatchChannel, cleanupCallChannel]);
 
   const handleNext = useCallback(async () => {
@@ -384,9 +379,7 @@ export const App: React.FC = () => {
     setPartnerProfile(null);
     setConnectionStatus('idle');
 
-    // GTM Data Layer event
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: 'skip_next', chat_mode: currentModeRef.current });
+    trackSkipNext(currentModeRef.current);
 
     // Re-start in the same mode after a short delay
     setTimeout(() => startChatRef.current?.(currentModeRef.current as 'video' | 'text'), 300);
@@ -520,9 +513,10 @@ export const App: React.FC = () => {
         .chat-column { display: flex; flex-direction: column; }
         .text-chat-layout { display: flex; justify-content: center; width: 100%; max-width: 640px; margin: 0 auto; }
         .mobile-chat-overlay { display: none; }
-        .ad-banner { display: flex; justify-content: center; width: 100%; padding: 0.5rem 0; opacity: 0.85; }
+        .ad-banner { display: flex; justify-content: center; width: 100%; max-width: 100vw; overflow: hidden; padding: 0.5rem 0; opacity: 0.85; }
 
         @media (max-width: 1024px) {
+          .ad-banner { display: none; }
           .chat-layout-grid { grid-template-columns: 1fr; gap: 0; }
           .video-column { height: calc(100dvh - 120px); display: flex; flex-direction: column; justify-content: space-between; }
           .chat-column { display: none; }
@@ -550,10 +544,6 @@ export const App: React.FC = () => {
 
         @media (max-width: 480px) {
           .mobile-chat-overlay { height: 60vh; }
-        }
-
-        @media (max-width: 768px) {
-          .ad-banner { display: none; }
         }
 
         @media (max-height: 500px) and (orientation: landscape) {

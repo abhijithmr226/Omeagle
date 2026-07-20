@@ -25,6 +25,13 @@ export async function joinQueue(
   const userId = getCurrentUserId();
   if (!userId) throw new Error('Not authenticated');
 
+  // Mark any prior active calls as ended so user doesn't get stuck in ghost room
+  await supabase
+    .from('calls')
+    .update({ status: 'ended', ended_at: new Date().toISOString() })
+    .eq('status', 'active')
+    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+
   const { data, error } = await supabase.rpc('match_users_in_queue', {
     p_user_id: userId,
     p_mode: mode,

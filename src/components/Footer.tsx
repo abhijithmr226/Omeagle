@@ -65,7 +65,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPage }) => {
         .footer-developer { font-size: 0.82rem; color: var(--text-muted); }
         .footer-developer a { color: var(--brand-blue); text-decoration: none; font-weight: 600; }
         .footer-developer a:hover { text-decoration: underline; }
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .footer-columns { grid-template-columns: repeat(2, 1fr); }
           .footer-bottom { flex-direction: column; text-align: center; }
         }
