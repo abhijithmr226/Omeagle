@@ -235,7 +235,43 @@ CREATE TRIGGER trg_cleanup_signals
 -- SUPABASE REALTIME PUBLICATION
 -- Enable realtime broadcasting and postgres_changes
 -- ============================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE calls;
-ALTER PUBLICATION supabase_realtime ADD TABLE waiting_queue;
-ALTER PUBLICATION supabase_realtime ADD TABLE messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE signals;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_rel pr
+    JOIN pg_class c ON pr.prrelid = c.oid
+    JOIN pg_publication p ON pr.prpubid = p.oid
+    WHERE p.pubname = 'supabase_realtime' AND c.relname = 'calls'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE calls;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_rel pr
+    JOIN pg_class c ON pr.prrelid = c.oid
+    JOIN pg_publication p ON pr.prpubid = p.oid
+    WHERE p.pubname = 'supabase_realtime' AND c.relname = 'waiting_queue'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE waiting_queue;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_rel pr
+    JOIN pg_class c ON pr.prrelid = c.oid
+    JOIN pg_publication p ON pr.prpubid = p.oid
+    WHERE p.pubname = 'supabase_realtime' AND c.relname = 'messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_rel pr
+    JOIN pg_class c ON pr.prrelid = c.oid
+    JOIN pg_publication p ON pr.prpubid = p.oid
+    WHERE p.pubname = 'supabase_realtime' AND c.relname = 'signals'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE signals;
+  END IF;
+EXCEPTION WHEN OTHERS THEN
+  NULL;
+END $$;
