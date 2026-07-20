@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { RefreshCw, UserCheck, CameraOff, Maximize2, Minimize2, Flag, Shield, ChevronRight } from 'lucide-react';
+import { RefreshCw, UserCircle2, CameraOff, Maximize2, Minimize2, Flag, RotateCcw } from 'lucide-react';
 import type { ConnectionStatus } from '../../types/chat';
 
 interface VideoGridProps {
@@ -14,227 +14,287 @@ interface VideoGridProps {
 }
 
 export const VideoGrid: React.FC<VideoGridProps> = ({
-  localStream, remoteStream, connectionStatus, isMuted, isVideoOff, onFlipCamera, onReportStranger, onOpenSafety
+  localStream, remoteStream, connectionStatus, isMuted, isVideoOff,
+  onFlipCamera, onReportStranger,
 }) => {
-  // Desktop refs
-  const localVideoDesktopRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoDesktopRef = useRef<HTMLVideoElement>(null);
-  // Mobile refs — separate so they work when desktop is display:none
-  const localVideoMobileRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoMobileRef = useRef<HTMLVideoElement>(null);
-
-  const containerRef = useRef<HTMLDivElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const localVideoRef  = useRef<HTMLVideoElement>(null);
+  const wrapperRef     = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Attach streams to ALL video elements (both mobile and desktop)
   useEffect(() => {
-    if (localStream) {
-      if (localVideoDesktopRef.current) localVideoDesktopRef.current.srcObject = localStream;
-      if (localVideoMobileRef.current)  localVideoMobileRef.current.srcObject = localStream;
-    }
-  }, [localStream]);
-
-  useEffect(() => {
-    if (remoteStream) {
-      if (remoteVideoDesktopRef.current) remoteVideoDesktopRef.current.srcObject = remoteStream;
-      if (remoteVideoMobileRef.current)  remoteVideoMobileRef.current.srcObject = remoteStream;
-    }
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
   }, [remoteStream]);
 
+  useEffect(() => {
+    if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+  }, [localStream]);
+
+  // Sync fullscreen state with browser events
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
   const toggleFullscreen = () => {
-    if (!containerRef.current) return;
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen?.().catch(() => {});
-      setIsFullscreen(true);
+      wrapperRef.current?.requestFullscreen?.().catch(() => {});
     } else {
       document.exitFullscreen?.().catch(() => {});
-      setIsFullscreen(false);
     }
   };
 
-  const isConnected = connectionStatus === 'connected';
-  const isSearching = connectionStatus === 'searching';
+  const isConnected  = connectionStatus === 'connected';
+  const isSearching  = connectionStatus === 'searching' || connectionStatus === 'connecting';
 
   return (
-    <div className="vg-wrapper" ref={containerRef}>
-      {/* Mobile Stacked 2-Card Layout */}
-      <div className="vg-mobile-stack">
-        {/* Top Card: Stranger Video */}
-        <div className="vg-card vg-card-stranger">
-          <div className="vg-card-header-overlay">
-            <div className="vg-badge badge-stranger">
-              <span className="dot-blue" />
-              <span>Stranger</span>
-            </div>
-            <button className="vg-icon-btn" onClick={toggleFullscreen} title="Fullscreen">
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-          </div>
+    <div className="vg-root" ref={wrapperRef}>
 
-          {/* Always render video — hide with CSS when no stream */}
-          <video
-            ref={remoteVideoMobileRef}
-            autoPlay
-            playsInline
-            className={`vg-feed-video ${remoteStream ? '' : 'vg-hidden'}`}
-          />
-          {!remoteStream && (
-            <div className="vg-placeholder">
-              {isSearching ? <RefreshCw size={44} className="spin-icon" /> :
-               isConnected ? <UserCheck size={44} /> :
-               <CameraOff size={44} />}
-              <p>{isSearching ? 'Looking for someone...' : isConnected ? 'Connected' : 'Start video chat'}</p>
-            </div>
-          )}
-
-          <div className="vg-card-footer-overlay">
-            <div className="vg-footer-left">
-              {onReportStranger && (
-                <button className="vg-pill-btn" onClick={onReportStranger}>
-                  <Flag size={14} /> <span>Report</span>
-                </button>
-              )}
-              {onOpenSafety && (
-                <button className="vg-pill-btn" onClick={onOpenSafety}>
-                  <Shield size={14} /> <span>Safety</span>
-                </button>
-              )}
-            </div>
-            {onFlipCamera && (
-              <button className="vg-pill-btn vg-flip-btn" onClick={onFlipCamera}>
-                <RefreshCw size={14} /> <span>Flip</span>
-              </button>
-            )}
-          </div>
+      {/* ── Stranger panel (top / larger) ─────────────────────── */}
+      <div className="vg-panel vg-panel-stranger">
+        {/* label */}
+        <div className="vg-label">
+          <span className={`vg-dot ${isConnected ? 'dot-live' : 'dot-idle'}`} />
+          Stranger
         </div>
 
-        {/* Bottom Card: Your Video */}
-        <div className="vg-card vg-card-you">
-          <div className="vg-card-header-overlay">
-            <div className="vg-badge badge-you">
-              <span className="dot-green" />
-              <span>You</span>
-            </div>
-            <button className="vg-icon-btn" onClick={toggleFullscreen} title="Fullscreen">
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+        {/* video / placeholder */}
+        <video
+          ref={remoteVideoRef}
+          autoPlay playsInline
+          className={`vg-video ${remoteStream ? 'vg-video-visible' : ''}`}
+        />
+
+        {!remoteStream && (
+          <div className="vg-placeholder">
+            {isSearching
+              ? <RefreshCw size={40} className="vg-spin-icon" />
+              : <UserCircle2 size={48} className="vg-idle-icon" />}
+            <p className="vg-placeholder-text">
+              {isSearching ? 'Finding someone…' : 'Waiting for a stranger'}
+            </p>
+          </div>
+        )}
+
+        {/* top-right actions */}
+        <div className="vg-actions-tr">
+          {onReportStranger && isConnected && (
+            <button className="vg-action-btn" onClick={onReportStranger} title="Report">
+              <Flag size={15} />
+              <span>Report</span>
             </button>
-          </div>
-
-          {/* Always render video — hide with CSS when no stream */}
-          <video
-            ref={localVideoMobileRef}
-            autoPlay
-            playsInline
-            muted
-            className={`vg-feed-video vg-self-video ${localStream && !isVideoOff ? '' : 'vg-hidden'}`}
-          />
-          {(!localStream || isVideoOff) && (
-            <div className="vg-placeholder">
-              <CameraOff size={36} />
-              <p>{isVideoOff ? 'Camera off' : 'Connecting camera...'}</p>
-            </div>
           )}
-
-          <div className="vg-card-notice-overlay">
-            <div className="vg-notice-pill">
-              <Shield size={14} className="shield-icon" />
-              <span>Be respectful and keep it friendly.</span>
-              <ChevronRight size={14} />
-            </div>
-          </div>
+          <button className="vg-action-btn vg-action-icon-only" onClick={toggleFullscreen} title="Fullscreen">
+            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+          </button>
         </div>
+
+        {/* connected badge */}
+        {isConnected && (
+          <div className="vg-connected-badge">
+            <span className="vg-dot dot-live" />
+            Connected
+          </div>
+        )}
       </div>
 
-      {/* Desktop Standard View */}
-      <div className="vg-desktop-view">
-        <div className="vg-remote-wrap">
-          {remoteStream ? (
-            <video ref={remoteVideoDesktopRef} autoPlay playsInline className="vg-remote-video" />
-          ) : (
-            <div className="vg-placeholder">
-              {isSearching ? <RefreshCw size={48} className="spin-icon" /> :
-               isConnected ? <UserCheck size={48} /> :
-               <CameraOff size={48} />}
-              <p>{isSearching ? 'Looking for someone to chat with...' : isConnected ? 'Connected' : 'Start video chat'}</p>
-            </div>
-          )}
-          {isConnected && (
-            <div className="vg-status-bar">
-              <span className="pulse-dot-green"></span>
-              <span>Connected with a Stranger</span>
-            </div>
-          )}
+      {/* ── You panel (bottom / smaller) ───────────────────────── */}
+      <div className="vg-panel vg-panel-you">
+        {/* label */}
+        <div className="vg-label">
+          <span className="vg-dot dot-you" />
+          You
         </div>
-        {localStream && (
-          <div className="vg-pip-wrap">
-            <video ref={localVideoDesktopRef} autoPlay playsInline muted className="vg-pip-video vg-self-video" />
+
+        <video
+          ref={localVideoRef}
+          autoPlay playsInline muted
+          className={`vg-video vg-video-mirror ${localStream && !isVideoOff ? 'vg-video-visible' : ''}`}
+        />
+
+        {(!localStream || isVideoOff) && (
+          <div className="vg-placeholder">
+            <CameraOff size={32} className="vg-idle-icon" />
+            <p className="vg-placeholder-text">
+              {isVideoOff ? 'Camera off' : 'Starting camera…'}
+            </p>
+          </div>
+        )}
+
+        {/* flip camera */}
+        {onFlipCamera && localStream && (
+          <div className="vg-actions-tr">
+            <button className="vg-action-btn vg-action-icon-only" onClick={onFlipCamera} title="Flip camera">
+              <RotateCcw size={15} />
+            </button>
           </div>
         )}
       </div>
 
       <style>{`
-        .vg-wrapper { width: 100%; position: relative; }
-        .vg-hidden { display: none !important; }
-
-        /* Desktop Layout */
-        .vg-desktop-view { display: flex; position: relative; width: 100%; border-radius: var(--radius-lg); overflow: hidden; background: #0c0f14; aspect-ratio: 16/9; animation: scaleIn 0.3s ease; border: 1px solid rgba(255,255,255,0.1); }
-        .vg-remote-wrap { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; background: #0c0f14; }
-        .vg-remote-video { width: 100%; height: 100%; object-fit: contain; }
-        .vg-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; gap: 0.75rem; text-align: center; padding: 1rem; }
-        .vg-placeholder p { font-size: 0.95rem; font-weight: 500; }
-        .spin-icon { animation: spin 1.5s linear infinite; color: var(--brand-blue); }
-        .vg-status-bar { position: absolute; top: 14px; left: 14px; display: flex; align-items: center; gap: 0.5rem; background: rgba(12,15,20,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; padding: 0.45rem 0.9rem; border-radius: var(--radius-full); font-size: 0.82rem; font-weight: 600; z-index: 2; border: 1px solid rgba(255,255,255,0.12); }
-        .vg-pip-wrap { position: absolute; bottom: 16px; right: 16px; width: 220px; height: 165px; border-radius: var(--radius-lg); overflow: hidden; border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 3; animation: scaleIn 0.3s ease; }
-        .vg-pip-video { width: 100%; height: 100%; object-fit: cover; }
-        .vg-self-video { transform: scaleX(-1); }
-
-        /* Mobile Stacked View */
-        .vg-mobile-stack { display: none; flex-direction: column; gap: 0.75rem; width: 100%; }
-        .vg-card {
-          position: relative; width: 100%; height: 260px; min-height: 220px;
-          background: #12161f; border-radius: 16px; overflow: hidden;
-          border: 1px solid rgba(255,255,255,0.08);
-          display: flex; flex-direction: column; justify-content: space-between;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .vg-feed-video {
-          width: 100%; height: 100%; object-fit: cover;
-          position: absolute; inset: 0; z-index: 1;
-          display: block;
+        /* ─── Root ─────────────────────────────────────────── */
+        .vg-root {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          width: 100%;
         }
 
-        .vg-card-header-overlay { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 5; pointer-events: none; }
-        .vg-card-header-overlay * { pointer-events: auto; }
-        .vg-badge { display: flex; align-items: center; gap: 0.4rem; background: rgba(18,22,31,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.82rem; font-weight: 600; color: #fff; border: 1px solid rgba(255,255,255,0.12); }
-        .dot-blue { width: 8px; height: 8px; border-radius: 50%; background-color: #3b82f6; display: inline-block; box-shadow: 0 0 8px rgba(59,130,246,0.8); }
-        .dot-green { width: 8px; height: 8px; border-radius: 50%; background-color: #10b981; display: inline-block; box-shadow: 0 0 8px rgba(16,185,129,0.8); }
-
-        .vg-icon-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(18,22,31,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; border: 1px solid rgba(255,255,255,0.12); transition: background 0.2s ease; }
-        .vg-icon-btn:active { background: rgba(255,255,255,0.25); }
-
-        .vg-card-footer-overlay { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 5; pointer-events: none; }
-        .vg-card-footer-overlay * { pointer-events: auto; }
-        .vg-footer-left { display: flex; align-items: center; gap: 0.5rem; }
-
-        .vg-pill-btn { display: flex; align-items: center; gap: 0.4rem; background: rgba(18,22,31,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; border: 1px solid rgba(255,255,255,0.12); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; transition: all 0.2s ease; }
-        .vg-pill-btn:active { background: rgba(255,255,255,0.25); transform: scale(0.96); }
-
-        .vg-card-notice-overlay { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; z-index: 5; pointer-events: none; padding: 0 12px; }
-        .vg-notice-pill { pointer-events: auto; display: flex; align-items: center; gap: 0.45rem; background: rgba(18,22,31,0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.9rem; border-radius: 24px; font-size: 0.78rem; font-weight: 500; text-align: center; max-width: 100%; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
-        .shield-icon { color: #94a3b8; flex-shrink: 0; }
-
-        @media (max-width: 1024px) {
-          .vg-desktop-view { display: none; }
-          .vg-mobile-stack { display: flex; }
+        /* ─── Panel shared ─────────────────────────────────── */
+        .vg-panel {
+          position: relative;
+          width: 100%;
+          overflow: hidden;
+          border-radius: 12px;
+          background: #0d1117;
+          border: 1px solid rgba(255,255,255,0.07);
+          box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        @media (max-width: 480px) {
-          .vg-card { height: calc((100dvh - 290px) / 2); min-height: 185px; max-height: 270px; }
+        /* Stranger: taller — 16:10 ratio feel */
+        .vg-panel-stranger { height: 300px; }
+        .vg-panel-you      { height: 196px; }
+
+        /* Grow panels on taller viewports */
+        @media (min-height: 800px) {
+          .vg-panel-stranger { height: 340px; }
+          .vg-panel-you      { height: 224px; }
+        }
+        @media (min-height: 900px) {
+          .vg-panel-stranger { height: 380px; }
+          .vg-panel-you      { height: 252px; }
         }
 
-        @media (max-height: 700px) and (max-width: 1024px) {
-          .vg-card { height: 175px; min-height: 160px; }
+        /* ─── Video ────────────────────────────────────────── */
+        .vg-video {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          opacity: 0;
+          transition: opacity 0.3s ease;
         }
+        .vg-video-visible { opacity: 1; }
+        .vg-video-mirror  { transform: scaleX(-1); }
+
+        /* ─── Placeholder ──────────────────────────────────── */
+        .vg-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          color: #475569;
+          padding: 1.5rem;
+          text-align: center;
+          z-index: 1;
+        }
+        .vg-idle-icon  { color: #1e293b; }
+        .vg-spin-icon  { color: #2563eb; animation: vg-spin 1.4s linear infinite; }
+        .vg-placeholder-text {
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: #475569;
+          letter-spacing: 0.01em;
+        }
+        @keyframes vg-spin { to { transform: rotate(360deg); } }
+
+        /* ─── Label (top-left) ─────────────────────────────── */
+        .vg-label {
+          position: absolute;
+          top: 10px;
+          left: 12px;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 20px;
+          padding: 4px 10px 4px 8px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: #e2e8f0;
+          letter-spacing: 0.02em;
+          pointer-events: none;
+          text-transform: uppercase;
+        }
+
+        .vg-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .dot-live { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.8); }
+        .dot-idle { background: #475569; }
+        .dot-you  { background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.7); }
+
+        /* ─── Top-right action buttons ─────────────────────── */
+        .vg-actions-tr {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .vg-action-btn {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 20px;
+          padding: 5px 10px;
+          font-size: 0.78rem;
+          font-weight: 600;
+          color: #e2e8f0;
+          cursor: pointer;
+          transition: background 0.15s, border-color 0.15s;
+          white-space: nowrap;
+        }
+        .vg-action-btn:hover  { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25); }
+        .vg-action-btn:active { transform: scale(0.95); }
+        .vg-action-icon-only  { padding: 5px 8px; }
+
+        /* ─── Connected badge (bottom-left of stranger panel) ── */
+        .vg-connected-badge {
+          position: absolute;
+          bottom: 10px;
+          left: 12px;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(34,197,94,0.3);
+          border-radius: 20px;
+          padding: 4px 10px 4px 8px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #86efac;
+          letter-spacing: 0.02em;
+          pointer-events: none;
+          animation: vg-fadein 0.4s ease;
+        }
+        @keyframes vg-fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ─── Fullscreen tweaks ────────────────────────────── */
+        :fullscreen .vg-root { background: #000; gap: 0; border-radius: 0; }
+        :fullscreen .vg-panel { border-radius: 0; border: none; }
       `}</style>
     </div>
   );
