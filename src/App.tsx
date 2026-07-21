@@ -662,8 +662,8 @@ export const App: React.FC = () => {
         @media (max-width: 1024px) {
           /* Wrapper fills everything below the 64px header */
           .chat-layout-wrapper {
-            padding: 0;
-            gap: 0;
+            padding: 0.5rem 0.5rem 0.25rem;
+            gap: 0.5rem;
             height: calc(100dvh - 64px);
             overflow: hidden;
           }
