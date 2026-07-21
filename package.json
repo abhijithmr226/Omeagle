@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
-    "postbuild": "react-snap",
+    "postbuild": "node scripts/postbuild.js",
     "preview": "vite preview"
   },
   "dependencies": {
