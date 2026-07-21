@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ArrowLeftRight, Users, ChevronRight } from 'lucide-react';
 import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
 import { VideoGrid } from './components/VideoChat/VideoGrid';
@@ -11,12 +11,12 @@ import { SettingsModal } from './components/Modals/SettingsModal';
 import { PreferencesModal } from './components/Modals/PreferencesModal';
 import { AgeGateModal } from './components/Modals/AgeGateModal';
 import { ReportModal } from './components/Modals/ReportModal';
-const About = React.lazy(() => import('./pages/About').then(m => ({ default: m.About })));
-const Privacy = React.lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })));
-const Terms = React.lazy(() => import('./pages/Terms').then(m => ({ default: m.Terms })));
-const Contact = React.lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })));
-const Blog = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.Blog })));
-const Safety = React.lazy(() => import('./pages/Safety').then(m => ({ default: m.Safety })));
+import { About } from './pages/About';
+import { Privacy } from './pages/Privacy';
+import { Terms } from './pages/Terms';
+import { Contact } from './pages/Contact';
+import { Blog } from './pages/Blog';
+import { Safety } from './pages/Safety';
 import type { ChatMode, ConnectionStatus, PartnerProfile } from './types/chat';
 import { joinQueue, pollMatch, leaveQueue, endCall, cleanupAfterSkip } from './services/queue';
 import { createCallChannel, type CallChannel } from './services/signaling';
@@ -116,7 +116,7 @@ export const App: React.FC = () => {
 
   const cleanupCallChannel = useCallback(async () => {
     if (callChannelRef.current) {
-      try { await callChannelRef.current.sendDisconnect(); } catch {}
+      try { await callChannelRef.current.sendDisconnect(); } catch { }
       callChannelRef.current.cleanup();
       callChannelRef.current = null;
     }
@@ -423,9 +423,9 @@ export const App: React.FC = () => {
 
   // Online count — initial fetch + periodic refresh
   useEffect(() => {
-    getOnlineCount().then(setOnlineCount).catch(() => {});
+    getOnlineCount().then(setOnlineCount).catch(() => { });
     const interval = setInterval(() => {
-      getOnlineCount().then(setOnlineCount).catch(() => {});
+      getOnlineCount().then(setOnlineCount).catch(() => { });
     }, 15000);
     return () => clearInterval(interval);
   }, []);
@@ -466,94 +466,125 @@ export const App: React.FC = () => {
       }} onlineCount={onlineCount} theme={theme} onToggleTheme={toggleTheme} />
 
       <main className="main-content">
-        <React.Suspense fallback={<div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="vg-spin" /></div>}>
-          <Routes>
-            <Route path="/about" element={<About />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/omeagle-free-random-video-chat" element={<Blog article="article1" />} />
-            <Route path="/blog/best-omegle-alternatives" element={<Blog article="article2" />} />
-            <Route path="/blog/safe-video-chat-guide" element={<Blog article="article3" />} />
-            <Route path="/blog/ometv-alternative" element={<Blog article="article4" />} />
-            <Route path="/blog/no-signup-video-chat" element={<Blog article="article5" />} />
-            <Route path="/blog/text-chat-with-strangers" element={<Blog article="article6" />} />
-            <Route path="/safety" element={<Safety />} />
-            <Route path="/*" element={
-              mode === 'landing' ? (
-                <LandingPage onStartChat={startChat} onlineCount={onlineCount}
-                  settings={settings} onOpenPrefs={() => setIsPrefsOpen(true)} />
-              ) : mode === 'text' ? (
-                <div className="text-chat-layout">
-                  <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                    onSendMessage={handleSendMessage} onNext={handleNext}
-                    onStart={() => startChat('text')} mode="text"
-                    isStrangerTyping={chat.isStrangerTyping}
-                    onTyping={() => callChannelRef.current?.sendTyping()}
-                    partnerProfile={partnerProfile} />
+        <Routes>
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/omeagle-free-random-video-chat" element={<Blog article="article1" />} />
+          <Route path="/blog/best-omegle-alternatives" element={<Blog article="article2" />} />
+          <Route path="/blog/safe-video-chat-guide" element={<Blog article="article3" />} />
+          <Route path="/blog/ometv-alternative" element={<Blog article="article4" />} />
+          <Route path="/blog/no-signup-video-chat" element={<Blog article="article5" />} />
+          <Route path="/blog/text-chat-with-strangers" element={<Blog article="article6" />} />
+          <Route path="/safety" element={<Safety />} />
+          <Route path="/*" element={
+            mode === 'landing' ? (
+              <LandingPage onStartChat={startChat} onlineCount={onlineCount}
+                settings={settings} onOpenPrefs={() => setIsPrefsOpen(true)} />
+            ) : mode === 'text' ? (
+              <div className="text-chat-layout">
+                <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
+                  onSendMessage={handleSendMessage} onNext={handleNext}
+                  onStart={() => startChat('text')} mode="text"
+                  isStrangerTyping={chat.isStrangerTyping}
+                  onTyping={() => callChannelRef.current?.sendTyping()}
+                  partnerProfile={partnerProfile} />
+              </div>
+            ) : (
+              <div className="chat-layout-wrapper">
+                {/* Mobile Top Status Pill Banner (matches reference UI) */}
+                <div className="mobile-status-banner">
+                  <span className="dot-green-pulse" />
+                  <span className="status-banner-text">
+                    {connectionStatus === 'connected' ? "You're now chatting with a random stranger" :
+                      connectionStatus === 'searching' ? (
+                        searchStep === 0 ? "Looking for a random stranger to chat with..." :
+                          searchStep === 1 ? "Searching globally across 190+ countries..." :
+                            "Broadening matching preferences to find a match fast..."
+                      ) :
+                        "Start a video chat to meet strangers"}
+                  </span>
+                  <ChevronRight size={16} className="chevron-right-icon" />
                 </div>
-              ) : (
-                <div className="chat-layout-wrapper">
-                  {/* Mobile Top Status Pill Banner (matches reference UI) */}
-                  <div className="mobile-status-banner">
-                    <span className="dot-green-pulse" />
-                    <span className="status-banner-text">
-                      {connectionStatus === 'connected' ? "You're now chatting with a random stranger" :
-                       connectionStatus === 'searching' ? (
-                         searchStep === 0 ? "Looking for a random stranger to chat with..." :
-                         searchStep === 1 ? "Searching globally across 190+ countries..." :
-                         "Broadening matching preferences to find a match fast..."
-                       ) :
-                       "Start a video chat to meet strangers"}
-                    </span>
-                    <ChevronRight size={16} className="chevron-right-icon" />
-                  </div>
 
-                  <div className="chat-layout-grid">
-                    <div className="video-column">
-                      <VideoGrid localStream={media.localStream} remoteStream={remoteStream}
-                        connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
-                        onFlipCamera={handleFlipCamera}
-                        onReportStranger={() => setIsReportOpen(true)}
-                        onOpenSafety={() => navigate('/safety')} />
-                      <ControlsBar connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
-                        onStart={() => startChat('video')} onStop={handleStop} onNext={handleNext}
-                        onToggleMute={media.toggleMute} onToggleVideo={media.toggleVideo} onOpenSettings={() => setIsSettingsOpen(true)}
-                        onFlipCamera={handleFlipCamera} mobileChatOpen={mobileChatOpen} onToggleChat={() => setMobileChatOpen(!mobileChatOpen)} />
-                    </div>
+                <div className="chat-layout-grid">
+                  <div className="video-column">
+                    <VideoGrid localStream={media.localStream} remoteStream={remoteStream}
+                      connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
+                      onFlipCamera={handleFlipCamera}
+                      onReportStranger={() => setIsReportOpen(true)}
+                      onOpenSafety={() => navigate('/safety')} />
+                    <ControlsBar connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
+                      onStart={() => startChat('video')} onStop={handleStop} onNext={handleNext}
+                      onToggleMute={media.toggleMute} onToggleVideo={media.toggleVideo} onOpenSettings={() => setIsSettingsOpen(true)}
+                      onFlipCamera={handleFlipCamera} mobileChatOpen={mobileChatOpen} onToggleChat={() => setMobileChatOpen(!mobileChatOpen)} />
 
-                    <div className="chat-column">
-                      <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                        onSendMessage={handleSendMessage} onNext={handleNext}
-                        onStart={() => startChat('video')} mode="video"
-                        isStrangerTyping={chat.isStrangerTyping}
-                        onTyping={() => callChannelRef.current?.sendTyping()}
-                        partnerProfile={partnerProfile} />
-                    </div>
-
-                    <div className={`mobile-chat-overlay ${mobileChatOpen ? 'open' : ''}`}>
-                      <div className="mobile-chat-header">
-                        <span>Text Chat</span>
-                        <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)}>✕</button>
+                    {/* Mobile Bottom Footer Cards (matches reference UI) */}
+                    <div className="mobile-footer-cards">
+                      <div className="mobile-card card-next" onClick={connectionStatus === 'connected' ? handleNext : () => startChat('video')}>
+                        <div className="card-icon-circle icon-swap">
+                          <ArrowLeftRight size={20} />
+                        </div>
+                        <div className="card-text-body">
+                          <div className="card-title">Next</div>
+                          <div className="card-subtitle">Find another stranger</div>
+                        </div>
                       </div>
-                      <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                        onSendMessage={handleSendMessage} onNext={handleNext}
-                        onStart={() => startChat('video')} mode="video"
-                        isStrangerTyping={chat.isStrangerTyping}
-                        onTyping={() => callChannelRef.current?.sendTyping()}
-                        partnerProfile={partnerProfile} />
+
+                      <div className="mobile-card card-users">
+                        <div className="card-icon-circle icon-users">
+                          <Users size={20} />
+                        </div>
+                        <div className="card-text-body">
+                          <div className="card-number">{onlineCount.toLocaleString()}</div>
+                          <div className="card-subtitle">users online</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
+
+                  <div className="chat-column">
+                    <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
+                      onSendMessage={handleSendMessage} onNext={handleNext}
+                      onStart={() => startChat('video')} mode="video"
+                      isStrangerTyping={chat.isStrangerTyping}
+                      onTyping={() => callChannelRef.current?.sendTyping()}
+                      partnerProfile={partnerProfile} />
+                  </div>
+
+                  <div className={`mobile-chat-overlay ${mobileChatOpen ? 'open' : ''}`}>
+                    <div className="mobile-chat-header">
+                      <span>Text Chat</span>
+                      <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)}>✕</button>
+                    </div>
+                    <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
+                      onSendMessage={handleSendMessage} onNext={handleNext}
+                      onStart={() => startChat('video')} mode="video"
+                      isStrangerTyping={chat.isStrangerTyping}
+                      onTyping={() => callChannelRef.current?.sendTyping()}
+                      partnerProfile={partnerProfile} />
+                  </div>
                 </div>
-              )
-            } />
-          </Routes>
-        </React.Suspense>
+              </div>
+            )
+          } />
+        </Routes>
       </main>
 
       <div className="ad-banner">
-        <div id="container-8bdddf8feba87229589bd6c56db45ecd"></div>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+          atOptions = {
+            'key' : '8bdddf8feba87229589bd6c56db45ecd',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+          };
+        ` }} />
+        <script src="https://www.highperformanceformat.com/8bdddf8feba87229589bd6c56db45ecd/invoke.js" async />
       </div>
       <Footer onOpenPage={openPage} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}
@@ -571,7 +602,7 @@ export const App: React.FC = () => {
                 details: details || null,
                 created_at: new Date().toISOString()
               })
-            ).catch(() => {});
+            ).catch(() => { });
           }
           handleNext();
         }} />
@@ -597,11 +628,9 @@ export const App: React.FC = () => {
         }
         .chat-layout-grid {
           display: grid;
-          grid-template-columns: 360px minmax(0, 1fr);
+          grid-template-columns: 360px 1fr;
           gap: 1.25rem;
           width: 100%;
-          max-width: 960px;
-          margin: 0 auto;
           align-items: start;
         }
         .video-column {
@@ -609,9 +638,6 @@ export const App: React.FC = () => {
           flex-direction: column;
           gap: 0.5rem;
           width: 360px;
-          min-width: 360px;
-          max-width: 360px;
-          flex-shrink: 0;
         }
         .chat-column {
           display: flex;
@@ -620,16 +646,15 @@ export const App: React.FC = () => {
           min-height: 560px;
         }
 
-        /* ── Mobile UI Extras (hidden on desktop) ───────────── */
-        .mobile-status-banner { display: none; }
-        .mobile-chat-overlay  { display: none; }
+        /* ── Mobile chat slide-up overlay ───────────────────── */
+        .mobile-chat-overlay { display: none; }
 
         /* ────────────────────────────────────────────────────
-           MOBILE  ≤ 768px
+           MOBILE  ≤ 1024px
            Full-screen video layout: panels fill the viewport
            below the sticky header with controls at bottom.
         ──────────────────────────────────────────────────── */
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           /* Wrapper fills everything below the 64px header */
           .chat-layout-wrapper {
             padding: 0;
@@ -638,8 +663,9 @@ export const App: React.FC = () => {
             overflow: hidden;
           }
 
-          /* Status banner pill at top of mobile screen */
-          .mobile-status-banner { display: flex; margin: 8px 10px 0; z-index: 10; }
+          /* Status banner and footer cards are desktop-only extras */
+          .mobile-status-banner { display: none !important; }
+          .mobile-footer-cards  { display: none !important; }
 
           /* Single column — fills the wrapper height */
           .chat-layout-grid {
@@ -653,9 +679,6 @@ export const App: React.FC = () => {
           /* Video column fills grid cell height */
           .video-column {
             height: 100%;
-            width: 100%;
-            min-width: 0;
-            max-width: 100%;
             display: flex;
             flex-direction: column;
             gap: 0;
