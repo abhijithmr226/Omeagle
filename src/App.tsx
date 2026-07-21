@@ -636,7 +636,7 @@ export const App: React.FC = () => {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
-          height: min(580px, calc(100dvh - 140px));
+          height: min(640px, calc(100dvh - 130px));
         }
         .chat-column { display: flex; flex-direction: column; }
 

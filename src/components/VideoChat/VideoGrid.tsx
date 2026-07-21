@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { RefreshCw, UserCircle2, CameraOff, Maximize2, Minimize2, Flag, RotateCcw } from 'lucide-react';
+import { RefreshCw, UserCircle2, CameraOff, Maximize2, Minimize2, Flag, RotateCcw, Expand, Shrink } from 'lucide-react';
 import type { ConnectionStatus } from '../../types/chat';
 
 interface VideoGridProps {
@@ -21,6 +21,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   const localVideoRef  = useRef<HTMLVideoElement>(null);
   const wrapperRef     = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [objectFitMode, setObjectFitMode] = useState<'cover' | 'contain'>('cover');
 
   useEffect(() => {
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
@@ -44,6 +45,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
     }
   };
 
+  const toggleObjectFit = () => {
+    setObjectFitMode(prev => prev === 'cover' ? 'contain' : 'cover');
+  };
+
   const isConnected = connectionStatus === 'connected';
   const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
 
@@ -55,7 +60,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         <video
           ref={remoteVideoRef}
           autoPlay playsInline
-          className={`vg-video ${remoteStream ? 'vg-video-on' : ''}`}
+          className={`vg-video ${remoteStream ? 'vg-video-on' : ''} vg-fit-${objectFitMode}`}
         />
 
         {!remoteStream && (
@@ -75,12 +80,21 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         </div>
 
         <div className="vg-tr-actions">
+          <button
+            className="vg-btn vg-btn-icon"
+            onClick={toggleObjectFit}
+            title={objectFitMode === 'cover' ? 'Switch to Fit (Show Full Frame)' : 'Switch to Fill (Cover Panel)'}
+          >
+            {objectFitMode === 'cover' ? <Shrink size={14} /> : <Expand size={14} />}
+            <span className="vg-btn-text-mobile">{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
+          </button>
+
           {isConnected && onReportStranger && (
             <button className="vg-btn" onClick={onReportStranger}>
               <Flag size={13} /><span>Report</span>
             </button>
           )}
-          <button className="vg-btn vg-btn-icon" onClick={toggleFullscreen}>
+          <button className="vg-btn vg-btn-icon" onClick={toggleFullscreen} title="Toggle Fullscreen">
             {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
         </div>
@@ -97,7 +111,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         <video
           ref={localVideoRef}
           autoPlay playsInline muted
-          className={`vg-video vg-mirror ${localStream && !isVideoOff ? 'vg-video-on' : ''}`}
+          className={`vg-video vg-mirror ${localStream && !isVideoOff ? 'vg-video-on' : ''} vg-fit-${objectFitMode}`}
         />
 
         {(!localStream || isVideoOff) && (
@@ -116,7 +130,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
 
         {onFlipCamera && localStream && (
           <div className="vg-tr-actions">
-            <button className="vg-btn vg-btn-icon" onClick={onFlipCamera} title="Flip">
+            <button className="vg-btn vg-btn-icon" onClick={onFlipCamera} title="Flip Camera">
               <RotateCcw size={14} />
             </button>
           </div>
@@ -128,7 +142,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .vg-root {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 6px;
           width: 100%;
           flex: 1;
           min-height: 0;
@@ -139,17 +153,17 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .vg-panel {
           position: relative;
           width: 100%;
+          flex: 1;
           min-height: 0;
           overflow: hidden;
-          border-radius: 10px;
-          background: #0d1117;
-          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 12px;
+          background: #090d14;
+          border: 1px solid rgba(255,255,255,0.08);
           display: flex;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
-        .vg-stranger { flex: 3; }   /* ~60 % of available height */
-        .vg-you      { flex: 2; }   /* ~40 % */
 
         /* ── Video element ─────────────────────────────────── */
         .vg-video {
@@ -157,15 +171,17 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: contain;   /* show full frame — no face cropping */
-          background: #0d1117;
+          background: #000;
           opacity: 0;
-          transition: opacity 0.35s ease;
+          transition: opacity 0.3s ease, object-fit 0.2s ease;
           display: block;
         }
+        .vg-fit-cover { object-fit: cover; object-position: center center; }
+        .vg-fit-contain { object-fit: contain; object-position: center center; }
+
         .vg-video-on { opacity: 1; }
-        /* Local feed: cover + mirror looks natural in the small panel */
-        .vg-mirror   { transform: scaleX(-1); object-fit: cover; }
+        /* Local feed: mirror transform */
+        .vg-mirror   { transform: scaleX(-1); }
 
         /* ── Placeholder ───────────────────────────────────── */
         .vg-placeholder {
@@ -179,102 +195,103 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           z-index: 1;
           pointer-events: none;
         }
-        .vg-idle-icon { color: #1e293b; }
+        .vg-idle-icon { color: #334155; }
         .vg-spin {
-          color: #2563eb;
-          animation: vg-spin 1.35s linear infinite;
+          color: var(--brand-blue);
+          animation: vg-spin 1.2s linear infinite;
         }
         @keyframes vg-spin { to { transform: rotate(360deg); } }
         .vg-ph-text {
-          font-size: 0.82rem;
-          font-weight: 500;
-          color: #334155;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #94a3b8;
           letter-spacing: 0.01em;
         }
 
         /* ── Label (top-left overlay) ──────────────────────── */
         .vg-label {
           position: absolute;
-          top: 9px;
+          top: 10px;
           left: 10px;
           z-index: 10;
           display: flex;
           align-items: center;
-          gap: 5px;
-          background: rgba(0,0,0,0.52);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.09);
+          gap: 6px;
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.12);
           border-radius: 100px;
-          padding: 3px 9px 3px 7px;
-          font-size: 0.72rem;
+          padding: 4px 10px;
+          font-size: 0.74rem;
           font-weight: 700;
-          color: #cbd5e1;
+          color: #f1f5f9;
           text-transform: uppercase;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.05em;
           pointer-events: none;
         }
 
         /* ── Dots ──────────────────────────────────────────── */
         .vg-dot {
-          width: 6px;
-          height: 6px;
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
           flex-shrink: 0;
         }
-        .vg-dot-live { background: #22c55e; box-shadow: 0 0 5px rgba(34,197,94,0.9); }
-        .vg-dot-idle { background: #334155; }
-        .vg-dot-you  { background: #3b82f6; box-shadow: 0 0 5px rgba(59,130,246,0.8); }
+        .vg-dot-live { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.9); }
+        .vg-dot-idle { background: #64748b; }
+        .vg-dot-you  { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.9); }
 
         /* ── Top-right action buttons ──────────────────────── */
         .vg-tr-actions {
           position: absolute;
-          top: 9px;
-          right: 9px;
+          top: 10px;
+          right: 10px;
           z-index: 10;
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 6px;
         }
         .vg-btn {
           display: flex;
           align-items: center;
-          gap: 4px;
-          background: rgba(0,0,0,0.52);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.09);
+          gap: 5px;
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.12);
           border-radius: 100px;
-          padding: 4px 9px;
-          font-size: 0.74rem;
+          padding: 4px 10px;
+          font-size: 0.75rem;
           font-weight: 600;
-          color: #cbd5e1;
+          color: #f1f5f9;
           cursor: pointer;
-          transition: background 0.15s;
+          transition: all 0.15s ease;
           white-space: nowrap;
         }
-        .vg-btn:hover  { background: rgba(255,255,255,0.14); }
-        .vg-btn:active { transform: scale(0.94); }
-        .vg-btn-icon   { padding: 4px 7px; }
+        .vg-btn:hover  { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.25); }
+        .vg-btn:active { transform: scale(0.95); }
+        .vg-btn-icon   { padding: 4px 8px; }
+        .vg-btn-text-mobile { font-size: 0.72rem; }
 
         /* ── Connected badge (bottom-left of stranger) ─────── */
         .vg-live-badge {
           position: absolute;
-          bottom: 9px;
+          bottom: 10px;
           left: 10px;
           z-index: 10;
           display: flex;
           align-items: center;
-          gap: 5px;
-          background: rgba(0,0,0,0.52);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(34,197,94,0.28);
+          gap: 6px;
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(34,197,94,0.4);
           border-radius: 100px;
-          padding: 3px 9px 3px 7px;
-          font-size: 0.72rem;
+          padding: 4px 10px;
+          font-size: 0.74rem;
           font-weight: 700;
-          color: #86efac;
+          color: #4ade80;
           pointer-events: none;
           animation: vg-pop 0.3s ease;
         }
