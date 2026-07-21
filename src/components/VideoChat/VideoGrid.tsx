@@ -21,7 +21,8 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   const localVideoRef  = useRef<HTMLVideoElement>(null);
   const wrapperRef     = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [objectFitMode, setObjectFitMode] = useState<'cover' | 'contain'>('cover');
+  // Default to 'contain' so video is 100% full frame and NEVER cropped
+  const [objectFitMode, setObjectFitMode] = useState<'contain' | 'cover'>('contain');
 
   useEffect(() => {
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
@@ -46,7 +47,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   };
 
   const toggleObjectFit = () => {
-    setObjectFitMode(prev => prev === 'cover' ? 'contain' : 'cover');
+    setObjectFitMode(prev => prev === 'contain' ? 'cover' : 'contain');
   };
 
   const isConnected = connectionStatus === 'connected';
@@ -83,10 +84,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           <button
             className="vg-btn vg-btn-icon"
             onClick={toggleObjectFit}
-            title={objectFitMode === 'cover' ? 'Switch to Fit (Show Full Frame)' : 'Switch to Fill (Cover Panel)'}
+            title={objectFitMode === 'contain' ? 'Uncropped (Contain) — Click to Fill Panel' : 'Filled (Cover) — Click to Show Full Uncropped Video'}
           >
-            {objectFitMode === 'cover' ? <Shrink size={14} /> : <Expand size={14} />}
-            <span className="vg-btn-text-mobile">{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
+            {objectFitMode === 'contain' ? <Expand size={14} /> : <Shrink size={14} />}
+            <span className="vg-btn-text-mobile">{objectFitMode === 'contain' ? 'Fit Full' : 'Fill'}</span>
           </button>
 
           {isConnected && onReportStranger && (
@@ -157,7 +158,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           min-height: 0;
           overflow: hidden;
           border-radius: 12px;
-          background: #090d14;
+          background: #05080e;
           border: 1px solid rgba(255,255,255,0.08);
           display: flex;
           align-items: center;
@@ -176,8 +177,9 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           transition: opacity 0.3s ease, object-fit 0.2s ease;
           display: block;
         }
-        .vg-fit-cover { object-fit: cover; object-position: center center; }
-        .vg-fit-contain { object-fit: contain; object-position: center center; }
+        /* Default: contain ensures 100% of video is visible without cropping */
+        .vg-fit-contain { object-fit: contain !important; object-position: center center; }
+        .vg-fit-cover   { object-fit: cover !important; object-position: center center; }
 
         .vg-video-on { opacity: 1; }
         /* Local feed: mirror transform */
