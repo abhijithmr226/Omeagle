@@ -2,14 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://bhrsheykwaduhpxiyqlw.supabase.co" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/headerlogo.png?v=3" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0066ff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -157,9 +160,34 @@
       "name": "Omeagle",
       "url": "https://omeagle.online",
       "logo": "https://omeagle.online/headerlogo.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "url": "https://omeagle.online/contact"
+      },
       "sameAs": [
-        "https://github.com/abhijithmr226"
+        "https://github.com/abhijithmr226",
+        "https://linkedin.com/in/abhijithmr226"
       ]
+    }
+    </script>
+
+    <!-- Structured Data: WebSite SearchAction (enables sitelinks searchbox) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Omeagle",
+      "url": "https://omeagle.online",
+      "description": "Free random video chat and text chat with strangers. No registration required. Best Omegle alternative.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://omeagle.online/blog?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
     }
     </script>
 
@@ -264,6 +292,42 @@
           "position": 1,
           "name": "Home",
           "item": "https://omeagle.online/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://omeagle.online/blog"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Safety",
+          "item": "https://omeagle.online/safety"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "About",
+          "item": "https://omeagle.online/about"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "name": "Privacy",
+          "item": "https://omeagle.online/privacy"
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "name": "Terms",
+          "item": "https://omeagle.online/terms"
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "name": "Contact",
+          "item": "https://omeagle.online/contact"
         }
       ]
     }

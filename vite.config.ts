@@ -10,6 +10,9 @@ export default defineConfig({
     allowedHosts: true
   },
   build: {
+    // es2015 target ensures react-snap's old Chromium can parse the bundle
+    // (optional chaining / nullish coalescing are transpiled to compatible form)
+    target: 'es2015',
     sourcemap: true,
     rollupOptions: {
       output: {

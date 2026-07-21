@@ -12,7 +12,9 @@ import './index.css';
 const supabaseReady =
   !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+const root = document.getElementById('root') as HTMLElement;
+
+const appJsx = (
   <React.StrictMode>
     <ErrorBoundary>
       {!supabaseReady ? (
@@ -31,3 +33,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     </ErrorBoundary>
   </React.StrictMode>
 );
+
+// react-snap prerenders HTML at build time; use hydrateRoot when prerendered
+// content is detected, otherwise use createRoot for normal dev/preview
+if (root.hasChildNodes()) {
+  ReactDOM.hydrateRoot(root, appJsx);
+} else {
+  ReactDOM.createRoot(root).render(appJsx);
+}

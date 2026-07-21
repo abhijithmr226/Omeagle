@@ -7,7 +7,7 @@ interface BlogPageProps {
 }
 
 export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
-  const [activeArticle, setActiveArticle] = useState<'index' | 'article1' | 'article2' | 'article3'>('index');
+  const [activeArticle, setActiveArticle] = useState<'index' | 'article1' | 'article2' | 'article3' | 'article4' | 'article5' | 'article6'>('index');
 
   const articles = [
     {
@@ -33,6 +33,30 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
       readTime: '7 min read',
       title: 'How to Video Chat with Strangers Safely: 10 Essential Tips for 2026',
       description: 'Stay safe while talking to strangers online. Learn the 10 essential rules for anonymous video chat — from protecting your identity to handling bad actors.',
+    },
+    {
+      id: 'article4' as const,
+      tag: 'Comparison',
+      date: 'July 21, 2026',
+      readTime: '8 min read',
+      title: 'Best Omegle Alternative With No Sign Up — Free Random Video Chat in 2026',
+      description: 'OmeTV charges for filters. Chatroulette requires a Google login. Monkey is app-only. Here is why Omeagle is the only true no-sign-up Omegle alternative that actually works.',
+    },
+    {
+      id: 'article5' as const,
+      tag: 'Guide',
+      date: 'July 21, 2026',
+      readTime: '6 min read',
+      title: 'No Sign Up Video Chat Sites That Actually Work in 2026',
+      description: 'Most "free" chat sites hide paywalls behind sign-up forms. Here are the only video chat platforms that work instantly in your browser — zero account, zero download.',
+    },
+    {
+      id: 'article6' as const,
+      tag: 'Guide',
+      date: 'July 21, 2026',
+      readTime: '7 min read',
+      title: 'Text Chat with Strangers — Free Anonymous Text Chat in 2026',
+      description: 'Not ready for video? Anonymous text chat with strangers is faster, more private, and less awkward. Here is everything you need to know to get started safely.',
     },
   ];
 
@@ -982,6 +1006,410 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
               <div className="blog-cta-buttons">
                 <Link to="/" className="blog-btn-primary"><Video size={18} style={{marginRight:'0.5rem'}} /> Start Safe Video Chat</Link>
                 <Link to="/safety" className="blog-btn-secondary"><Shield size={18} style={{marginRight:'0.5rem'}} /> Read Safety Guide</Link>
+              </div>
+            </div>
+          </section>
+        </article>
+      )}
+
+      {activeArticle === 'article4' && (
+        <article className="blog-article" itemScope itemType="https://schema.org/Article">
+          <header className="blog-header">
+            <div className="blog-meta">
+              <span className="blog-tag">Comparison</span>
+              <span className="blog-date"><Calendar size={14} /> July 21, 2026</span>
+              <span className="blog-reading"><Clock size={14} /> 8 min read</span>
+            </div>
+            <h1 itemProp="headline">Best Omegle Alternative With No Sign Up — Free Random Video Chat in 2026</h1>
+            <p className="blog-subtitle" itemProp="description">
+              OmeTV charges for filters. Chatroulette requires a Google login. Monkey is app-only.
+              Here is why Omeagle is the only true no-sign-up alternative that actually works.
+            </p>
+          </header>
+
+          <section className="blog-section" itemProp="articleBody">
+            <p>
+              You clicked Start on a "free" Omegle alternative, and the next screen asked you to download
+              an app. Or create an account. Or pay $9.99 for a gender filter. That is not what you were
+              looking for. <strong>Omeagle</strong> gives you what the original Omegle promised: open your
+              browser, click one button, and you are talking to a random stranger in under three seconds.
+              No account. No app. No paywall.
+            </p>
+
+            <h2>Quick Comparison: Omeagle vs Top Competitors</h2>
+            <p>Here is how Omeagle stacks up against the most-visited alternatives right now:</p>
+            <div className="blog-table-wrap">
+              <table className="blog-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th style={{background:'var(--brand-blue)',color:'#fff'}}>Omeagle</th>
+                    <th>OmeTV</th>
+                    <th>Chatroulette</th>
+                    <th>Monkey App</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>No sign up</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>✅ Zero</td><td>❌ Required</td><td>❌ Google login</td><td>❌ Phone number</td></tr>
+                  <tr><td>Works in browser</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>✅ Yes</td><td>⚠️ App preferred</td><td>✅ Yes</td><td>❌ App only</td></tr>
+                  <tr><td>Free gender filter</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>✅ Free</td><td>❌ Coins required</td><td>❌ N/A</td><td>❌ Paid</td></tr>
+                  <tr><td>Free country filter</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>✅ Free</td><td>✅ Free</td><td>❌ N/A</td><td>❌ N/A</td></tr>
+                  <tr><td>Interest matching</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>✅ Free</td><td>❌ No</td><td>❌ No</td><td>❌ No</td></tr>
+                  <tr><td>AI moderation</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>✅ Real-time</td><td>⚠️ Basic</td><td>⚠️ Basic</td><td>⚠️ Basic</td></tr>
+                  <tr><td>WebRTC encryption</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>✅ Yes</td><td>❌ No</td><td>❌ No</td><td>❌ No</td></tr>
+                  <tr><td>Zero data retention</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>✅ Yes</td><td>❌ No</td><td>❌ No</td><td>❌ No</td></tr>
+                  <tr><td>Cost</td><td style={{color:'var(--brand-blue)',fontWeight:700}}>Free</td><td>Freemium</td><td>Free</td><td>Freemium</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2>Why People Keep Searching for "No Sign Up" Alternatives</h2>
+            <p>
+              Omegle shut down in November 2023. Leif K-Brooks posted a farewell message and the domain
+              went dark. Within weeks, millions of monthly searches — "omegle alternative," "omegle tv,"
+              "sites like omegle" — had nowhere good to go. The platforms that rushed in made a critical
+              mistake: they added friction. Accounts. Apps. Coins. Payment screens.
+            </p>
+            <p>
+              This defeats the entire point of random chat. The appeal was always the <em>lack</em> of
+              barriers. You connected with a random human being, somewhere in the world, spontaneously.
+              Omeagle is built on that original principle.
+            </p>
+
+            <h2>The Problem with OmeTV in 2026</h2>
+            <p>
+              OmeTV is the most-visited alternative right now, and for many users, the experience disappoints.
+            </p>
+            <ul>
+              <li><strong>The app problem:</strong> OmeTV's website on mobile redirects to the App Store or Google Play. The browser version exists but performs poorly — video drops, matching delays, cluttered interface. If you want phone access without downloading anything, OmeTV is not the right choice.</li>
+              <li><strong>The coin problem:</strong> OmeTV's gender filter — one of the most-requested features — requires purchasing coins. There is no free gender preference. On Omeagle, gender <em>and</em> country filters are completely free, always.</li>
+              <li><strong>The moderation gap:</strong> OmeTV uses a basic report-and-review system with no real-time AI detection. Inappropriate content reaches your screen before it can be flagged.</li>
+            </ul>
+
+            <h2>The Problem with Chatroulette in 2026</h2>
+            <p>
+              Chatroulette was one of the originals, launching in 2009. The current version requires a
+              Google account — which immediately eliminates the anonymity that made random chat appealing.
+              Beyond the sign-up wall, Chatroulette has no text chat mode, no interest matching, and no
+              country filters. It is a single-feature product with a login requirement bolted on.
+            </p>
+
+            <h2>The Problem with Monkey App</h2>
+            <p>
+              Monkey is built exclusively as a mobile app. There is no browser version. If you are on a
+              laptop or desktop — where the majority of video chat users are — Monkey does not work at all.
+              For mobile users, Monkey requires phone number verification. It is a social app where
+              connections persist and profiles form, which is fundamentally different from what Omegle
+              users want.
+            </p>
+
+            <h2>What Omeagle Does Differently</h2>
+            <div className="blog-highlight">
+              <Zap size={20} />
+              <div>
+                <strong>No sign up — ever</strong>
+                <p>A temporary anonymous session ID is generated when you load the page and discarded when you leave. That is it. No email. No password. No verification.</p>
+              </div>
+            </div>
+            <ul>
+              <li><strong>Browser-first by design</strong> — built for the web, not ported from an app. Works in Chrome, Firefox, Edge, and Safari on any device.</li>
+              <li><strong>Free filters that competitors charge for</strong> — gender, country, and interest tag matching are all free. No coins, credits, or subscription tiers.</li>
+              <li><strong>Real-time AI moderation</strong> — violations are caught and sessions terminated before content reaches the other user, not after a manual report.</li>
+              <li><strong>WebRTC peer-to-peer encryption</strong> — your video travels directly between devices. Not recorded. Not stored. Not reviewable by anyone.</li>
+            </ul>
+
+            <h2>Interest Matching — The Feature Competitors Ignore</h2>
+            <p>
+              Add up to 20 interest tags before starting a chat — things like "music," "gaming,"
+              "travel," or "coding." The matching algorithm prioritizes users who share at least one
+              interest. You still meet random people, but conversations start with common ground. This
+              single feature dramatically reduces awkward silences and skips.
+            </p>
+
+            <h2>How to Get Started (60 Seconds Flat)</h2>
+            <ol className="blog-steps">
+              <li><strong>Go to omeagle.online</strong> — no download needed</li>
+              <li><strong>Click Video Chat or Text Chat</strong> based on your preference</li>
+              <li><strong>Allow camera and mic access</strong> when prompted (video mode only)</li>
+              <li><strong>Set preferences (optional)</strong> — country, gender, interests</li>
+              <li><strong>Click Start</strong> — matched in under 3 seconds</li>
+              <li><strong>Hit Next to skip, Stop to end</strong> — no explanation needed</li>
+            </ol>
+
+            <h2>Is Omeagle Safe?</h2>
+            <p>
+              Yes. Safety is built into every layer: an 18+ age gate on every session, a report button
+              during every chat, a block system, real-time AI moderation, and zero data storage. Omeagle
+              does not build profiles, store conversation history, or collect personally identifiable
+              information. For the full picture, read the{' '}
+              <Link to="/safety">Safety Guide</Link>.
+            </p>
+
+            <div className="blog-cta">
+              <h2>Try the Best No-Sign-Up Omegle Alternative</h2>
+              <p>No account. No app. No paywall. Just click Start and meet someone new in seconds.</p>
+              <div className="blog-cta-buttons">
+                <Link to="/" className="blog-btn-primary"><Video size={18} style={{marginRight:'0.5rem'}} /> Start Free Video Chat</Link>
+                <Link to="/" className="blog-btn-secondary"><MessageCircle size={18} style={{marginRight:'0.5rem'}} /> Try Text Chat</Link>
+              </div>
+            </div>
+          </section>
+        </article>
+      )}
+
+      {activeArticle === 'article5' && (
+        <article className="blog-article" itemScope itemType="https://schema.org/Article">
+          <header className="blog-header">
+            <div className="blog-meta">
+              <span className="blog-tag">Guide</span>
+              <span className="blog-date"><Calendar size={14} /> July 21, 2026</span>
+              <span className="blog-reading"><Clock size={14} /> 6 min read</span>
+            </div>
+            <h1 itemProp="headline">No Sign Up Video Chat Sites That Actually Work in 2026</h1>
+            <p className="blog-subtitle" itemProp="description">
+              Most "free" chat sites hide paywalls behind sign-up forms. Here are the only platforms
+              that work instantly in your browser — zero account, zero download, zero friction.
+            </p>
+          </header>
+
+          <section className="blog-section" itemProp="articleBody">
+            <p>
+              "No sign up" is the most searched qualifier in random video chat for a reason. Users have
+              been burned. They land on a site, click Start, and hit a wall — create an account, verify
+              your email, download the app, add a phone number. The promise was instant connection. The
+              reality was a multi-step friction funnel.
+            </p>
+            <p>
+              This guide lists the video chat platforms that are genuinely sign-up free in 2026 —
+              tested, verified, and ranked by how frictionless the experience actually is.
+            </p>
+
+            <h2>What "No Sign Up" Actually Means</h2>
+            <p>
+              Before the list: a sign-up-free video chat site should meet all of these criteria:
+            </p>
+            <ul>
+              <li>✅ No email address required</li>
+              <li>✅ No password or username</li>
+              <li>✅ No phone number verification</li>
+              <li>✅ No social login (Google/Facebook)</li>
+              <li>✅ No app download to start chatting</li>
+              <li>✅ Working in a standard browser with no plugins</li>
+            </ul>
+            <p>
+              Platforms that fail any one of these are not truly sign-up free — they are just moving
+              the friction point later in the funnel.
+            </p>
+
+            <h2>1. Omeagle — Best Overall No-Sign-Up Video Chat</h2>
+            <div className="blog-highlight">
+              <Zap size={20} />
+              <div>
+                <strong>Our #1 Pick</strong>
+                <p>Open browser → click Start → talking to a stranger in under 3 seconds. No account. No app. 100% free.</p>
+              </div>
+            </div>
+            <p>
+              <strong>Omeagle</strong> (<Link to="/">omeagle.online</Link>) passes every criterion above
+              with zero caveats. It is the only major random chat platform that requires absolutely nothing
+              to start — not even an age confirmation email. You confirm you are 18+ with a single click
+              and you are in.
+            </p>
+            <p><strong>What makes it the best:</strong></p>
+            <ul>
+              <li>Gender and country filters — free, no account needed</li>
+              <li>Interest tag matching — free</li>
+              <li>Both video chat and text chat modes</li>
+              <li>Real-time AI moderation</li>
+              <li>WebRTC end-to-end encryption</li>
+              <li>Full mobile browser support — no app download</li>
+              <li>Zero data collected or retained</li>
+            </ul>
+
+            <h2>2. Bazoocam — Free, No Account</h2>
+            <p>
+              Bazoocam is a French random video chat platform with a loyal European user base. It works
+              in-browser, requires no sign-up, and includes basic country filtering. The interface is
+              simple. Moderation is lighter than Omeagle, and the user base skews heavily European. If
+              you want to meet people from France, Spain, or Germany specifically, Bazoocam is a solid
+              choice. It does not match Omeagle's moderation quality or feature set, but it passes the
+              no-sign-up test cleanly.
+            </p>
+
+            <h2>3. Camsurf — Free Tier, No Registration</h2>
+            <p>
+              Camsurf allows you to start chatting without creating an account. The free tier works and
+              includes basic video matching. The catch: gender filtering and country-specific matching
+              require a paid subscription. The sign-up barrier is low — you can start chatting
+              anonymously — but the best features are paywalled. Consider it a step below Omeagle for
+              this reason.
+            </p>
+
+            <h2>Why Most "No Sign Up" Claims Are Misleading</h2>
+            <p>Here is what platforms do to obscure their sign-up requirements:</p>
+            <div className="blog-table-wrap">
+              <table className="blog-table">
+                <thead>
+                  <tr><th>Tactic</th><th>Example</th><th>What it really means</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>"Sign in with Google"</td><td>Chatroulette, OmeTV</td><td>Still a sign-up. Your Google account is your ID.</td></tr>
+                  <tr><td>"No account needed" + app required</td><td>Monkey App</td><td>App store account required to download</td></tr>
+                  <tr><td>Free to start, filters paywalled</td><td>Chatspin, Shagle</td><td>You can join but the useful features cost money</td></tr>
+                  <tr><td>"Quick registration"</td><td>Emerald Chat</td><td>Still a sign-up, just fast</td></tr>
+                  <tr><td>Genuinely free and sign-up free</td><td><strong>Omeagle</strong></td><td>No account. No friction. Open and start.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2>How to Pick the Right Platform for You</h2>
+            <ul>
+              <li><strong>Want true anonymity?</strong> → Omeagle. No email, no account, no trace.</li>
+              <li><strong>European user base preference?</strong> → Bazoocam as a secondary option.</li>
+              <li><strong>Text chat without a camera?</strong> → Omeagle's text mode — the only major platform with a genuinely free text chat that requires no sign-up.</li>
+              <li><strong>Language practice with specific countries?</strong> → Omeagle's country filter, free.</li>
+              <li><strong>Interest-based matching?</strong> → Omeagle — the only no-sign-up platform with this feature.</li>
+            </ul>
+
+            <h2>Why Sign-Up Requirements Keep Spreading</h2>
+            <p>
+              Platforms add registration for two reasons: monetization and moderation. Accounts create
+              user profiles that can be monetized with ads. They also create a friction layer that
+              reduces the volume of bad actors (it takes more effort to create an account than to just
+              click Start). Both are legitimate business reasons.
+            </p>
+            <p>
+              Omeagle solves the moderation problem differently — with <strong>real-time AI content
+              moderation</strong> rather than friction-based account requirements. The result: genuine
+              anonymity with genuine safety. You do not have to choose between the two.
+            </p>
+
+            <h2>Getting Started With No Sign Up</h2>
+            <p>
+              The fastest way to start a no-sign-up video chat right now:
+            </p>
+            <ol className="blog-steps">
+              <li>Open your browser — Chrome, Firefox, Edge, or Safari</li>
+              <li>Go to <Link to="/">omeagle.online</Link></li>
+              <li>Click <strong>Video Chat</strong> or <strong>Text Chat</strong></li>
+              <li>Allow camera/mic access (video only)</li>
+              <li>Click <strong>Start</strong> — you're connected in under 3 seconds</li>
+            </ol>
+            <p>No form. No password. No email confirmation waiting in your inbox.</p>
+
+            <div className="blog-cta">
+              <h2>Start Chatting — No Account Needed</h2>
+              <p>The only truly sign-up-free random video chat. Open in any browser, click Start, meet someone new.</p>
+              <div className="blog-cta-buttons">
+                <Link to="/" className="blog-btn-primary"><Video size={18} style={{marginRight:'0.5rem'}} /> Start Video Chat Free</Link>
+                <Link to="/safety" className="blog-btn-secondary"><Shield size={18} style={{marginRight:'0.5rem'}} /> Safety Guide</Link>
+              </div>
+            </div>
+          </section>
+        </article>
+      )}
+
+      {activeArticle === 'article6' && (
+        <article className="blog-article" itemScope itemType="https://schema.org/Article">
+          <header className="blog-header">
+            <div className="blog-meta">
+              <span className="blog-tag">Guide</span>
+              <span className="blog-date"><Calendar size={14} /> July 21, 2026</span>
+              <span className="blog-reading"><Clock size={14} /> 7 min read</span>
+            </div>
+            <h1 itemProp="headline">Text Chat with Strangers — Free Anonymous Text Chat in 2026</h1>
+            <p className="blog-subtitle" itemProp="description">
+              Not ready for video? Anonymous text chat with strangers is faster, more private, and
+              less awkward than you think. Here is everything you need to know.
+            </p>
+          </header>
+
+          <section className="blog-section" itemProp="articleBody">
+            <p>
+              Not everyone wants to turn on a camera when talking to strangers. That is completely
+              valid. <strong>Text chat with strangers</strong> offers the same random connection
+              experience as video chat — without the camera anxiety, lighting concerns, or bandwidth
+              requirements. You are still meeting real people. You are just doing it through words.
+            </p>
+
+            <h2>How to Start Text Chat on Omeagle</h2>
+            <div className="blog-highlight">
+              <MessageCircle size={20} />
+              <div>
+                <strong>Text Chat on Omeagle is 100% free</strong>
+                <p>No account. No camera. No download. Opens in any browser in seconds.</p>
+              </div>
+            </div>
+            <ol className="blog-steps">
+              <li>Go to <Link to="/">omeagle.online</Link></li>
+              <li>Click <strong>Text Chat</strong> (the second button on the home page)</li>
+              <li>Set preferences — country, gender, interests (all optional)</li>
+              <li>Click <strong>Start</strong> — matched with a stranger in under 3 seconds</li>
+              <li>Type your messages. Hit <strong>Next</strong> to skip anytime.</li>
+            </ol>
+
+            <h2>Text Chat vs Video Chat</h2>
+            <div className="blog-table-wrap">
+              <table className="blog-table">
+                <thead>
+                  <tr><th>Factor</th><th>Text Chat</th><th>Video Chat</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Camera required</td><td>❌ No</td><td>✅ Yes</td></tr>
+                  <tr><td>Bandwidth needed</td><td>⚡ Minimal</td><td>📶 High</td></tr>
+                  <tr><td>Anonymity level</td><td>🔒 Maximum</td><td>🔒 High</td></tr>
+                  <tr><td>Works on slow connections</td><td>✅ Yes</td><td>❌ Often struggles</td></tr>
+                  <tr><td>Good for language practice</td><td>✅ Excellent</td><td>✅ Excellent</td></tr>
+                  <tr><td>Less social anxiety</td><td>✅ Yes</td><td>⚠️ Varies</td></tr>
+                  <tr><td>Can multitask</td><td>✅ Yes</td><td>❌ Not really</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2>Top Reasons to Use Text Chat</h2>
+            <ul>
+              <li><strong>Language practice</strong> — take time to compose sentences correctly; use the country filter to find native speakers</li>
+              <li><strong>Social anxiety</strong> — lower stakes than video, no camera pressure, focus on expression</li>
+              <li><strong>Privacy-first conversations</strong> — no face, no voice, no visible background</li>
+              <li><strong>Low bandwidth</strong> — works on 3G mobile data, perfect for travel</li>
+              <li><strong>Late-night chatting</strong> — silent by nature, no microphone needed</li>
+            </ul>
+
+            <h2>Text Chat Safety Tips</h2>
+            <ul>
+              <li><strong>Never share personal info</strong> — no real name, location, social handles, or phone number</li>
+              <li><strong>Ignore link requests</strong> — strangers asking you to click links are almost always scammers</li>
+              <li><strong>Use the report button</strong> — for any threatening, explicit, or harassing messages</li>
+              <li><strong>Do not share contact info</strong> — the anonymity is a feature, not a limitation</li>
+            </ul>
+            <p>For the full safety picture, read our <Link to="/safety">Safety Guide</Link>.</p>
+
+            <h2>Common Questions</h2>
+            <div className="blog-faq">
+              <div className="faq-item">
+                <h3>Is text chat with strangers safe?</h3>
+                <p>Yes, with the right habits. Use a moderated platform, never share personal information, and use the report button for violations. Text chat is lower-risk than video because your face and location are never visible.</p>
+              </div>
+              <div className="faq-item">
+                <h3>Can I text chat without signing up?</h3>
+                <p>Yes — on Omeagle, text chat requires zero sign-up. No email, no account, no personal information. Open the browser, click Text Chat, you are connected.</p>
+              </div>
+              <div className="faq-item">
+                <h3>Is text chat free on Omeagle?</h3>
+                <p>Completely. No daily limits, no coins, no premium tier. Gender, country, and interest matching are all free in text mode.</p>
+              </div>
+              <div className="faq-item">
+                <h3>Does text chat work on mobile?</h3>
+                <p>Yes. Omeagle's text chat works on all mobile browsers — iPhone Safari, Android Chrome — with no app download required.</p>
+              </div>
+            </div>
+
+            <div className="blog-cta">
+              <h2>Start Free Text Chat Now</h2>
+              <p>No camera. No account. No download. Open the page, click Text Chat, meet someone new.</p>
+              <div className="blog-cta-buttons">
+                <Link to="/" className="blog-btn-primary"><MessageCircle size={18} style={{marginRight:'0.5rem'}} /> Start Text Chat Free</Link>
+                <Link to="/" className="blog-btn-secondary"><Video size={18} style={{marginRight:'0.5rem'}} /> Try Video Chat Instead</Link>
               </div>
             </div>
           </section>

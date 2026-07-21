@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
+    "postbuild": "react-snap",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -22,7 +23,25 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "react-snap": "^1.23.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.5"
+  },
+  "reactSnap": {
+    "source": "dist",
+    "destination": "dist",
+    "include": [
+      "/",
+      "/about",
+      "/privacy",
+      "/terms",
+      "/contact",
+      "/blog",
+      "/safety"
+    ],
+    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "minifyHtml": { "collapseWhitespace": true, "removeComments": false },
+    "inlineCss": false,
+    "saveAs": "html"
   }
 }

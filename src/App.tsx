@@ -10,6 +10,7 @@ import { Footer } from './components/Footer';
 import { SettingsModal } from './components/Modals/SettingsModal';
 import { PreferencesModal } from './components/Modals/PreferencesModal';
 import { AgeGateModal } from './components/Modals/AgeGateModal';
+import { ReportModal } from './components/Modals/ReportModal';
 import { About } from './pages/About';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
@@ -68,7 +69,9 @@ export const App: React.FC = () => {
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPrefsOpen, setIsPrefsOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
+  const [searchStep, setSearchStep] = useState(0);
   const [partnerProfile, setPartnerProfile] = useState<PartnerProfile | null>(null);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
     return sessionStorage.getItem('omeagle_age_verified') === 'true';
@@ -427,6 +430,20 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Search progress feedback for longer matching queues
+  useEffect(() => {
+    if (connectionStatus !== 'searching') {
+      setSearchStep(0);
+      return;
+    }
+    const timer1 = setTimeout(() => setSearchStep(1), 12000);
+    const timer2 = setTimeout(() => setSearchStep(2), 24000);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [connectionStatus]);
+
   // Cleanup on unmount
   useEffect(() => () => {
     cleanupPoll();
@@ -476,7 +493,11 @@ export const App: React.FC = () => {
                   <span className="dot-green-pulse" />
                   <span className="status-banner-text">
                     {connectionStatus === 'connected' ? "You're now chatting with a random stranger" :
-                     connectionStatus === 'searching' ? "Looking for a random stranger to chat with..." :
+                     connectionStatus === 'searching' ? (
+                       searchStep === 0 ? "Looking for a random stranger to chat with..." :
+                       searchStep === 1 ? "Searching globally across 190+ countries..." :
+                       "Broadening matching preferences to find a match fast..."
+                     ) :
                      "Start a video chat to meet strangers"}
                   </span>
                   <ChevronRight size={16} className="chevron-right-icon" />
@@ -487,7 +508,7 @@ export const App: React.FC = () => {
                     <VideoGrid localStream={media.localStream} remoteStream={remoteStream}
                       connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
                       onFlipCamera={handleFlipCamera}
-                      onReportStranger={() => navigate('/safety')}
+                      onReportStranger={() => setIsReportOpen(true)}
                       onOpenSafety={() => navigate('/safety')} />
                     <ControlsBar connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
                       onStart={() => startChat('video')} onStop={handleStop} onNext={handleNext}
@@ -563,6 +584,21 @@ export const App: React.FC = () => {
         settings={settings} onSaveSettings={updateSettings} />
       <PreferencesModal isOpen={isPrefsOpen} onClose={() => setIsPrefsOpen(false)}
         settings={settings} onSave={updateSettings} />
+      <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)}
+        onSubmitReport={(reason, details) => {
+          // Log report event and skip to next match
+          if (roomIdRef.current) {
+            Promise.resolve(
+              supabase.from('reports').insert({
+                room_id: roomIdRef.current,
+                reason,
+                details: details || null,
+                created_at: new Date().toISOString()
+              })
+            ).catch(() => {});
+          }
+          handleNext();
+        }} />
       {!ageConfirmed && <AgeGateModal onConfirm={handleAgeConfirm} />}
       <PWAInstallPrompt />
 

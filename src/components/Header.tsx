@@ -42,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
           <Link to="/" onClick={() => onSelectMode('landing')} className="logo-link">
-            <img src={headerLogo} alt="Omeagle" className="header-logo-img" />
+            <img src={headerLogo} alt="Omeagle — Free Video Chat with Strangers" className="header-logo-img" width="160" height="38" fetchPriority="high" decoding="async" />
           </Link>
           <nav className="desktop-nav">
             <button className={`nav-tab ${currentMode === 'video' ? 'active' : ''}`} onClick={() => onSelectMode('video')}>

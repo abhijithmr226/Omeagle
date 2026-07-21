@@ -52,10 +52,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
-            <span className="highlight-text">Free Video Chat</span> with Strangers
+            <span className="highlight-text">Free Video Chat</span> with Strangers —{' '}
+            <span className="hero-nosignup">No Sign Up</span>
           </h1>
           <p className="hero-subtitle">
-            Talk to strangers worldwide — no sign up, no registration required. The best Omegle alternative.
+            The best <strong>Omegle alternative</strong> — random video chat and text chat with strangers worldwide. Instant matching, 100% free, no registration ever.
           </p>
           <div className="cta-group">
             <button className="btn-primary-lg" onClick={() => onStartChat('video')}>
@@ -279,6 +280,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
         .hero-section { text-align: center; max-width: 600px; width: 100%; }
         .hero-title { font-size: 3.5rem; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1rem; color: var(--text-primary); }
         .highlight-text { color: var(--brand-blue); }
+        .hero-nosignup { color: var(--text-secondary); font-size: 0.75em; font-weight: 600; white-space: nowrap; }
         .hero-subtitle { font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 2rem; }
         .cta-group { display: flex; flex-direction: column; gap: 0.9rem; max-width: 340px; margin: 0 auto; width: 100%; }
         .btn-primary-lg { display: flex; align-items: center; justify-content: center; gap: 0.75rem; background-color: var(--brand-blue); color: #ffffff; padding: 1rem 1.75rem; font-size: 1.1rem; font-weight: 700; border-radius: var(--radius-md); box-shadow: 0 8px 20px -4px rgba(0, 102, 255, 0.4); min-height: 56px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
