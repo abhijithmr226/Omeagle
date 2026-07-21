@@ -21,8 +21,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   const localVideoRef  = useRef<HTMLVideoElement>(null);
   const wrapperRef     = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  // Default to 'contain' so video is 100% full frame and NEVER cropped
-  const [objectFitMode, setObjectFitMode] = useState<'contain' | 'cover'>('contain');
+  const [objectFitMode, setObjectFitMode] = useState<'cover' | 'contain'>('cover');
 
   useEffect(() => {
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
@@ -47,7 +46,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   };
 
   const toggleObjectFit = () => {
-    setObjectFitMode(prev => prev === 'contain' ? 'cover' : 'contain');
+    setObjectFitMode(prev => prev === 'cover' ? 'contain' : 'cover');
   };
 
   const isConnected = connectionStatus === 'connected';
@@ -56,7 +55,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   return (
     <div className="vg-root" ref={wrapperRef}>
 
-      {/* ── Stranger panel ──────────────────────────────────── */}
+      {/* ── Stranger panel (Classic 4:3 Omegle ratio) ──────────── */}
       <div className="vg-panel vg-stranger">
         <video
           ref={remoteVideoRef}
@@ -84,10 +83,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           <button
             className="vg-btn vg-btn-icon"
             onClick={toggleObjectFit}
-            title={objectFitMode === 'contain' ? 'Uncropped (Contain) — Click to Fill Panel' : 'Filled (Cover) — Click to Show Full Uncropped Video'}
+            title={objectFitMode === 'cover' ? 'Switch to Fit (Show Letterbox)' : 'Switch to Cover (Fill Box)'}
           >
-            {objectFitMode === 'contain' ? <Expand size={14} /> : <Shrink size={14} />}
-            <span className="vg-btn-text-mobile">{objectFitMode === 'contain' ? 'Fit Full' : 'Fill'}</span>
+            {objectFitMode === 'cover' ? <Shrink size={14} /> : <Expand size={14} />}
+            <span className="vg-btn-text-mobile">{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
           </button>
 
           {isConnected && onReportStranger && (
@@ -107,7 +106,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         )}
       </div>
 
-      {/* ── You panel ───────────────────────────────────────── */}
+      {/* ── You panel (Classic 4:3 Omegle ratio) ───────────── */}
       <div className="vg-panel vg-you">
         <video
           ref={localVideoRef}
@@ -139,31 +138,29 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
       </div>
 
       <style>{`
-        /* ── Root fills parent flex column ─────────────────── */
+        /* ── Classic Omegle 4:3 Video Layout ─────────────────── */
         .vg-root {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 8px;
           width: 100%;
-          flex: 1;
           min-height: 0;
           overflow: hidden;
         }
 
-        /* ── Panels ────────────────────────────────────────── */
+        /* ── Panels (Standard 4:3 Omegle aspect ratio) ───────── */
         .vg-panel {
           position: relative;
           width: 100%;
-          flex: 1;
-          min-height: 0;
+          aspect-ratio: 4 / 3;
           overflow: hidden;
-          border-radius: 12px;
-          background: #05080e;
+          border-radius: 10px;
+          background: #000000;
           border: 1px solid rgba(255,255,255,0.08);
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }
 
         /* ── Video element ─────────────────────────────────── */
@@ -177,9 +174,8 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           transition: opacity 0.3s ease, object-fit 0.2s ease;
           display: block;
         }
-        /* Default: contain ensures 100% of video is visible without cropping */
-        .vg-fit-contain { object-fit: contain !important; object-position: center center; }
         .vg-fit-cover   { object-fit: cover !important; object-position: center center; }
+        .vg-fit-contain { object-fit: contain !important; object-position: center center; }
 
         .vg-video-on { opacity: 1; }
         /* Local feed: mirror transform */
@@ -302,9 +298,14 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* ── Mobile Responsive Override ─────────────────────── */
+        @media (max-width: 1024px) {
+          .vg-panel { aspect-ratio: auto; flex: 1; }
+        }
+
         /* ── Fullscreen ────────────────────────────────────── */
         :fullscreen .vg-root { gap: 0; }
-        :fullscreen .vg-panel { border-radius: 0; border: none; }
+        :fullscreen .vg-panel { border-radius: 0; border: none; aspect-ratio: auto; flex: 1; }
       `}</style>
     </div>
   );

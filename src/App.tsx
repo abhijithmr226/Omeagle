@@ -615,34 +615,34 @@ export const App: React.FC = () => {
         /* ── Text chat (centered column) ───────────────────── */
         .text-chat-layout { display: flex; justify-content: center; width: 100%; max-width: 640px; margin: 0 auto; }
 
-        /* ── Desktop video-chat layout ──────────────────────── */
+        /* ── Classic Omegle Desktop Layout (900px container) ── */
         .chat-layout-wrapper {
           display: flex;
           flex-direction: column;
           width: 100%;
-          max-width: 1080px;
+          max-width: 900px;
           margin: 0 auto;
           padding: 0.5rem;
           gap: 0;
         }
         .chat-layout-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 360px 1fr;
           gap: 1.25rem;
           width: 100%;
           align-items: start;
         }
-        /* Video & Chat columns — compact, balanced 490px desktop viewport */
         .video-column {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
-          height: min(490px, calc(100dvh - 145px));
+          width: 360px;
         }
         .chat-column {
           display: flex;
           flex-direction: column;
-          height: min(490px, calc(100dvh - 145px));
+          width: 100%;
+          min-height: 560px;
         }
 
         /* ── Mobile chat slide-up overlay ───────────────────── */
