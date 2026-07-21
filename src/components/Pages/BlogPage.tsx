@@ -4,14 +4,16 @@ import { ArrowLeft, Calendar, Clock, Users, Shield, Globe, Video, MessageCircle,
 
 interface BlogPageProps {
   onBack?: () => void;
+  initialArticle?: 'index' | 'article1' | 'article2' | 'article3' | 'article4' | 'article5' | 'article6';
 }
 
-export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
-  const [activeArticle, setActiveArticle] = useState<'index' | 'article1' | 'article2' | 'article3' | 'article4' | 'article5' | 'article6'>('index');
+export const BlogPage: React.FC<BlogPageProps> = ({ onBack, initialArticle }) => {
+  const [activeArticle, setActiveArticle] = useState<'index' | 'article1' | 'article2' | 'article3' | 'article4' | 'article5' | 'article6'>(initialArticle || 'index');
 
   const articles = [
     {
       id: 'article1' as const,
+      slug: 'omeagle-free-random-video-chat',
       tag: 'Guide',
       date: 'July 19, 2026',
       readTime: '12 min read',
@@ -20,6 +22,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
     },
     {
       id: 'article2' as const,
+      slug: 'best-omegle-alternatives',
       tag: 'Comparison',
       date: 'July 20, 2026',
       readTime: '9 min read',
@@ -28,6 +31,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
     },
     {
       id: 'article3' as const,
+      slug: 'safe-video-chat-guide',
       tag: 'Safety',
       date: 'July 20, 2026',
       readTime: '7 min read',
@@ -36,6 +40,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
     },
     {
       id: 'article4' as const,
+      slug: 'ometv-alternative',
       tag: 'Comparison',
       date: 'July 21, 2026',
       readTime: '8 min read',
@@ -44,6 +49,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
     },
     {
       id: 'article5' as const,
+      slug: 'no-signup-video-chat',
       tag: 'Guide',
       date: 'July 21, 2026',
       readTime: '6 min read',
@@ -52,6 +58,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
     },
     {
       id: 'article6' as const,
+      slug: 'text-chat-with-strangers',
       tag: 'Guide',
       date: 'July 21, 2026',
       readTime: '7 min read',
@@ -73,8 +80,9 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
 
           <div className="blog-card-grid">
             {articles.map((article) => (
-              <button
+              <Link
                 key={article.id}
+                to={`/blog/${article.slug}`}
                 className="blog-card"
                 onClick={() => setActiveArticle(article.id)}
               >
@@ -86,7 +94,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack }) => {
                 <h2 className="blog-card-title">{article.title}</h2>
                 <p className="blog-card-desc">{article.description}</p>
                 <span className="blog-card-cta">Read article <ChevronRight size={14} /></span>
-              </button>
+              </Link>
             ))}
           </div>
         </div>

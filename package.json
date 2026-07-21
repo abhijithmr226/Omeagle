@@ -37,6 +37,12 @@
       "/terms",
       "/contact",
       "/blog",
+      "/blog/omeagle-free-random-video-chat",
+      "/blog/best-omegle-alternatives",
+      "/blog/safe-video-chat-guide",
+      "/blog/ometv-alternative",
+      "/blog/no-signup-video-chat",
+      "/blog/text-chat-with-strangers",
       "/safety"
     ],
     "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],

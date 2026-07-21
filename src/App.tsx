@@ -472,6 +472,12 @@ export const App: React.FC = () => {
           <Route path="/terms" element={<Terms />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/omeagle-free-random-video-chat" element={<Blog article="article1" />} />
+          <Route path="/blog/best-omegle-alternatives" element={<Blog article="article2" />} />
+          <Route path="/blog/safe-video-chat-guide" element={<Blog article="article3" />} />
+          <Route path="/blog/ometv-alternative" element={<Blog article="article4" />} />
+          <Route path="/blog/no-signup-video-chat" element={<Blog article="article5" />} />
+          <Route path="/blog/text-chat-with-strangers" element={<Blog article="article6" />} />
           <Route path="/safety" element={<Safety />} />
           <Route path="/*" element={
             mode === 'landing' ? (
