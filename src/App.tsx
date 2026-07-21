@@ -620,7 +620,9 @@ export const App: React.FC = () => {
           display: flex;
           flex-direction: column;
           width: 100%;
-          padding: 0.75rem;
+          max-width: 1080px;
+          margin: 0 auto;
+          padding: 0.5rem;
           gap: 0;
         }
         .chat-layout-grid {
@@ -630,15 +632,18 @@ export const App: React.FC = () => {
           width: 100%;
           align-items: start;
         }
-        /* Video column — responsive height: caps at 580px but shrinks on
-           shorter screens so nothing scrolls off-screen on a laptop */
+        /* Video & Chat columns — compact, balanced 490px desktop viewport */
         .video-column {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
-          height: min(640px, calc(100dvh - 130px));
+          height: min(490px, calc(100dvh - 145px));
         }
-        .chat-column { display: flex; flex-direction: column; }
+        .chat-column {
+          display: flex;
+          flex-direction: column;
+          height: min(490px, calc(100dvh - 145px));
+        }
 
         /* ── Mobile chat slide-up overlay ───────────────────── */
         .mobile-chat-overlay { display: none; }
