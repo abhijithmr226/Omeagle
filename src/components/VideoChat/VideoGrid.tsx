@@ -302,7 +302,8 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
 
         /* ── Mobile Responsive Override ─────────────────────── */
         @media (max-width: 1024px) {
-          .vg-panel { aspect-ratio: auto; flex: 1; }
+          .vg-root { flex: 1; min-height: 0; }
+          .vg-panel { aspect-ratio: auto; flex: 1; min-height: 0; }
         }
 
         /* ── Fullscreen ────────────────────────────────────── */
