@@ -21,7 +21,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   const localVideoRef  = useRef<HTMLVideoElement>(null);
   const wrapperRef     = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [objectFitMode, setObjectFitMode] = useState<'cover' | 'contain'>('cover');
+  const [objectFitMode, setObjectFitMode] = useState<'contain' | 'cover'>('contain');
 
   useEffect(() => {
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
@@ -163,19 +163,21 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }
 
-        /* ── Video element ─────────────────────────────────── */
+        /* ── Video element (default contain = 100% full uncropped video) ── */
         .vg-video {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
+          object-fit: contain !important;
+          object-position: center center;
           background: #000;
           opacity: 0;
-          transition: opacity 0.3s ease, object-fit 0.2s ease;
+          transition: opacity 0.3s ease;
           display: block;
         }
-        .vg-fit-cover   { object-fit: cover !important; object-position: center center; }
-        .vg-fit-contain { object-fit: contain !important; object-position: center center; }
+        .vg-fit-contain { object-fit: contain !important; }
+        .vg-fit-cover   { object-fit: cover !important; }
 
         .vg-video-on { opacity: 1; }
         /* Local feed: mirror transform */
