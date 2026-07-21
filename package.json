@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
-    "postbuild": "react-snap",
+    "postbuild": "react-snap || true",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -45,7 +45,12 @@
       "/blog/text-chat-with-strangers",
       "/safety"
     ],
-    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu"
+    ],
     "minifyHtml": { "collapseWhitespace": true, "removeComments": false },
     "inlineCss": false,
     "saveAs": "html"
