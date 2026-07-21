@@ -11,12 +11,12 @@ import { SettingsModal } from './components/Modals/SettingsModal';
 import { PreferencesModal } from './components/Modals/PreferencesModal';
 import { AgeGateModal } from './components/Modals/AgeGateModal';
 import { ReportModal } from './components/Modals/ReportModal';
-import { About } from './pages/About';
-import { Privacy } from './pages/Privacy';
-import { Terms } from './pages/Terms';
-import { Contact } from './pages/Contact';
-import { Blog } from './pages/Blog';
-import { Safety } from './pages/Safety';
+const About = React.lazy(() => import('./pages/About').then(m => ({ default: m.About })));
+const Privacy = React.lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })));
+const Terms = React.lazy(() => import('./pages/Terms').then(m => ({ default: m.Terms })));
+const Contact = React.lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })));
+const Blog = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.Blog })));
+const Safety = React.lazy(() => import('./pages/Safety').then(m => ({ default: m.Safety })));
 import type { ChatMode, ConnectionStatus, PartnerProfile } from './types/chat';
 import { joinQueue, pollMatch, leaveQueue, endCall, cleanupAfterSkip } from './services/queue';
 import { createCallChannel, type CallChannel } from './services/signaling';
@@ -466,101 +466,94 @@ export const App: React.FC = () => {
       }} onlineCount={onlineCount} theme={theme} onToggleTheme={toggleTheme} />
 
       <main className="main-content">
-        <Routes>
-          <Route path="/about" element={<About />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/omeagle-free-random-video-chat" element={<Blog article="article1" />} />
-          <Route path="/blog/best-omegle-alternatives" element={<Blog article="article2" />} />
-          <Route path="/blog/safe-video-chat-guide" element={<Blog article="article3" />} />
-          <Route path="/blog/ometv-alternative" element={<Blog article="article4" />} />
-          <Route path="/blog/no-signup-video-chat" element={<Blog article="article5" />} />
-          <Route path="/blog/text-chat-with-strangers" element={<Blog article="article6" />} />
-          <Route path="/safety" element={<Safety />} />
-          <Route path="/*" element={
-            mode === 'landing' ? (
-              <LandingPage onStartChat={startChat} onlineCount={onlineCount}
-                settings={settings} onOpenPrefs={() => setIsPrefsOpen(true)} />
-            ) : mode === 'text' ? (
-              <div className="text-chat-layout">
-                <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                  onSendMessage={handleSendMessage} onNext={handleNext}
-                  onStart={() => startChat('text')} mode="text"
-                  isStrangerTyping={chat.isStrangerTyping}
-                  onTyping={() => callChannelRef.current?.sendTyping()}
-                  partnerProfile={partnerProfile} />
-              </div>
-            ) : (
-              <div className="chat-layout-wrapper">
-                {/* Mobile Top Status Pill Banner (matches reference UI) */}
-                <div className="mobile-status-banner">
-                  <span className="dot-green-pulse" />
-                  <span className="status-banner-text">
-                    {connectionStatus === 'connected' ? "You're now chatting with a random stranger" :
-                     connectionStatus === 'searching' ? (
-                       searchStep === 0 ? "Looking for a random stranger to chat with..." :
-                       searchStep === 1 ? "Searching globally across 190+ countries..." :
-                       "Broadening matching preferences to find a match fast..."
-                     ) :
-                     "Start a video chat to meet strangers"}
-                  </span>
-                  <ChevronRight size={16} className="chevron-right-icon" />
+        <React.Suspense fallback={<div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="vg-spin" /></div>}>
+          <Routes>
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/omeagle-free-random-video-chat" element={<Blog article="article1" />} />
+            <Route path="/blog/best-omegle-alternatives" element={<Blog article="article2" />} />
+            <Route path="/blog/safe-video-chat-guide" element={<Blog article="article3" />} />
+            <Route path="/blog/ometv-alternative" element={<Blog article="article4" />} />
+            <Route path="/blog/no-signup-video-chat" element={<Blog article="article5" />} />
+            <Route path="/blog/text-chat-with-strangers" element={<Blog article="article6" />} />
+            <Route path="/safety" element={<Safety />} />
+            <Route path="/*" element={
+              mode === 'landing' ? (
+                <LandingPage onStartChat={startChat} onlineCount={onlineCount}
+                  settings={settings} onOpenPrefs={() => setIsPrefsOpen(true)} />
+              ) : mode === 'text' ? (
+                <div className="text-chat-layout">
+                  <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
+                    onSendMessage={handleSendMessage} onNext={handleNext}
+                    onStart={() => startChat('text')} mode="text"
+                    isStrangerTyping={chat.isStrangerTyping}
+                    onTyping={() => callChannelRef.current?.sendTyping()}
+                    partnerProfile={partnerProfile} />
                 </div>
-
-                <div className="chat-layout-grid">
-                  <div className="video-column">
-                    <VideoGrid localStream={media.localStream} remoteStream={remoteStream}
-                      connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
-                      onFlipCamera={handleFlipCamera}
-                      onReportStranger={() => setIsReportOpen(true)}
-                      onOpenSafety={() => navigate('/safety')} />
-                    <ControlsBar connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
-                      onStart={() => startChat('video')} onStop={handleStop} onNext={handleNext}
-                      onToggleMute={media.toggleMute} onToggleVideo={media.toggleVideo} onOpenSettings={() => setIsSettingsOpen(true)}
-                      onFlipCamera={handleFlipCamera} mobileChatOpen={mobileChatOpen} onToggleChat={() => setMobileChatOpen(!mobileChatOpen)} />
+              ) : (
+                <div className="chat-layout-wrapper">
+                  {/* Mobile Top Status Pill Banner (matches reference UI) */}
+                  <div className="mobile-status-banner">
+                    <span className="dot-green-pulse" />
+                    <span className="status-banner-text">
+                      {connectionStatus === 'connected' ? "You're now chatting with a random stranger" :
+                       connectionStatus === 'searching' ? (
+                         searchStep === 0 ? "Looking for a random stranger to chat with..." :
+                         searchStep === 1 ? "Searching globally across 190+ countries..." :
+                         "Broadening matching preferences to find a match fast..."
+                       ) :
+                       "Start a video chat to meet strangers"}
+                    </span>
+                    <ChevronRight size={16} className="chevron-right-icon" />
                   </div>
 
-                  <div className="chat-column">
-                    <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                      onSendMessage={handleSendMessage} onNext={handleNext}
-                      onStart={() => startChat('video')} mode="video"
-                      isStrangerTyping={chat.isStrangerTyping}
-                      onTyping={() => callChannelRef.current?.sendTyping()}
-                      partnerProfile={partnerProfile} />
-                  </div>
-
-                  <div className={`mobile-chat-overlay ${mobileChatOpen ? 'open' : ''}`}>
-                    <div className="mobile-chat-header">
-                      <span>Text Chat</span>
-                      <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)}>✕</button>
+                  <div className="chat-layout-grid">
+                    <div className="video-column">
+                      <VideoGrid localStream={media.localStream} remoteStream={remoteStream}
+                        connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
+                        onFlipCamera={handleFlipCamera}
+                        onReportStranger={() => setIsReportOpen(true)}
+                        onOpenSafety={() => navigate('/safety')} />
+                      <ControlsBar connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
+                        onStart={() => startChat('video')} onStop={handleStop} onNext={handleNext}
+                        onToggleMute={media.toggleMute} onToggleVideo={media.toggleVideo} onOpenSettings={() => setIsSettingsOpen(true)}
+                        onFlipCamera={handleFlipCamera} mobileChatOpen={mobileChatOpen} onToggleChat={() => setMobileChatOpen(!mobileChatOpen)} />
                     </div>
-                    <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                      onSendMessage={handleSendMessage} onNext={handleNext}
-                      onStart={() => startChat('video')} mode="video"
-                      isStrangerTyping={chat.isStrangerTyping}
-                      onTyping={() => callChannelRef.current?.sendTyping()}
-                      partnerProfile={partnerProfile} />
+
+                    <div className="chat-column">
+                      <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
+                        onSendMessage={handleSendMessage} onNext={handleNext}
+                        onStart={() => startChat('video')} mode="video"
+                        isStrangerTyping={chat.isStrangerTyping}
+                        onTyping={() => callChannelRef.current?.sendTyping()}
+                        partnerProfile={partnerProfile} />
+                    </div>
+
+                    <div className={`mobile-chat-overlay ${mobileChatOpen ? 'open' : ''}`}>
+                      <div className="mobile-chat-header">
+                        <span>Text Chat</span>
+                        <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)}>✕</button>
+                      </div>
+                      <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
+                        onSendMessage={handleSendMessage} onNext={handleNext}
+                        onStart={() => startChat('video')} mode="video"
+                        isStrangerTyping={chat.isStrangerTyping}
+                        onTyping={() => callChannelRef.current?.sendTyping()}
+                        partnerProfile={partnerProfile} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          } />
-        </Routes>
+              )
+            } />
+          </Routes>
+        </React.Suspense>
       </main>
 
       <div className="ad-banner">
-        <script dangerouslySetInnerHTML={{ __html: `
-          atOptions = {
-            'key' : '8bdddf8feba87229589bd6c56db45ecd',
-            'format' : 'iframe',
-            'height' : 90,
-            'width' : 728,
-            'params' : {}
-          };
-        ` }} />
-        <script src="https://www.highperformanceformat.com/8bdddf8feba87229589bd6c56db45ecd/invoke.js" async />
+        <div id="container-8bdddf8feba87229589bd6c56db45ecd"></div>
       </div>
       <Footer onOpenPage={openPage} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}

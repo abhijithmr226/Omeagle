@@ -7,7 +7,14 @@
     <link rel="preconnect" href="https://bhrsheykwaduhpxiyqlw.supabase.co" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" />
+
+    <!-- Async Font Loading (Non-render-blocking) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" /></noscript>
+
+    <!-- Preload LCP Image -->
+    <link rel="preload" as="image" href="/headerlogo.png?v=3" type="image/png" fetchpriority="high" />
+
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/headerlogo.png?v=3" />
@@ -29,23 +36,28 @@
     <!-- Google Site Verification -->
     <meta name="google-site-verification" content="yseHS_Ozr9kHCMJ3rQ8H45jEmKuEFof6GH9RGOvt4vk" />
 
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-KGJZ3QD7');</script>
-    <!-- End Google Tag Manager -->
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z5331SMR7T"></script>
+    <!-- Google Tag Manager (Deferred after window load to prevent LCP/FCP delay) -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-Z5331SMR7T');
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-KGJZ3QD7');
+
+          var gaScript = document.createElement('script');
+          gaScript.async = true;
+          gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z5331SMR7T';
+          document.head.appendChild(gaScript);
+
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Z5331SMR7T');
+        }, 1000);
+      });
     </script>
-    <!-- End Google tag -->
 
     <!-- Primary Meta Tags -->
     <title>Omeagle — Free Video Chat with Strangers | Omegle Alternative 2026</title>
@@ -172,7 +184,7 @@
     }
     </script>
 
-    <!-- Structured Data: WebSite SearchAction (enables sitelinks searchbox) -->
+    <!-- Structured Data: WebSite SearchAction -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -332,8 +344,6 @@
       ]
     }
     </script>
-
-    <!-- Fonts loaded non-blockingly in CSS @import -->
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
