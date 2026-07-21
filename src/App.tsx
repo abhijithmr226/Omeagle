@@ -674,6 +674,8 @@ export const App: React.FC = () => {
           /* Single column — fills the wrapper height */
           .chat-layout-grid {
             grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+            align-items: stretch;
             gap: 0;
             flex: 1;
             height: 100%;
