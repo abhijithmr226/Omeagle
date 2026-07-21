@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { ArrowLeftRight, Users, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
 import { VideoGrid } from './components/VideoChat/VideoGrid';
@@ -520,29 +520,6 @@ export const App: React.FC = () => {
                       onStart={() => startChat('video')} onStop={handleStop} onNext={handleNext}
                       onToggleMute={media.toggleMute} onToggleVideo={media.toggleVideo} onOpenSettings={() => setIsSettingsOpen(true)}
                       onFlipCamera={handleFlipCamera} mobileChatOpen={mobileChatOpen} onToggleChat={() => setMobileChatOpen(!mobileChatOpen)} />
-
-                    {/* Mobile Bottom Footer Cards (matches reference UI) */}
-                    <div className="mobile-footer-cards">
-                      <div className="mobile-card card-next" onClick={connectionStatus === 'connected' ? handleNext : () => startChat('video')}>
-                        <div className="card-icon-circle icon-swap">
-                          <ArrowLeftRight size={20} />
-                        </div>
-                        <div className="card-text-body">
-                          <div className="card-title">Next</div>
-                          <div className="card-subtitle">Find another stranger</div>
-                        </div>
-                      </div>
-
-                      <div className="mobile-card card-users">
-                        <div className="card-icon-circle icon-users">
-                          <Users size={20} />
-                        </div>
-                        <div className="card-text-body">
-                          <div className="card-number">{onlineCount.toLocaleString()}</div>
-                          <div className="card-subtitle">users online</div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
 
                   <div className="chat-column">
@@ -647,7 +624,6 @@ export const App: React.FC = () => {
 
         /* ── Mobile UI Extras (hidden on desktop) ───────────── */
         .mobile-status-banner { display: none; }
-        .mobile-footer-cards  { display: none; }
         .mobile-chat-overlay  { display: none; }
 
         /* ────────────────────────────────────────────────────
@@ -664,9 +640,8 @@ export const App: React.FC = () => {
             overflow: hidden;
           }
 
-          /* Status banner and footer cards for mobile layout */
-          .mobile-status-banner { display: flex; }
-          .mobile-footer-cards  { display: grid; }
+          /* Status banner pill at top of mobile screen */
+          .mobile-status-banner { display: flex; margin: 8px 10px 0; z-index: 10; }
 
           /* Single column — fills the wrapper height */
           .chat-layout-grid {
