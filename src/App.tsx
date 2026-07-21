@@ -645,8 +645,10 @@ export const App: React.FC = () => {
           min-height: 560px;
         }
 
-        /* ── Mobile chat slide-up overlay ───────────────────── */
-        .mobile-chat-overlay { display: none; }
+        /* ── Mobile UI Extras (hidden on desktop) ───────────── */
+        .mobile-status-banner { display: none; }
+        .mobile-footer-cards  { display: none; }
+        .mobile-chat-overlay  { display: none; }
 
         /* ────────────────────────────────────────────────────
            MOBILE  ≤ 1024px
@@ -662,9 +664,9 @@ export const App: React.FC = () => {
             overflow: hidden;
           }
 
-          /* Status banner and footer cards are desktop-only extras */
-          .mobile-status-banner { display: none !important; }
-          .mobile-footer-cards  { display: none !important; }
+          /* Status banner and footer cards for mobile layout */
+          .mobile-status-banner { display: flex; }
+          .mobile-footer-cards  { display: grid; }
 
           /* Single column — fills the wrapper height */
           .chat-layout-grid {
