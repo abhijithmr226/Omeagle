@@ -604,9 +604,11 @@ export const App: React.FC = () => {
         }
         .chat-layout-grid {
           display: grid;
-          grid-template-columns: 360px 1fr;
+          grid-template-columns: 360px minmax(0, 1fr);
           gap: 1.25rem;
           width: 100%;
+          max-width: 960px;
+          margin: 0 auto;
           align-items: start;
         }
         .video-column {
@@ -614,6 +616,9 @@ export const App: React.FC = () => {
           flex-direction: column;
           gap: 0.5rem;
           width: 360px;
+          min-width: 360px;
+          max-width: 360px;
+          flex-shrink: 0;
         }
         .chat-column {
           display: flex;
@@ -627,11 +632,11 @@ export const App: React.FC = () => {
         .mobile-chat-overlay  { display: none; }
 
         /* ────────────────────────────────────────────────────
-           MOBILE  ≤ 1024px
+           MOBILE  ≤ 768px
            Full-screen video layout: panels fill the viewport
            below the sticky header with controls at bottom.
         ──────────────────────────────────────────────────── */
-        @media (max-width: 1024px) {
+        @media (max-width: 768px) {
           /* Wrapper fills everything below the 64px header */
           .chat-layout-wrapper {
             padding: 0;
@@ -655,6 +660,9 @@ export const App: React.FC = () => {
           /* Video column fills grid cell height */
           .video-column {
             height: 100%;
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
             display: flex;
             flex-direction: column;
             gap: 0;
