@@ -152,15 +152,18 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .vg-panel {
           position: relative;
           width: 100%;
+          max-width: 360px;
+          height: 270px;
           aspect-ratio: 4 / 3;
           overflow: hidden;
-          border-radius: 10px;
+          border-radius: 12px;
           background: #000000;
           border: 1px solid rgba(255,255,255,0.08);
           display: flex;
           align-items: center;
           justify-content: center;
           box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+          flex: none;
         }
 
         /* ── Video element (default contain = 100% full uncropped video) ── */
@@ -303,7 +306,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         /* ── Mobile Responsive Override ─────────────────────── */
         @media (max-width: 1024px) {
           .vg-root { flex: 1; min-height: 0; }
-          .vg-panel { aspect-ratio: auto; flex: 1; min-height: 0; }
+          .vg-panel { max-width: 100%; height: auto; aspect-ratio: auto; flex: 1; min-height: 0; }
         }
 
         /* ── Fullscreen ────────────────────────────────────── */

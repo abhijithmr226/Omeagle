@@ -628,7 +628,7 @@ export const App: React.FC = () => {
         }
         .chat-layout-grid {
           display: grid;
-          grid-template-columns: 360px 1fr;
+          grid-template-columns: 360px minmax(0, 1fr);
           gap: 1.25rem;
           width: 100%;
           align-items: start;
@@ -638,6 +638,9 @@ export const App: React.FC = () => {
           flex-direction: column;
           gap: 0.5rem;
           width: 360px;
+          min-width: 360px;
+          max-width: 360px;
+          flex-shrink: 0;
         }
         .chat-column {
           display: flex;
@@ -646,8 +649,10 @@ export const App: React.FC = () => {
           min-height: 560px;
         }
 
-        /* ── Mobile chat slide-up overlay ───────────────────── */
-        .mobile-chat-overlay { display: none; }
+        /* ── Mobile UI Extras (hidden on desktop) ───────────── */
+        .mobile-status-banner { display: none; }
+        .mobile-footer-cards  { display: none; }
+        .mobile-chat-overlay  { display: none; }
 
         /* ────────────────────────────────────────────────────
            MOBILE  ≤ 1024px
@@ -663,9 +668,8 @@ export const App: React.FC = () => {
             overflow: hidden;
           }
 
-          /* Status banner and footer cards are desktop-only extras */
-          .mobile-status-banner { display: none !important; }
-          .mobile-footer-cards  { display: none !important; }
+          /* Status banner pill at top of mobile screen */
+          .mobile-status-banner { display: flex; margin: 8px 10px 0; z-index: 10; }
 
           /* Single column — fills the wrapper height */
           .chat-layout-grid {
@@ -679,6 +683,9 @@ export const App: React.FC = () => {
           /* Video column fills grid cell height */
           .video-column {
             height: 100%;
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
             flex: 1;
             min-height: 0;
             display: flex;
