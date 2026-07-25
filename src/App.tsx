@@ -617,68 +617,70 @@ export const App: React.FC = () => {
       <PWAInstallPrompt />
 
       <style>{`
-        /* ── Ad banner (desktop only) ──────────────────────── */
-        .ad-banner { display: flex; justify-content: center; width: 100%; max-width: 100vw; overflow: hidden; padding: 0.5rem 0; opacity: 0.85; }
+        /* ── Ad banner ─────────────────────────────────────── */
+        .ad-banner {
+          display: flex; justify-content: center; width: 100%;
+          max-width: 100vw; overflow: hidden; padding: 0.5rem 0; opacity: 0.85;
+        }
 
         /* ── Text chat (centered column) ───────────────────── */
-        .text-chat-layout { display: flex; justify-content: center; width: 100%; max-width: 640px; margin: 0 auto; }
+        .text-chat-layout {
+          display: flex; justify-content: center;
+          width: 100%; max-width: 640px; margin: 0 auto;
+        }
 
-        /* ── Classic Omegle Desktop Layout (900px container) ── */
+        /* ── Desktop Layout — wider, more balanced ────────── */
         .chat-layout-wrapper {
           display: flex;
           flex-direction: column;
           width: 100%;
-          max-width: 900px;
+          max-width: 1280px;
           margin: 0 auto;
-          padding: 0.5rem;
+          padding: 0.75rem 1rem;
           gap: 0;
         }
+
         .chat-layout-grid {
           display: grid;
-          grid-template-columns: 360px minmax(0, 1fr);
+          grid-template-columns: minmax(480px, 1.4fr) minmax(300px, 1fr);
           gap: 1.25rem;
           width: 100%;
           align-items: start;
         }
+
         .video-column {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
-          width: 360px;
-          min-width: 360px;
-          max-width: 360px;
-          flex-shrink: 0;
+          gap: 0;
+          width: 100%;
+          min-width: 0;
         }
+
         .chat-column {
           display: flex;
           flex-direction: column;
           width: 100%;
-          min-height: 560px;
+          height: min(74vh, 720px);
+          min-height: 400px;
         }
 
-        /* ── Mobile UI Extras (hidden on desktop) ───────────── */
+        /* ── Mobile UI Extras ───────────────────────────────── */
         .mobile-status-banner { display: none; }
         .mobile-footer-cards  { display: none; }
         .mobile-chat-overlay  { display: none; }
 
-        /* ────────────────────────────────────────────────────
-           MOBILE  ≤ 1024px
-           Full-screen video layout: panels fill the viewport
-           below the sticky header with controls at bottom.
+        /* ── TABLET / MOBILE  ≤ 1024px ──────────────────────
+           Full-screen video layout: video + controls fill the
+           viewport below the header; chat is a slide-up drawer.
         ──────────────────────────────────────────────────── */
         @media (max-width: 1024px) {
-          /* Wrapper fills everything below the 64px header */
           .chat-layout-wrapper {
-            padding: 0.5rem 0.5rem 0.25rem;
-            gap: 0.5rem;
+            padding: 0;
+            gap: 0;
             height: calc(100dvh - 64px);
             overflow: hidden;
           }
 
-          /* Status banner pill at top of mobile screen */
-          .mobile-status-banner { display: flex; margin: 8px 10px 0; z-index: 10; }
-
-          /* Single column — fills the wrapper height */
           .chat-layout-grid {
             grid-template-columns: 1fr;
             grid-template-rows: 1fr;
@@ -689,34 +691,26 @@ export const App: React.FC = () => {
             min-height: 0;
           }
 
-          /* Video column fills grid cell height */
           .video-column {
             height: 100%;
-            width: 100%;
-            min-width: 0;
-            max-width: 100%;
             flex: 1;
             min-height: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
             overflow: hidden;
           }
 
-          /* Desktop chat panel is hidden; chat accessible via overlay */
           .chat-column { display: none; }
 
-          /* Slide-up chat overlay */
+          /* Slide-up chat drawer */
           .mobile-chat-overlay {
             display: flex;
             flex-direction: column;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: 56vh;
+            height: 58vh;
             background: var(--bg-surface);
             border-top: 1px solid var(--border-color);
             border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-            box-shadow: 0 -8px 40px rgba(0,0,0,0.35);
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.4);
             z-index: 200;
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -724,29 +718,31 @@ export const App: React.FC = () => {
             padding-bottom: env(safe-area-inset-bottom, 0px);
           }
           .mobile-chat-overlay.open { transform: translateY(0); }
+
           .mobile-chat-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
+            padding: 0.7rem 1rem; border-bottom: 1px solid var(--border-color);
             font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
-            background: var(--bg-surface);
+            background: var(--bg-surface-secondary);
           }
           .mobile-chat-close {
             width: 44px; height: 44px; border-radius: var(--radius-full);
-            background: var(--bg-surface-secondary); display: flex; align-items: center;
+            background: var(--bg-surface); display: flex; align-items: center;
             justify-content: center; font-size: 1.1rem; color: var(--text-primary);
             -webkit-tap-highlight-color: transparent;
+            border: 1px solid var(--border-color);
           }
           .mobile-chat-close:active { background: var(--border-color); }
         }
 
         @media (max-width: 480px) {
-          .mobile-chat-overlay { height: 62vh; }
+          .mobile-chat-overlay { height: 64vh; }
         }
 
-        /* Landscape phone — keep videos as tall as possible */
+        /* Landscape phone */
         @media (max-height: 500px) and (orientation: landscape) {
-          .chat-layout-wrapper { height: calc(100dvh - 56px); }
-          .mobile-chat-overlay { height: 70vw; }
+          .chat-layout-wrapper { height: calc(100dvh - 52px); }
+          .mobile-chat-overlay { height: 72vw; }
         }
       `}</style>
     </div>

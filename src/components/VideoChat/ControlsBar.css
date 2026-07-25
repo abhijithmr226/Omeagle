@@ -1,58 +1,77 @@
-/* ── ControlsBar Stylesheet System ─────────────────────────────────── */
+/* ── ControlsBar Stylesheet ─────────────────────────────────────── */
 
 .azar-controls-root {
   position: relative;
   width: 100%;
-  max-width: min(720px, 95vw);
-  margin: 0.75rem auto 0;
+  flex-shrink: 0;
   z-index: 30;
   user-select: none;
+  padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 
+/* Glass pill bar */
 .azar-glass-bar {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 8px clamp(10px, 2.5vw, 20px);
-  background: rgba(15, 23, 42, 0.85);
+  padding: 8px clamp(10px, 2.5vw, 18px);
+  background: rgba(15, 23, 42, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 100px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
-  gap: clamp(4px, 1.5vw, 12px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  gap: clamp(4px, 1.5vw, 10px);
+  max-width: 680px;
+  margin: 0 auto;
 }
 
+/* Light theme overrides for the bar */
+[data-theme='light'] .azar-glass-bar {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ── Individual Action Button ─────────────────────────────────── */
 .azar-action-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: none;
   border: none;
   color: #94a3b8;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
 }
-.azar-action-btn:hover {
-  color: #ffffff;
-  transform: translateY(-2px);
+
+[data-theme='light'] .azar-action-btn {
+  color: #475569;
 }
-.azar-action-btn:active {
-  transform: scale(0.92);
-}
+
+.azar-action-btn:hover  { color: #ffffff; transform: translateY(-2px); }
+.azar-action-btn:active { transform: scale(0.92); }
 .azar-action-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
   transform: none !important;
 }
 
+[data-theme='light'] .azar-action-btn:hover { color: #0f172a; }
+
+/* Circle icon container */
 .azar-circle-btn {
-  width: clamp(38px, 4vw, 44px);
-  height: clamp(38px, 4vw, 44px);
+  width: clamp(40px, 5vw, 46px);
+  height: clamp(40px, 5vw, 46px);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.09);
   color: #f8fafc;
   display: flex;
   align-items: center;
@@ -60,64 +79,87 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  flex-shrink: 0;
 }
+
+[data-theme='light'] .azar-circle-btn {
+  background: rgba(0, 0, 0, 0.06);
+  color: #1e293b;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .azar-action-btn:hover .azar-circle-btn {
   background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+[data-theme='light'] .azar-action-btn:hover .azar-circle-btn {
+  background: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+/* Muted state */
 .active-muted .azar-circle-btn {
-  background: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.22) !important;
   border-color: #ef4444 !important;
   color: #fca5a5 !important;
 }
 
+/* Video off state */
 .active-video-off .azar-circle-btn {
-  background: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.22) !important;
   border-color: #ef4444 !important;
   color: #fca5a5 !important;
 }
 
+/* Chat open state */
 .active-chat .azar-circle-btn {
-  background: rgba(59, 130, 246, 0.25) !important;
+  background: rgba(59, 130, 246, 0.22) !important;
   border-color: #3b82f6 !important;
   color: #93c5fd !important;
 }
 
+/* Stop button */
 .circle-stop {
   background: #ef4444 !important;
   border-color: #f87171 !important;
-  box-shadow: 0 0 14px rgba(239, 68, 68, 0.6) !important;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.55) !important;
   color: #ffffff !important;
 }
 
+/* Label under icon */
 .azar-action-label {
-  font-size: clamp(0.62rem, 0.8vw, 0.72rem);
+  font-size: clamp(0.6rem, 0.8vw, 0.7rem);
   font-weight: 600;
-  color: #94a3b8;
+  color: #64748b;
   letter-spacing: 0.02em;
+  line-height: 1;
 }
 
-/* Hero Primary Action Button (START ➔ SEARCHING... ➔ NEXT ◄) */
+[data-theme='light'] .azar-action-label {
+  color: #94a3b8;
+}
+
+/* ── Hero Primary Button (START / SEARCHING / NEXT) ──────────── */
 .azar-hero-next-btn {
   background: linear-gradient(135deg, #2563eb, #7c3aed);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 100px;
-  padding: clamp(8px, 1.2vw, 10px) clamp(18px, 2.5vw, 28px);
+  padding: clamp(10px, 1.2vw, 12px) clamp(20px, 2.5vw, 30px);
   color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255,255,255,0.35);
   transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   will-change: transform;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
-.azar-hero-next-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 28px rgba(124, 58, 237, 0.6);
-}
-.azar-hero-next-btn:active {
-  transform: scale(0.95);
-}
+
+.azar-hero-next-btn:hover  { transform: scale(1.05); box-shadow: 0 8px 28px rgba(124,58,237,0.6); }
+.azar-hero-next-btn:active { transform: scale(0.95); }
 
 .azar-hero-content {
   display: flex;
@@ -126,44 +168,72 @@
 }
 
 .azar-hero-text {
-  font-size: clamp(0.82rem, 1.1vw, 0.95rem);
+  font-size: clamp(0.8rem, 1.1vw, 0.93rem);
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-/* Searching State Pulsing Style */
+/* Searching pulsing state */
 .azar-hero-next-btn.is-searching {
   background: linear-gradient(135deg, #d97706, #dc2626);
-  box-shadow: 0 6px 24px rgba(217, 119, 6, 0.6);
-  animation: otv-hero-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 6px 24px rgba(217, 119, 6, 0.55);
+  animation: azar-hero-pulse 1.5s ease-in-out infinite;
 }
 
 .spin-hero-icon {
-  animation: otv-spin 1.2s linear infinite;
+  animation: azar-spin 1.2s linear infinite;
 }
 
-@keyframes otv-hero-pulse {
-  0%   { transform: scale(1); box-shadow: 0 6px 20px rgba(217, 119, 6, 0.5); }
-  50%  { transform: scale(1.04); box-shadow: 0 10px 30px rgba(220, 38, 38, 0.8); }
-  100% { transform: scale(1); box-shadow: 0 6px 20px rgba(217, 119, 6, 0.5); }
+@keyframes azar-hero-pulse {
+  0%   { transform: scale(1);    box-shadow: 0 6px 20px rgba(217,119,6,0.5); }
+  50%  { transform: scale(1.04); box-shadow: 0 10px 30px rgba(220,38,38,0.8); }
+  100% { transform: scale(1);    box-shadow: 0 6px 20px rgba(217,119,6,0.5); }
 }
 
-@keyframes otv-spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes azar-spin { to { transform: rotate(360deg); } }
 
 .red-icon { color: #f87171; }
 
-/* Mobile Optimization */
-@media (max-width: 480px) {
+/* ── Mobile Optimisation ──────────────────────────────────────── */
+@media (max-width: 1024px) {
   .azar-controls-root {
-    margin-top: 0.4rem;
+    /* Stick to the bottom of the video column (flex child) */
+    padding: 0.4rem 0.75rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
   }
-  .azar-action-label {
-    display: none;
+
+  .azar-glass-bar {
+    border-radius: 100px;
+    padding: 6px clamp(8px, 2vw, 14px);
+    gap: clamp(2px, 1.5vw, 8px);
   }
+}
+
+@media (max-width: 480px) {
+  /* Hide text labels on very small screens */
+  .azar-action-label { display: none; }
+
+  .azar-circle-btn {
+    width: 40px;
+    height: 40px;
+  }
+
   .azar-hero-next-btn {
-    padding: 8px 16px;
+    padding: 10px 16px;
   }
+
+  .azar-hero-text {
+    font-size: 0.78rem;
+  }
+}
+
+/* Landscape phone — keep bar compact */
+@media (max-height: 500px) and (orientation: landscape) {
+  .azar-controls-root {
+    padding: 0.25rem 0.5rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
+  }
+  .azar-glass-bar { padding: 4px 10px; }
+  .azar-action-label { display: none; }
+  .azar-circle-btn { width: 36px; height: 36px; }
 }
