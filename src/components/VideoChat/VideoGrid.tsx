@@ -202,12 +202,11 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
       </div>
 
       <style>{`
-        /* ── Azar Live Immersive Full-Screen Layout ─────────────────── */
+        /* ── Azar Live Immersive Responsive Layout ─────────────────── */
         .azar-vg-root {
           position: relative;
           width: 100%;
-          height: 100%;
-          min-height: 480px;
+          height: 480px;
           border-radius: 18px;
           overflow: hidden;
           background: #090d14;
@@ -215,6 +214,13 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           transition: transform 0.15s ease-out;
           touch-action: pan-y;
           user-select: none;
+        }
+
+        @media (max-width: 960px) {
+          .azar-vg-root {
+            height: calc(100dvh - 170px);
+            min-height: 380px;
+          }
         }
 
         .azar-stranger-panel {
@@ -312,14 +318,14 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           z-index: 10;
           display: flex;
           align-items: center;
-          gap: 8px;
-          background: rgba(15, 23, 42, 0.65);
+          gap: 6px;
+          background: rgba(15, 23, 42, 0.75);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border: 1px solid rgba(255,255,255,0.15);
           border-radius: 100px;
-          padding: 6px 14px;
-          font-size: 0.8rem;
+          padding: 5px 12px;
+          font-size: 0.78rem;
           font-weight: 700;
           color: #f8fafc;
         }
@@ -332,31 +338,34 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .azar-top-actions {
           position: absolute;
           top: 14px;
-          right: 130px; /* Leave space for PIP card on top right */
+          left: 125px;
           z-index: 10;
           display: flex;
           align-items: center;
           gap: 6px;
+          max-width: calc(100% - 240px);
+          overflow-x: auto;
         }
 
         .azar-pill-btn {
           display: flex;
           align-items: center;
           gap: 5px;
-          background: rgba(15, 23, 42, 0.65);
+          background: rgba(15, 23, 42, 0.75);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border: 1px solid rgba(255,255,255,0.15);
           border-radius: 100px;
-          padding: 6px 12px;
-          font-size: 0.75rem;
+          padding: 5px 10px;
+          font-size: 0.72rem;
           font-weight: 600;
           color: #f1f5f9;
           cursor: pointer;
           transition: all 0.15s ease;
+          white-space: nowrap;
         }
         .azar-pill-btn:hover { background: rgba(255,255,255,0.25); }
-        .azar-icon-only { padding: 6px 8px; }
+        .azar-icon-only { padding: 5px 8px; }
         .azar-report-btn { color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); }
 
         /* Swipe hint indicator on right side */
@@ -371,10 +380,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           gap: 4px;
           background: rgba(0,0,0,0.4);
           backdrop-filter: blur(8px);
-          padding: 6px 12px;
+          padding: 5px 10px;
           border-radius: 100px;
           color: rgba(255,255,255,0.7);
-          font-size: 0.72rem;
+          font-size: 0.7rem;
           font-weight: 600;
           pointer-events: none;
           animation: azar-swipe-bounce 2s infinite;
@@ -392,9 +401,9 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .azar-pip-card {
           position: absolute;
           z-index: 20;
-          width: 100px;
-          height: 135px;
-          border-radius: 14px;
+          width: 90px;
+          height: 120px;
+          border-radius: 12px;
           overflow: hidden;
           background: #000;
           border: 2px solid rgba(255, 255, 255, 0.25);
@@ -408,8 +417,8 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         }
         .azar-pip-top-right    { top: 14px; right: 14px; }
         .azar-pip-top-left     { top: 14px; left: 14px; }
-        .azar-pip-bottom-right { bottom: 80px; right: 14px; }
-        .azar-pip-bottom-left  { bottom: 80px; left: 14px; }
+        .azar-pip-bottom-right { bottom: 70px; right: 14px; }
+        .azar-pip-bottom-left  { bottom: 70px; left: 14px; }
 
         .azar-pip-video {
           width: 100%;

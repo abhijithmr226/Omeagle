@@ -493,9 +493,9 @@ export const App: React.FC = () => {
                   partnerProfile={partnerProfile} />
               </div>
             ) : (
-              <div className="chat-layout-wrapper azar-container">
-                <div className="chat-layout-grid azar-grid">
-                  <div className="video-column azar-video-column">
+              <div className="chat-layout-wrapper">
+                <div className="chat-layout-grid">
+                  <div className="video-column">
                     <VideoGrid
                       localStream={media.localStream}
                       remoteStream={remoteStream}
@@ -507,22 +507,6 @@ export const App: React.FC = () => {
                       onOpenSafety={() => navigate('/safety')}
                       onNext={handleNext}
                     />
-
-                    {/* Floating Translucent Live Chat Overlay (Azar / TikTok Live style) */}
-                    {(mobileChatOpen || connectionStatus === 'connected' || chat.messages.length > 0) && (
-                      <ChatBox
-                        messages={chat.messages}
-                        connectionStatus={connectionStatus}
-                        onSendMessage={handleSendMessage}
-                        onNext={handleNext}
-                        onStart={() => startChat('video')}
-                        mode="video"
-                        isOverlay={true}
-                        isStrangerTyping={chat.isStrangerTyping}
-                        onTyping={() => callChannelRef.current?.sendTyping()}
-                        partnerProfile={partnerProfile}
-                      />
-                    )}
 
                     <ControlsBar
                       connectionStatus={connectionStatus}
@@ -537,6 +521,41 @@ export const App: React.FC = () => {
                       onFlipCamera={handleFlipCamera}
                       mobileChatOpen={mobileChatOpen}
                       onToggleChat={() => setMobileChatOpen(!mobileChatOpen)}
+                    />
+                  </div>
+
+                  {/* PC Desktop Dedicated Chat Panel (No overlap) */}
+                  <div className="chat-column desktop-only-chat">
+                    <ChatBox
+                      messages={chat.messages}
+                      connectionStatus={connectionStatus}
+                      onSendMessage={handleSendMessage}
+                      onNext={handleNext}
+                      onStart={() => startChat('video')}
+                      mode="video"
+                      isStrangerTyping={chat.isStrangerTyping}
+                      onTyping={() => callChannelRef.current?.sendTyping()}
+                      partnerProfile={partnerProfile}
+                    />
+                  </div>
+
+                  {/* Mobile Slide-Up Chat Drawer (Opens only on tap, zero video overlap) */}
+                  <div className={`mobile-chat-drawer ${mobileChatOpen ? 'open' : ''}`}>
+                    <div className="mobile-chat-header">
+                      <span>Live Chat</span>
+                      <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)}>✕</button>
+                    </div>
+                    <ChatBox
+                      messages={chat.messages}
+                      connectionStatus={connectionStatus}
+                      onSendMessage={handleSendMessage}
+                      onNext={handleNext}
+                      onStart={() => startChat('video')}
+                      mode="video"
+                      isOverlay={true}
+                      isStrangerTyping={chat.isStrangerTyping}
+                      onTyping={() => callChannelRef.current?.sendTyping()}
+                      partnerProfile={partnerProfile}
                     />
                   </div>
                 </div>

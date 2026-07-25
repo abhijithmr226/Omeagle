@@ -276,36 +276,82 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   .chevron-right-icon { color: #64748b; flex-shrink: 0; }
 }
 
-/* Azar Live Full-Screen Layout Rules */
-.azar-container {
+/* PC Desktop & Mobile Responsive Video Layout Rules */
+.chat-layout-wrapper {
   width: 100%;
-  height: calc(100vh - 80px);
-  height: calc(100dvh - 80px);
-  max-width: 100%;
+  max-width: 1360px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
 }
 
-.azar-grid {
+.chat-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.25rem;
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  align-items: start;
 }
 
-.azar-video-column {
+.video-column {
   position: relative;
   width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  gap: 0.75rem;
 }
 
-@media (max-width: 768px) {
-  .azar-container {
-    height: calc(100dvh - 60px);
+.desktop-only-chat {
+  display: block;
+}
+
+.mobile-chat-drawer {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  height: 60vh;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.mobile-chat-drawer.open {
+  transform: translateY(0);
+}
+
+.mobile-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.mobile-chat-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+@media (max-width: 960px) {
+  .chat-layout-grid {
+    grid-template-columns: 1fr;
+  }
+  .desktop-only-chat {
+    display: none;
+  }
+  .mobile-chat-drawer {
+    display: flex;
+    flex-direction: column;
   }
 }
+
 

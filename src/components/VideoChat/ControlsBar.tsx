@@ -76,27 +76,22 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
 
       <style>{`
         .azar-controls-root {
-          position: absolute;
-          bottom: 16px;
-          left: 50%;
-          transform: translateX(-50%);
+          position: relative;
+          width: 100%;
+          max-width: 540px;
+          margin: 0.5rem auto 0;
           z-index: 30;
-          width: calc(100% - 32px);
-          max-width: 480px;
-          pointer-events: auto;
         }
 
         .azar-glass-bar {
           display: flex;
           align-items: center;
           justify-content: space-around;
-          padding: 8px 12px;
-          background: rgba(15, 23, 42, 0.75);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          border-radius: 100px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.2);
+          padding: 8px 16px;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-xl);
+          box-shadow: var(--shadow-md);
         }
 
         .azar-action-btn {
