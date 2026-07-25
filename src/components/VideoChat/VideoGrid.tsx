@@ -285,9 +285,11 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
 
       // Clamping PiP position strictly within container bounds
       const containerRect = containerRef.current.getBoundingClientRect();
-      const pipRect = pipRef.current.getBoundingClientRect();
-      const maxX = containerRect.width - pipRect.width - 12;
-      const maxY = containerRect.height - pipRect.height - 12;
+      const pipWidth = pipRef.current.offsetWidth;
+      const pipHeight = pipRef.current.offsetHeight;
+
+      const maxX = containerRect.width - pipWidth - 12;
+      const maxY = containerRect.height - pipHeight - 12;
 
       const clampedX = Math.max(12, Math.min(maxX, unconstrainedX));
       const clampedY = Math.max(12, Math.min(maxY, unconstrainedY));
@@ -302,7 +304,11 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     const handleEnd = () => {
       if (!isDraggingRef.current) return;
       isDraggingRef.current = false;
-      if (pipRef.current) pipRef.current.classList.remove('otv-pip-dragging');
+      pipRef.current?.classList.remove('otv-pip-dragging');
+
+      requestAnimationFrame(() => {
+        hasDraggedRef.current = false;
+      });
     };
 
     window.addEventListener('mousemove', handleMove);
