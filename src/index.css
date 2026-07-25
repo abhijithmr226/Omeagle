@@ -275,3 +275,37 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   }
   .chevron-right-icon { color: #64748b; flex-shrink: 0; }
 }
+
+/* Azar Live Full-Screen Layout Rules */
+.azar-container {
+  width: 100%;
+  height: calc(100vh - 80px);
+  height: calc(100dvh - 80px);
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.azar-grid {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.azar-video-column {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .azar-container {
+    height: calc(100dvh - 60px);
+  }
+}
+

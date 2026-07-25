@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, Square, Mic, MicOff, Settings, Camera, SkipForward, MessageCircle } from 'lucide-react';
+import { Video, Square, Mic, MicOff, Settings, Camera, SkipForward, MessageCircle, ChevronRight } from 'lucide-react';
 import type { ConnectionStatus } from '../../types/chat';
 
 interface ControlsBarProps {
@@ -23,106 +23,168 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
   mobileChatOpen, onToggleChat
 }) => {
   const isConnected = connectionStatus === 'connected';
-  const isSearching = connectionStatus === 'searching';
+  const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
 
   return (
-    <div className="controls-bar">
-      {/* Desktop Controls */}
-      <div className="desktop-controls">
-        <button className={`ctrl-btn btn-start ${isSearching ? 'disabled' : ''}`} onClick={isConnected ? onNext : onStart}>
-          {isConnected ? <SkipForward size={18} /> : <Video size={18} />}
-          <span>{isConnected ? 'Next' : 'Start'}</span>
-        </button>
-        <button className={`ctrl-btn btn-stop ${!isConnected && !isSearching ? 'disabled' : ''}`} onClick={onStop}>
-          <Square size={16} fill="currentColor" />
-          <span>Stop</span>
-        </button>
-        <button className={`ctrl-btn btn-utility ${isMuted ? 'active-utility' : ''}`} onClick={onToggleMute}>
-          {isMuted ? <MicOff size={18} className="red-icon" /> : <Mic size={18} />}
-          <span>{isMuted ? 'Unmute' : 'Mute'}</span>
-        </button>
-        <button className="ctrl-btn btn-utility" onClick={onOpenSettings}>
-          <Settings size={18} />
-          <span>Settings</span>
-        </button>
-      </div>
-
-      {/* Mobile Reference UI Action Row (5 Circular Buttons) */}
-      <div className="mobile-controls">
-        {/* 1. Flip */}
-        <button className="mobile-action-item" onClick={onFlipCamera} title="Flip Camera">
-          <div className="mobile-circle-btn">
-            <Camera size={20} />
+    <div className="azar-controls-root">
+      {/* Floating Glass Pill Bar */}
+      <div className="azar-glass-bar">
+        {/* 1. Camera Flip */}
+        <button className="azar-action-btn" onClick={onFlipCamera} title="Flip Camera">
+          <div className="azar-circle-btn">
+            <Camera size={19} />
           </div>
-          <span className="mobile-action-label">Flip</span>
+          <span className="azar-action-label">Flip</span>
         </button>
 
-        {/* 2. Mute */}
-        <button className={`mobile-action-item ${isMuted ? 'active-muted' : ''}`} onClick={onToggleMute} title="Mute">
-          <div className="mobile-circle-btn">
-            {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+        {/* 2. Mic Mute */}
+        <button className={`azar-action-btn ${isMuted ? 'active-muted' : ''}`} onClick={onToggleMute} title={isMuted ? 'Unmute' : 'Mute'}>
+          <div className="azar-circle-btn">
+            {isMuted ? <MicOff size={19} className="red-icon" /> : <Mic size={19} />}
           </div>
-          <span className="mobile-action-label">{isMuted ? 'Unmute' : 'Mute'}</span>
+          <span className="azar-action-label">{isMuted ? 'Unmute' : 'Mute'}</span>
         </button>
 
-        {/* 3. Stop / Start */}
-        <button className="mobile-action-item" onClick={isConnected || isSearching ? onStop : onStart} title={isConnected || isSearching ? 'Stop' : 'Start'}>
-          <div className={`mobile-circle-btn ${isConnected || isSearching ? 'circle-red-stop' : 'circle-green-start'}`}>
-            {isConnected || isSearching ? <Square size={16} fill="#fff" color="#fff" /> : <Video size={20} color="#fff" />}
+        {/* 3. Primary Start / Next (Azar Hero Button) */}
+        <button
+          className={`azar-hero-next-btn ${isSearching ? 'is-searching' : ''}`}
+          onClick={isConnected ? onNext : onStart}
+          title={isConnected ? 'Next Match (Swipe Left)' : 'Start Matching'}
+        >
+          <div className="azar-hero-content">
+            {isConnected ? <SkipForward size={22} fill="currentColor" /> : <Video size={22} />}
+            <span className="azar-hero-text">{isConnected ? 'NEXT ◄' : 'START'}</span>
           </div>
-          <span className="mobile-action-label">{isConnected || isSearching ? 'Stop' : 'Start'}</span>
         </button>
 
-        {/* 4. Chat */}
-        <button className={`mobile-action-item ${mobileChatOpen ? 'active-chat' : ''}`} onClick={onToggleChat} title="Text Chat">
-          <div className="mobile-circle-btn">
-            <MessageCircle size={20} />
+        {/* 4. Chat Drawer Toggle */}
+        <button className={`azar-action-btn ${mobileChatOpen ? 'active-chat' : ''}`} onClick={onToggleChat} title="Toggle Chat Overlay">
+          <div className="azar-circle-btn">
+            <MessageCircle size={19} />
           </div>
-          <span className="mobile-action-label">Chat</span>
+          <span className="azar-action-label">Chat</span>
         </button>
 
-        {/* 5. Settings */}
-        <button className="mobile-action-item" onClick={onOpenSettings} title="Settings">
-          <div className="mobile-circle-btn">
-            <Settings size={20} />
+        {/* 5. Stop / Settings */}
+        <button className="azar-action-btn" onClick={isConnected || isSearching ? onStop : onOpenSettings} title={isConnected || isSearching ? 'Stop Call' : 'Match Preferences'}>
+          <div className={`azar-circle-btn ${isConnected || isSearching ? 'circle-stop' : ''}`}>
+            {isConnected || isSearching ? <Square size={16} fill="#fff" color="#fff" /> : <Settings size={19} />}
           </div>
-          <span className="mobile-action-label">Settings</span>
+          <span className="azar-action-label">{isConnected || isSearching ? 'Stop' : 'Filter'}</span>
         </button>
       </div>
 
       <style>{`
-        .controls-bar { flex-shrink: 0; width: 100%; }
-        .desktop-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; width: 100%; margin-top: 0.5rem; }
-        .ctrl-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 0.85rem; font-weight: 700; font-size: 0.95rem; border-radius: var(--radius-md); border: 1px solid transparent; transition: all 0.2s ease; }
-        .btn-start { background-color: var(--status-green-light); color: var(--status-green); border-color: var(--status-green-light); }
-        .btn-start:hover:not(.disabled) { background-color: var(--status-green); color: #fff; }
-        .btn-stop { background-color: var(--status-red-light); color: var(--status-red); border-color: var(--status-red-light); }
-        .btn-stop:hover:not(.disabled) { background-color: var(--status-red); color: #fff; }
-        .btn-utility { background-color: var(--bg-surface); color: var(--text-primary); border-color: var(--border-color); }
-        .btn-utility:hover { background-color: var(--bg-surface-secondary); border-color: var(--border-color-hover); }
-        .active-utility { background-color: var(--status-red-light); border-color: #fca5a5; }
-        .red-icon { color: var(--status-red); }
-        .disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* Mobile Action Row (5 Circular Buttons matching reference) */
-        .mobile-controls { display: none; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; width: 100%; padding: 0.85rem 0.5rem; background: transparent; justify-items: center; align-items: center; }
-        .mobile-action-item { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; border: none; background: none; color: #94a3b8; cursor: pointer; transition: all 0.2s ease; width: 100%; }
-        .mobile-action-item:active { transform: scale(0.92); }
-
-        .mobile-circle-btn { width: 48px; height: 48px; border-radius: 50%; background: #1e293b; color: #f8fafc; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: all 0.2s ease; }
-        .mobile-action-item.active-muted .mobile-circle-btn { background: #7f1d1d; color: #fca5a5; border-color: #ef4444; }
-        .mobile-action-item.active-chat .mobile-circle-btn { background: #1e3a8a; color: #93c5fd; border-color: #3b82f6; }
-
-        .circle-red-stop { background: #ef4444 !important; border-color: #f87171 !important; box-shadow: 0 4px 16px rgba(239,68,68,0.4) !important; }
-        .circle-green-start { background: #10b981 !important; border-color: #34d399 !important; box-shadow: 0 4px 16px rgba(16,185,129,0.4) !important; }
-
-        .mobile-action-label { font-size: 0.75rem; font-weight: 500; color: #94a3b8; }
-        .mobile-action-item:hover .mobile-action-label, .mobile-action-item:active .mobile-action-label { color: #f8fafc; }
-
-        @media (max-width: 1024px) {
-          .desktop-controls { display: none; }
-          .mobile-controls { display: grid; }
+        .azar-controls-root {
+          position: absolute;
+          bottom: 16px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 30;
+          width: calc(100% - 32px);
+          max-width: 480px;
+          pointer-events: auto;
         }
+
+        .azar-glass-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          padding: 8px 12px;
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          border-radius: 100px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.2);
+        }
+
+        .azar-action-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 3px;
+          background: none;
+          border: none;
+          color: #94a3b8;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .azar-action-btn:active { transform: scale(0.92); }
+
+        .azar-circle-btn {
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.1);
+          color: #f8fafc;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(255,255,255,0.12);
+          transition: all 0.2s ease;
+        }
+        .azar-action-btn:hover .azar-circle-btn {
+          background: rgba(255, 255, 255, 0.2);
+          color: #fff;
+        }
+
+        .active-muted .azar-circle-btn {
+          background: rgba(239, 68, 68, 0.25);
+          border-color: #ef4444;
+          color: #fca5a5;
+        }
+        .active-chat .azar-circle-btn {
+          background: rgba(59, 130, 246, 0.25);
+          border-color: #3b82f6;
+          color: #93c5fd;
+        }
+        .circle-stop {
+          background: #ef4444 !important;
+          border-color: #f87171 !important;
+          box-shadow: 0 0 12px rgba(239,68,68,0.5) !important;
+        }
+
+        .azar-action-label {
+          font-size: 0.68rem;
+          font-weight: 600;
+          color: #94a3b8;
+        }
+
+        /* Hero Primary Action Button (Next / Start) */
+        .azar-hero-next-btn {
+          background: linear-gradient(135deg, #2563eb, #7c3aed);
+          border: 1px solid rgba(255,255,255,0.3);
+          border-radius: 100px;
+          padding: 8px 22px;
+          color: #fff;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5), inset 0 1px 1px rgba(255,255,255,0.4);
+          transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .azar-hero-next-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 6px 24px rgba(124, 58, 237, 0.6);
+        }
+        .azar-hero-next-btn:active {
+          transform: scale(0.95);
+        }
+        .azar-hero-content {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .azar-hero-text {
+          font-size: 0.88rem;
+          font-weight: 800;
+          letter-spacing: 0.05em;
+        }
+        .is-searching {
+          background: linear-gradient(135deg, #d97706, #dc2626);
+          animation: pulse 1.5s infinite;
+        }
+
+        .red-icon { color: #f87171; }
       `}</style>
     </div>
   );

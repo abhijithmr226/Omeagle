@@ -493,78 +493,51 @@ export const App: React.FC = () => {
                   partnerProfile={partnerProfile} />
               </div>
             ) : (
-              <div className="chat-layout-wrapper">
-                {/* Mobile Top Status Pill Banner (matches reference UI) */}
-                <div className="mobile-status-banner">
-                  <span className="dot-green-pulse" />
-                  <span className="status-banner-text">
-                    {connectionStatus === 'connected' ? "You're now chatting with a random stranger" :
-                      connectionStatus === 'searching' ? (
-                        searchStep === 0 ? "Looking for a random stranger to chat with..." :
-                          searchStep === 1 ? "Searching globally across 190+ countries..." :
-                            "Broadening matching preferences to find a match fast..."
-                      ) :
-                        "Start a video chat to meet strangers"}
-                  </span>
-                  <ChevronRight size={16} className="chevron-right-icon" />
-                </div>
-
-                <div className="chat-layout-grid">
-                  <div className="video-column">
-                    <VideoGrid localStream={media.localStream} remoteStream={remoteStream}
-                      connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
+              <div className="chat-layout-wrapper azar-container">
+                <div className="chat-layout-grid azar-grid">
+                  <div className="video-column azar-video-column">
+                    <VideoGrid
+                      localStream={media.localStream}
+                      remoteStream={remoteStream}
+                      connectionStatus={connectionStatus}
+                      isMuted={media.isMuted}
+                      isVideoOff={media.isVideoOff}
                       onFlipCamera={handleFlipCamera}
                       onReportStranger={() => setIsReportOpen(true)}
-                      onOpenSafety={() => navigate('/safety')} />
-                    <ControlsBar connectionStatus={connectionStatus} isMuted={media.isMuted} isVideoOff={media.isVideoOff}
-                      onStart={() => startChat('video')} onStop={handleStop} onNext={handleNext}
-                      onToggleMute={media.toggleMute} onToggleVideo={media.toggleVideo} onOpenSettings={() => setIsSettingsOpen(true)}
-                      onFlipCamera={handleFlipCamera} mobileChatOpen={mobileChatOpen} onToggleChat={() => setMobileChatOpen(!mobileChatOpen)} />
+                      onOpenSafety={() => navigate('/safety')}
+                      onNext={handleNext}
+                    />
 
-                    {/* Mobile Bottom Footer Cards (matches reference UI) */}
-                    <div className="mobile-footer-cards">
-                      <div className="mobile-card card-next" onClick={connectionStatus === 'connected' ? handleNext : () => startChat('video')}>
-                        <div className="card-icon-circle icon-swap">
-                          <ArrowLeftRight size={20} />
-                        </div>
-                        <div className="card-text-body">
-                          <div className="card-title">Next</div>
-                          <div className="card-subtitle">Find another stranger</div>
-                        </div>
-                      </div>
+                    {/* Floating Translucent Live Chat Overlay (Azar / TikTok Live style) */}
+                    {(mobileChatOpen || connectionStatus === 'connected' || chat.messages.length > 0) && (
+                      <ChatBox
+                        messages={chat.messages}
+                        connectionStatus={connectionStatus}
+                        onSendMessage={handleSendMessage}
+                        onNext={handleNext}
+                        onStart={() => startChat('video')}
+                        mode="video"
+                        isOverlay={true}
+                        isStrangerTyping={chat.isStrangerTyping}
+                        onTyping={() => callChannelRef.current?.sendTyping()}
+                        partnerProfile={partnerProfile}
+                      />
+                    )}
 
-                      <div className="mobile-card card-users">
-                        <div className="card-icon-circle icon-users">
-                          <Users size={20} />
-                        </div>
-                        <div className="card-text-body">
-                          <div className="card-number">{onlineCount.toLocaleString()}</div>
-                          <div className="card-subtitle">users online</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="chat-column">
-                    <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                      onSendMessage={handleSendMessage} onNext={handleNext}
-                      onStart={() => startChat('video')} mode="video"
-                      isStrangerTyping={chat.isStrangerTyping}
-                      onTyping={() => callChannelRef.current?.sendTyping()}
-                      partnerProfile={partnerProfile} />
-                  </div>
-
-                  <div className={`mobile-chat-overlay ${mobileChatOpen ? 'open' : ''}`}>
-                    <div className="mobile-chat-header">
-                      <span>Text Chat</span>
-                      <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)}>✕</button>
-                    </div>
-                    <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                      onSendMessage={handleSendMessage} onNext={handleNext}
-                      onStart={() => startChat('video')} mode="video"
-                      isStrangerTyping={chat.isStrangerTyping}
-                      onTyping={() => callChannelRef.current?.sendTyping()}
-                      partnerProfile={partnerProfile} />
+                    <ControlsBar
+                      connectionStatus={connectionStatus}
+                      isMuted={media.isMuted}
+                      isVideoOff={media.isVideoOff}
+                      onStart={() => startChat('video')}
+                      onStop={handleStop}
+                      onNext={handleNext}
+                      onToggleMute={media.toggleMute}
+                      onToggleVideo={media.toggleVideo}
+                      onOpenSettings={() => setIsSettingsOpen(true)}
+                      onFlipCamera={handleFlipCamera}
+                      mobileChatOpen={mobileChatOpen}
+                      onToggleChat={() => setMobileChatOpen(!mobileChatOpen)}
+                    />
                   </div>
                 </div>
               </div>

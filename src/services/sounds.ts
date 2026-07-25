@@ -121,6 +121,47 @@ export async function playStrangerConnected(): Promise<void> {
 }
 
 /**
+ * Trigger haptic vibration on mobile devices (if supported).
+ */
+export function triggerHaptic(type: 'light' | 'medium' | 'heavy' | 'match' = 'light'): void {
+  if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
+    try {
+      if (type === 'light') navigator.vibrate(25);
+      else if (type === 'medium') navigator.vibrate(50);
+      else if (type === 'heavy') navigator.vibrate(80);
+      else if (type === 'match') navigator.vibrate([40, 60, 80]);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+/**
+ * Play a quick swipe swoosh sound for match transitions.
+ */
+export async function playSwipeSwoosh(): Promise<void> {
+  try {
+    const ctx = getCtx();
+    if (ctx.state === 'suspended') await ctx.resume();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.16);
+    triggerHaptic('light');
+  } catch {
+    // ignore
+  }
+}
+
+/**
  * Resume AudioContext after user gesture (required by browsers).
  * Call this on any user interaction.
  */
@@ -134,3 +175,4 @@ export function unlockAudio(): void {
     // ignore
   }
 }
+

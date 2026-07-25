@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { RefreshCw, UserCircle2, CameraOff, Maximize2, Minimize2, Flag, RotateCcw, Expand, Shrink } from 'lucide-react';
+import { RefreshCw, UserCircle2, CameraOff, Maximize2, Minimize2, Flag, RotateCcw, Expand, Shrink, Sparkles, ChevronLeft } from 'lucide-react';
 import type { ConnectionStatus } from '../../types/chat';
 
 interface VideoGridProps {
@@ -11,17 +11,23 @@ interface VideoGridProps {
   onFlipCamera?: () => void;
   onReportStranger?: () => void;
   onOpenSafety?: () => void;
+  onNext?: () => void;
 }
 
 export const VideoGrid: React.FC<VideoGridProps> = ({
   localStream, remoteStream, connectionStatus, isMuted, isVideoOff,
-  onFlipCamera, onReportStranger,
+  onFlipCamera, onReportStranger, onNext,
 }) => {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [objectFitMode, setObjectFitMode] = useState<'contain' | 'cover'>('contain');
+  const [objectFitMode, setObjectFitMode] = useState<'contain' | 'cover'>('cover');
+  const [pipCorner, setPipCorner] = useState<'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'>('top-right');
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+
+  const touchStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   useEffect(() => {
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
@@ -49,269 +55,407 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
     setObjectFitMode(prev => prev === 'cover' ? 'contain' : 'cover');
   };
 
+  const cyclePipCorner = () => {
+    const corners: Array<'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'> = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
+    const idx = corners.indexOf(pipCorner);
+    setPipCorner(corners[(idx + 1) % corners.length]);
+  };
+
+  const [activeFilter, setActiveFilter] = useState<'normal' | 'beauty' | 'vibrant' | 'cyber' | 'vintage'>('normal');
+
+  const cycleFilter = () => {
+    const filters: Array<'normal' | 'beauty' | 'vibrant' | 'cyber' | 'vintage'> = ['normal', 'beauty', 'vibrant', 'cyber', 'vintage'];
+    const nextIdx = (filters.indexOf(activeFilter) + 1) % filters.length;
+    setActiveFilter(filters[nextIdx]);
+  };
+
+  // Touch Swipe Gesture (Swipe Left / Swipe Up for Next Stranger like Azar Live)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    setIsSwiping(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isSwiping) return;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    if (deltaX < 0) {
+      setSwipeOffset(deltaX);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (swipeOffset < -70 && onNext) {
+      onNext();
+    }
+    setSwipeOffset(0);
+    setIsSwiping(false);
+  };
+
   const isConnected = connectionStatus === 'connected';
   const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
 
   return (
-    <div className="vg-root" ref={wrapperRef}>
-
-      {/* ── Stranger panel (Classic 4:3 Omegle ratio) ──────────── */}
-      <div className="vg-panel vg-stranger">
+    <div
+      className="azar-vg-root"
+      ref={wrapperRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{ transform: `translateX(${swipeOffset}px)` }}
+    >
+      {/* ── Main Full-Screen Stranger Feed ──────────────────── */}
+      <div className="azar-stranger-panel">
         <video
           ref={remoteVideoRef}
           autoPlay playsInline
-          className={`vg-video ${remoteStream ? 'vg-video-on' : ''} vg-fit-${objectFitMode}`}
+          className={`azar-video ${remoteStream ? 'azar-video-on' : ''} azar-fit-${objectFitMode} azar-filter-${activeFilter} ${isSearching ? 'azar-blur' : ''}`}
         />
 
         {!remoteStream && (
-          <div className="vg-placeholder">
-            {isSearching
-              ? <RefreshCw size={36} className="vg-spin" />
-              : <UserCircle2 size={44} className="vg-idle-icon" />}
-            <p className="vg-ph-text">
-              {isSearching ? 'Finding someone…' : 'Waiting for a stranger'}
+          <div className="azar-placeholder">
+            {isSearching ? (
+              <div className="azar-radar-circle">
+                <RefreshCw size={44} className="azar-spin" />
+                <div className="azar-radar-pulse" />
+              </div>
+            ) : (
+              <UserCircle2 size={56} className="azar-idle-icon" />
+            )}
+            <p className="azar-ph-text">
+              {isSearching ? 'Finding someone interesting…' : 'Tap Start or Swipe to connect'}
             </p>
+            {isSearching && <span className="azar-ph-sub">Searching global live queue</span>}
           </div>
         )}
 
-        <div className="vg-label">
-          <span className={`vg-dot ${isConnected ? 'vg-dot-live' : 'vg-dot-idle'}`} />
-          Stranger
+        {/* Top-Left Status Pill */}
+        <div className="azar-top-badge">
+          <span className={`azar-dot ${isConnected ? 'azar-dot-live' : 'azar-dot-idle'}`} />
+          <span className="azar-badge-title">{isConnected ? 'Stranger' : 'Connecting'}</span>
         </div>
 
-        <div className="vg-tr-actions">
+        {/* Top-Right Action Controls */}
+        <div className="azar-top-actions">
+          <button className="azar-pill-btn" onClick={cycleFilter} title={`Current filter: ${activeFilter}. Click to cycle`}>
+            <Sparkles size={14} className={activeFilter !== 'normal' ? 'sparkle-active' : ''} />
+            <span className="capitalize">{activeFilter}</span>
+          </button>
+
           <button
-            className="vg-btn vg-btn-icon"
+            className="azar-pill-btn"
             onClick={toggleObjectFit}
-            title={objectFitMode === 'cover' ? 'Switch to Fit (Show Letterbox)' : 'Switch to Cover (Fill Box)'}
+            title={objectFitMode === 'cover' ? 'Show Letterbox (Fit)' : 'Fill Screen (Cover)'}
           >
             {objectFitMode === 'cover' ? <Shrink size={14} /> : <Expand size={14} />}
-            <span className="vg-btn-text-mobile">{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
+            <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
           </button>
 
           {isConnected && onReportStranger && (
-            <button className="vg-btn" onClick={onReportStranger}>
-              <Flag size={13} /><span>Report</span>
+            <button className="azar-pill-btn azar-report-btn" onClick={onReportStranger} title="Report Stranger">
+              <Flag size={14} /><span>Report</span>
             </button>
           )}
-          <button className="vg-btn vg-btn-icon" onClick={toggleFullscreen} title="Toggle Fullscreen">
-            {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+
+          <button className="azar-pill-btn azar-icon-only" onClick={toggleFullscreen} title="Toggle Fullscreen">
+            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
         </div>
 
-        {isConnected && (
-          <div className="vg-live-badge">
-            <span className="vg-dot vg-dot-live" />Connected
-          </div>
-        )}
+        {/* Swipe Hint overlay on edge */}
+        <div className="azar-swipe-hint">
+          <ChevronLeft size={16} className="azar-hint-arrow" />
+          <span>Swipe left to skip</span>
+        </div>
       </div>
 
-      {/* ── You panel (Classic 4:3 Omegle ratio) ───────────── */}
-      <div className="vg-panel vg-you">
+      {/* ── Floating Self-View PIP (Picture-in-Picture) ────── */}
+      <div
+        className={`azar-pip-card azar-pip-${pipCorner}`}
+        onClick={cyclePipCorner}
+        title="Click to move corner"
+      >
         <video
           ref={localVideoRef}
           autoPlay playsInline muted
-          className={`vg-video vg-mirror ${localStream && !isVideoOff ? 'vg-video-on' : ''} vg-fit-${objectFitMode}`}
+          className={`azar-pip-video azar-mirror ${localStream && !isVideoOff ? 'azar-video-on' : ''}`}
         />
 
         {(!localStream || isVideoOff) && (
-          <div className="vg-placeholder">
-            <CameraOff size={28} className="vg-idle-icon" />
-            <p className="vg-ph-text">
-              {isVideoOff ? 'Camera off' : 'Starting camera…'}
-            </p>
+          <div className="azar-pip-placeholder">
+            <CameraOff size={20} className="azar-idle-icon" />
           </div>
         )}
 
-        <div className="vg-label">
-          <span className="vg-dot vg-dot-you" />
-          You
-        </div>
+        <div className="azar-pip-label">You</div>
 
         {onFlipCamera && localStream && (
-          <div className="vg-tr-actions">
-            <button className="vg-btn vg-btn-icon" onClick={onFlipCamera} title="Flip Camera">
-              <RotateCcw size={14} />
-            </button>
-          </div>
+          <button
+            className="azar-pip-flip-btn"
+            onClick={(e) => { e.stopPropagation(); onFlipCamera(); }}
+            title="Flip Camera"
+          >
+            <RotateCcw size={12} />
+          </button>
         )}
       </div>
 
       <style>{`
-        /* ── Classic Omegle 4:3 Video Layout ─────────────────── */
-        .vg-root {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          width: 100%;
-          min-height: 0;
-          overflow: hidden;
-        }
-
-        /* ── Panels (Standard 4:3 Omegle aspect ratio) ───────── */
-        .vg-panel {
+        /* ── Azar Live Immersive Full-Screen Layout ─────────────────── */
+        .azar-vg-root {
           position: relative;
           width: 100%;
-          max-width: 360px;
-          height: 270px;
-          aspect-ratio: 4 / 3;
+          height: 100%;
+          min-height: 480px;
+          border-radius: 18px;
           overflow: hidden;
-          border-radius: 12px;
-          background: #000000;
-          border: 1px solid rgba(255,255,255,0.08);
+          background: #090d14;
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+          transition: transform 0.15s ease-out;
+          touch-action: pan-y;
+          user-select: none;
+        }
+
+        .azar-stranger-panel {
+          position: relative;
+          width: 100%;
+          height: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-          flex: none;
         }
 
-        /* ── Video element (default contain = 100% full uncropped video) ── */
-        .vg-video {
+        /* Video element: full screen cover mode by default */
+        .azar-video {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: contain !important;
           object-position: center center;
           background: #000;
           opacity: 0;
-          transition: opacity 0.3s ease;
-          display: block;
+          transition: opacity 0.3s ease, filter 0.4s ease;
         }
-        .vg-fit-contain { object-fit: contain !important; }
-        .vg-fit-cover   { object-fit: cover !important; }
+        .azar-fit-cover   { object-fit: cover !important; }
+        .azar-fit-contain { object-fit: contain !important; }
+        .azar-video-on    { opacity: 1; }
+        .azar-blur        { filter: blur(20px) brightness(0.6); scale: 1.05; }
+        .azar-mirror      { transform: scaleX(-1); }
 
-        .vg-video-on { opacity: 1; }
-        /* Local feed: mirror transform */
-        .vg-mirror   { transform: scaleX(-1); }
+        /* AI Video Filters */
+        .azar-filter-beauty  { filter: contrast(1.08) brightness(1.06) saturate(1.1) blur(0.2px); }
+        .azar-filter-vibrant { filter: sepia(0.18) saturate(1.45) contrast(1.12); }
+        .azar-filter-cyber   { filter: hue-rotate(170deg) saturate(1.5) contrast(1.2); }
+        .azar-filter-vintage { filter: grayscale(1) contrast(1.25) brightness(0.95); }
+        .sparkle-active { color: #f59e0b; }
+        .capitalize { text-transform: capitalize; }
 
-        /* ── Placeholder ───────────────────────────────────── */
-        .vg-placeholder {
+
+        /* Placeholder & Matching Radar */
+        .azar-placeholder {
+          position: relative;
+          z-index: 2;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
-          gap: 10px;
-          padding: 1.25rem;
+          gap: 12px;
+          padding: 2rem;
           text-align: center;
-          z-index: 1;
           pointer-events: none;
         }
-        .vg-idle-icon { color: #334155; }
-        .vg-spin {
-          color: var(--brand-blue);
-          animation: vg-spin 1.2s linear infinite;
-        }
-        @keyframes vg-spin { to { transform: rotate(360deg); } }
-        .vg-ph-text {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: #94a3b8;
-          letter-spacing: 0.01em;
-        }
-
-        /* ── Label (top-left overlay) ──────────────────────── */
-        .vg-label {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          z-index: 10;
+        .azar-idle-icon { color: #475569; }
+        .azar-radar-circle {
+          position: relative;
           display: flex;
           align-items: center;
-          gap: 6px;
-          background: rgba(15, 23, 42, 0.75);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 100px;
-          padding: 4px 10px;
-          font-size: 0.74rem;
-          font-weight: 700;
-          color: #f1f5f9;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          pointer-events: none;
-        }
-
-        /* ── Dots ──────────────────────────────────────────── */
-        .vg-dot {
-          width: 7px;
-          height: 7px;
+          justify-content: center;
+          width: 80px;
+          height: 80px;
           border-radius: 50%;
-          flex-shrink: 0;
+          background: rgba(37, 99, 235, 0.15);
         }
-        .vg-dot-live { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.9); }
-        .vg-dot-idle { background: #64748b; }
-        .vg-dot-you  { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.9); }
-
-        /* ── Top-right action buttons ──────────────────────── */
-        .vg-tr-actions {
+        .azar-spin {
+          color: #3b82f6;
+          animation: azar-spin 1.2s linear infinite;
+        }
+        .azar-radar-pulse {
           position: absolute;
-          top: 10px;
-          right: 10px;
+          inset: -10px;
+          border-radius: 50%;
+          border: 2px solid rgba(59, 130, 246, 0.5);
+          animation: azar-pulse 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes azar-spin { to { transform: rotate(360deg); } }
+        @keyframes azar-pulse {
+          0% { transform: scale(0.8); opacity: 1; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        .azar-ph-text {
+          font-size: 1rem;
+          font-weight: 700;
+          color: #f8fafc;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .azar-ph-sub {
+          font-size: 0.8rem;
+          color: #94a3b8;
+          font-weight: 500;
+        }
+
+        /* Top Bar Badges & Controls */
+        .azar-top-badge {
+          position: absolute;
+          top: 14px;
+          left: 14px;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(15, 23, 42, 0.65);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 100px;
+          padding: 6px 14px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: #f8fafc;
+        }
+        .azar-dot {
+          width: 8px; height: 8px; border-radius: 50%;
+        }
+        .azar-dot-live { background: #22c55e; box-shadow: 0 0 10px rgba(34,197,94,0.9); }
+        .azar-dot-idle { background: #eab308; box-shadow: 0 0 10px rgba(234,179,8,0.9); }
+
+        .azar-top-actions {
+          position: absolute;
+          top: 14px;
+          right: 130px; /* Leave space for PIP card on top right */
           z-index: 10;
           display: flex;
           align-items: center;
           gap: 6px;
         }
-        .vg-btn {
+
+        .azar-pill-btn {
           display: flex;
           align-items: center;
           gap: 5px;
-          background: rgba(15, 23, 42, 0.75);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.12);
+          background: rgba(15, 23, 42, 0.65);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.15);
           border-radius: 100px;
-          padding: 4px 10px;
+          padding: 6px 12px;
           font-size: 0.75rem;
           font-weight: 600;
           color: #f1f5f9;
           cursor: pointer;
           transition: all 0.15s ease;
-          white-space: nowrap;
         }
-        .vg-btn:hover  { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.25); }
-        .vg-btn:active { transform: scale(0.95); }
-        .vg-btn-icon   { padding: 4px 8px; }
-        .vg-btn-text-mobile { font-size: 0.72rem; }
+        .azar-pill-btn:hover { background: rgba(255,255,255,0.25); }
+        .azar-icon-only { padding: 6px 8px; }
+        .azar-report-btn { color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); }
 
-        /* ── Connected badge (bottom-left of stranger) ─────── */
-        .vg-live-badge {
+        /* Swipe hint indicator on right side */
+        .azar-swipe-hint {
           position: absolute;
-          bottom: 10px;
-          left: 10px;
-          z-index: 10;
+          right: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 5;
           display: flex;
           align-items: center;
-          gap: 6px;
-          background: rgba(15, 23, 42, 0.75);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(34,197,94,0.4);
+          gap: 4px;
+          background: rgba(0,0,0,0.4);
+          backdrop-filter: blur(8px);
+          padding: 6px 12px;
           border-radius: 100px;
-          padding: 4px 10px;
-          font-size: 0.74rem;
-          font-weight: 700;
-          color: #4ade80;
+          color: rgba(255,255,255,0.7);
+          font-size: 0.72rem;
+          font-weight: 600;
           pointer-events: none;
-          animation: vg-pop 0.3s ease;
+          animation: azar-swipe-bounce 2s infinite;
         }
-        @keyframes vg-pop {
-          from { opacity: 0; transform: translateY(4px) scale(0.95); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes azar-swipe-bounce {
+          0%, 100% { transform: translateY(-50%) translateX(0); }
+          50% { transform: translateY(-50%) translateX(-6px); }
         }
-
-        /* ── Mobile Responsive Override ─────────────────────── */
-        @media (max-width: 1024px) {
-          .vg-root { flex: 1; min-height: 0; }
-          .vg-panel { max-width: 100%; height: auto; aspect-ratio: auto; flex: 1; min-height: 0; }
+        .azar-hint-arrow { animation: azar-arrow-pulse 1.2s infinite; }
+        @keyframes azar-arrow-pulse {
+          0%, 100% { opacity: 0.4; } 50% { opacity: 1; }
         }
 
-        /* ── Fullscreen ────────────────────────────────────── */
-        :fullscreen .vg-root { gap: 0; }
-        :fullscreen .vg-panel { border-radius: 0; border: none; aspect-ratio: auto; flex: 1; }
+        /* ── Floating Self View PIP Card ─────────────────────── */
+        .azar-pip-card {
+          position: absolute;
+          z-index: 20;
+          width: 100px;
+          height: 135px;
+          border-radius: 14px;
+          overflow: hidden;
+          background: #000;
+          border: 2px solid rgba(255, 255, 255, 0.25);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .azar-pip-card:hover {
+          transform: scale(1.05);
+          border-color: #3b82f6;
+        }
+        .azar-pip-top-right    { top: 14px; right: 14px; }
+        .azar-pip-top-left     { top: 14px; left: 14px; }
+        .azar-pip-bottom-right { bottom: 80px; right: 14px; }
+        .azar-pip-bottom-left  { bottom: 80px; left: 14px; }
+
+        .azar-pip-video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover !important;
+        }
+        .azar-pip-placeholder {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #1e293b;
+        }
+        .azar-pip-label {
+          position: absolute;
+          bottom: 4px;
+          left: 6px;
+          font-size: 0.65rem;
+          font-weight: 800;
+          color: #fff;
+          background: rgba(0,0,0,0.6);
+          padding: 2px 6px;
+          border-radius: 6px;
+          text-transform: uppercase;
+        }
+        .azar-pip-flip-btn {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          background: rgba(0,0,0,0.6);
+          color: #fff;
+          border: none;
+          border-radius: 50%;
+          width: 22px;
+          height: 22px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+          .azar-top-actions { right: 120px; }
+          .azar-pip-card { width: 90px; height: 120px; }
+        }
       `}</style>
     </div>
   );
