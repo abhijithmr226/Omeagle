@@ -248,7 +248,13 @@ export const App: React.FC = () => {
   const doPoll = useCallback(async () => {
     const chatMode = currentModeRef.current as 'video' | 'text';
     try {
-      const result = await pollMatch(chatMode);  // FIX: pass actual mode
+      const result = await pollMatch(chatMode, {
+        country: settings.country,
+        gender: settings.gender,
+        interests: settings.interests,
+        preferredGender: settings.preferredGender,
+        preferredCountries: settings.preferredCountries,
+      });
       if (result.status === 'matched' && result.call_id) {
         handleMatchFound(
           result.call_id,
@@ -264,7 +270,7 @@ export const App: React.FC = () => {
       console.error('[matching] poll error:', err);
       pollTimerRef.current = setTimeout(doPoll, POLL_SLOW_MS);
     }
-  }, [handleMatchFound]);
+  }, [handleMatchFound, settings]);
 
   /**
    * Subscribe to Supabase Realtime on the calls table.

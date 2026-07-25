@@ -49,7 +49,10 @@ export async function joinQueue(
   return data as MatchResult;
 }
 
-export async function pollMatch(mode: 'video' | 'text'): Promise<MatchResult> {
+export async function pollMatch(
+  mode: 'video' | 'text',
+  preferences?: QueuePreferences
+): Promise<MatchResult> {
   let userId = getCurrentUserId();
   if (!userId) {
     try {
@@ -63,7 +66,7 @@ export async function pollMatch(mode: 'video' | 'text'): Promise<MatchResult> {
   const { data, error } = await supabase.rpc('match_users_in_queue', {
     p_user_id: userId,
     p_mode: mode,
-    p_preferences: {},
+    p_preferences: preferences || {},
   });
 
   if (error) {
