@@ -276,31 +276,36 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   .chevron-right-icon { color: #64748b; flex-shrink: 0; }
 }
 
-/* PC Desktop & Mobile Responsive Video Layout Rules */
+/* Azar Web PC Desktop Layout Architecture (azarlive.com standard) */
 .chat-layout-wrapper {
   width: 100%;
-  max-width: 1360px;
+  max-width: 1040px;
   margin: 0 auto;
+  padding: 0.5rem 0;
 }
 
 .chat-layout-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 1.25rem;
+  grid-template-columns: 460px 1fr;
+  gap: 1.5rem;
   width: 100%;
   align-items: start;
+  justify-content: center;
 }
 
 .video-column {
   position: relative;
   width: 100%;
+  max-width: 460px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  margin: 0 auto;
 }
 
 .desktop-only-chat {
   display: block;
+  height: 575px;
 }
 
 .mobile-chat-drawer {
@@ -342,8 +347,16 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
 }
 
 @media (max-width: 960px) {
+  .chat-layout-wrapper {
+    max-width: 100%;
+    padding: 0;
+  }
   .chat-layout-grid {
     grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .video-column {
+    max-width: 100%;
   }
   .desktop-only-chat {
     display: none;
@@ -353,5 +366,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
     flex-direction: column;
   }
 }
+
 
 

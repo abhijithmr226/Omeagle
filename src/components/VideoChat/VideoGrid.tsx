@@ -130,37 +130,38 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           </div>
         )}
 
-        {/* Top-Left Status Pill */}
-        <div className="azar-top-badge">
-          <span className={`azar-dot ${isConnected ? 'azar-dot-live' : 'azar-dot-idle'}`} />
-          <span className="azar-badge-title">{isConnected ? 'Stranger' : 'Connecting'}</span>
-        </div>
+        {/* Top Header Row (Status + Action Pill Bar) */}
+        <div className="azar-top-header">
+          <div className="azar-top-badge">
+            <span className={`azar-dot ${isConnected ? 'azar-dot-live' : 'azar-dot-idle'}`} />
+            <span className="azar-badge-title">{isConnected ? 'Stranger' : 'Connecting'}</span>
+          </div>
 
-        {/* Top-Right Action Controls */}
-        <div className="azar-top-actions">
-          <button className="azar-pill-btn" onClick={cycleFilter} title={`Current filter: ${activeFilter}. Click to cycle`}>
-            <Sparkles size={14} className={activeFilter !== 'normal' ? 'sparkle-active' : ''} />
-            <span className="capitalize">{activeFilter}</span>
-          </button>
-
-          <button
-            className="azar-pill-btn"
-            onClick={toggleObjectFit}
-            title={objectFitMode === 'cover' ? 'Show Letterbox (Fit)' : 'Fill Screen (Cover)'}
-          >
-            {objectFitMode === 'cover' ? <Shrink size={14} /> : <Expand size={14} />}
-            <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
-          </button>
-
-          {isConnected && onReportStranger && (
-            <button className="azar-pill-btn azar-report-btn" onClick={onReportStranger} title="Report Stranger">
-              <Flag size={14} /><span>Report</span>
+          <div className="azar-top-actions">
+            <button className="azar-pill-btn" onClick={cycleFilter} title={`Filter: ${activeFilter}`}>
+              <Sparkles size={13} className={activeFilter !== 'normal' ? 'sparkle-active' : ''} />
+              <span className="capitalize">{activeFilter}</span>
             </button>
-          )}
 
-          <button className="azar-pill-btn azar-icon-only" onClick={toggleFullscreen} title="Toggle Fullscreen">
-            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
-          </button>
+            <button
+              className="azar-pill-btn"
+              onClick={toggleObjectFit}
+              title={objectFitMode === 'cover' ? 'Fit (Letterbox)' : 'Fill Screen'}
+            >
+              {objectFitMode === 'cover' ? <Shrink size={13} /> : <Expand size={13} />}
+              <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
+            </button>
+
+            {isConnected && onReportStranger && (
+              <button className="azar-pill-btn azar-report-btn" onClick={onReportStranger} title="Report Stranger">
+                <Flag size={13} /><span>Report</span>
+              </button>
+            )}
+
+            <button className="azar-pill-btn azar-icon-only" onClick={toggleFullscreen} title="Toggle Fullscreen">
+              {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            </button>
+          </div>
         </div>
 
         {/* Swipe Hint overlay on edge */}
@@ -206,11 +207,11 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .azar-vg-root {
           position: relative;
           width: 100%;
-          height: 480px;
-          border-radius: 18px;
+          height: 510px;
+          border-radius: 20px;
           overflow: hidden;
           background: #090d14;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
           transition: transform 0.15s ease-out;
           touch-action: pan-y;
           user-select: none;
@@ -220,6 +221,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           .azar-vg-root {
             height: calc(100dvh - 170px);
             min-height: 380px;
+            border-radius: 0;
           }
         }
 
@@ -310,12 +312,21 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           font-weight: 500;
         }
 
-        /* Top Bar Badges & Controls */
-        .azar-top-badge {
+        /* Top Header Row (Status + Action Pill Bar) */
+        .azar-top-header {
           position: absolute;
           top: 14px;
           left: 14px;
-          z-index: 10;
+          right: 120px; /* Leaves clear space for PIP card on top right */
+          z-index: 15;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+
+        .azar-top-badge {
           display: flex;
           align-items: center;
           gap: 6px;
@@ -328,6 +339,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           font-size: 0.78rem;
           font-weight: 700;
           color: #f8fafc;
+          flex-shrink: 0;
         }
         .azar-dot {
           width: 8px; height: 8px; border-radius: 50%;
@@ -336,15 +348,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .azar-dot-idle { background: #eab308; box-shadow: 0 0 10px rgba(234,179,8,0.9); }
 
         .azar-top-actions {
-          position: absolute;
-          top: 14px;
-          left: 125px;
-          z-index: 10;
           display: flex;
           align-items: center;
           gap: 6px;
-          max-width: calc(100% - 240px);
-          overflow-x: auto;
+          flex-shrink: 0;
         }
 
         .azar-pill-btn {
