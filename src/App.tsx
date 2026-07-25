@@ -7,16 +7,17 @@ import { VideoGrid } from './components/VideoChat/VideoGrid';
 import { ControlsBar } from './components/VideoChat/ControlsBar';
 import { ChatBox } from './components/Chat/ChatBox';
 import { Footer } from './components/Footer';
-import { SettingsModal } from './components/Modals/SettingsModal';
-import { PreferencesModal } from './components/Modals/PreferencesModal';
 import { AgeGateModal } from './components/Modals/AgeGateModal';
-import { ReportModal } from './components/Modals/ReportModal';
-import { About } from './pages/About';
-import { Privacy } from './pages/Privacy';
-import { Terms } from './pages/Terms';
-import { Contact } from './pages/Contact';
-import { Blog } from './pages/Blog';
-import { Safety } from './pages/Safety';
+// Lazy load non-critical secondary pages & modals for faster initial LCP/FCP load
+const About = React.lazy(() => import('./pages/About').then(m => ({ default: m.About })));
+const Privacy = React.lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })));
+const Terms = React.lazy(() => import('./pages/Terms').then(m => ({ default: m.Terms })));
+const Contact = React.lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })));
+const Blog = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.Blog })));
+const Safety = React.lazy(() => import('./pages/Safety').then(m => ({ default: m.Safety })));
+const SettingsModal = React.lazy(() => import('./components/Modals/SettingsModal').then(m => ({ default: m.SettingsModal })));
+const PreferencesModal = React.lazy(() => import('./components/Modals/PreferencesModal').then(m => ({ default: m.PreferencesModal })));
+const ReportModal = React.lazy(() => import('./components/Modals/ReportModal').then(m => ({ default: m.ReportModal })));
 import type { ChatMode, ConnectionStatus, PartnerProfile } from './types/chat';
 import { joinQueue, pollMatch, leaveQueue, endCall, cleanupAfterSkip } from './services/queue';
 import { createCallChannel, type CallChannel } from './services/signaling';
@@ -477,113 +478,136 @@ export const App: React.FC = () => {
       }} onlineCount={onlineCount} theme={theme} onToggleTheme={toggleTheme} />
 
       <main className="main-content">
-        <Routes>
-          <Route path="/about" element={<About />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/omeagle-free-random-video-chat" element={<Blog article="article1" />} />
-          <Route path="/blog/best-omegle-alternatives" element={<Blog article="article2" />} />
-          <Route path="/blog/safe-video-chat-guide" element={<Blog article="article3" />} />
-          <Route path="/blog/ometv-alternative" element={<Blog article="article4" />} />
-          <Route path="/blog/no-signup-video-chat" element={<Blog article="article5" />} />
-          <Route path="/blog/text-chat-with-strangers" element={<Blog article="article6" />} />
-          <Route path="/safety" element={<Safety />} />
-          <Route path="/*" element={
-            mode === 'landing' ? (
-              <LandingPage onStartChat={startChat} onlineCount={onlineCount}
-                settings={settings} onOpenPrefs={() => setIsPrefsOpen(true)} />
-            ) : mode === 'text' ? (
-              <div className="text-chat-layout">
-                <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
-                  onSendMessage={handleSendMessage} onNext={handleNext}
-                  onStart={() => startChat('text')} mode="text"
-                  isStrangerTyping={chat.isStrangerTyping}
-                  onTyping={() => callChannelRef.current?.sendTyping()}
-                  partnerProfile={partnerProfile} />
-              </div>
-            ) : (
-              <div className="chat-layout-wrapper">
-                <div className="chat-layout-grid">
-                  <div className="video-column">
-                    <VideoGrid
-                      localStream={media.localStream}
-                      remoteStream={remoteStream}
-                      connectionStatus={connectionStatus}
-                      isMuted={media.isMuted}
-                      isVideoOff={media.isVideoOff}
-                      onFlipCamera={handleFlipCamera}
-                      onReportStranger={() => setIsReportOpen(true)}
-                      onOpenSafety={() => navigate('/safety')}
-                      onNext={handleNext}
-                    />
+        <React.Suspense fallback={null}>
+          <Routes>
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/omeagle-free-random-video-chat" element={<Blog article="article1" />} />
+            <Route path="/blog/best-omegle-alternatives" element={<Blog article="article2" />} />
+            <Route path="/blog/safe-video-chat-guide" element={<Blog article="article3" />} />
+            <Route path="/blog/ometv-alternative" element={<Blog article="article4" />} />
+            <Route path="/blog/no-signup-video-chat" element={<Blog article="article5" />} />
+            <Route path="/blog/text-chat-with-strangers" element={<Blog article="article6" />} />
+            <Route path="/safety" element={<Safety />} />
+            <Route path="/*" element={
+              mode === 'landing' ? (
+                <LandingPage onStartChat={startChat} onlineCount={onlineCount}
+                  settings={settings} onOpenPrefs={() => setIsPrefsOpen(true)} />
+              ) : mode === 'text' ? (
+                <div className="text-chat-layout">
+                  <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
+                    onSendMessage={handleSendMessage} onNext={handleNext}
+                    onStart={() => startChat('text')} mode="text"
+                    isStrangerTyping={chat.isStrangerTyping}
+                    onTyping={() => callChannelRef.current?.sendTyping()}
+                    partnerProfile={partnerProfile} />
+                </div>
+              ) : (
+                <div className="chat-layout-wrapper">
+                  <div className="chat-layout-grid">
+                    <div className="video-column">
+                      <VideoGrid
+                        localStream={media.localStream}
+                        remoteStream={remoteStream}
+                        connectionStatus={connectionStatus}
+                        isMuted={media.isMuted}
+                        isVideoOff={media.isVideoOff}
+                        onFlipCamera={handleFlipCamera}
+                        onReportStranger={() => setIsReportOpen(true)}
+                        onOpenSafety={() => navigate('/safety')}
+                        onNext={handleNext}
+                      />
 
-                    <ControlsBar
-                      connectionStatus={connectionStatus}
-                      isMuted={media.isMuted}
-                      isVideoOff={media.isVideoOff}
-                      onStart={() => startChat('video')}
-                      onStop={handleStop}
-                      onNext={handleNext}
-                      onToggleMute={media.toggleMute}
-                      onToggleVideo={media.toggleVideo}
-                      onOpenSettings={() => setIsSettingsOpen(true)}
-                      onFlipCamera={handleFlipCamera}
-                      mobileChatOpen={mobileChatOpen}
-                      onToggleChat={() => setMobileChatOpen(!mobileChatOpen)}
-                    />
-                  </div>
-
-                  {/* PC Desktop Dedicated Chat Panel (No overlap) */}
-                  <div className="chat-column desktop-only-chat">
-                    <ChatBox
-                      messages={chat.messages}
-                      connectionStatus={connectionStatus}
-                      onSendMessage={handleSendMessage}
-                      onNext={handleNext}
-                      onStart={() => startChat('video')}
-                      mode="video"
-                      isStrangerTyping={chat.isStrangerTyping}
-                      onTyping={() => callChannelRef.current?.sendTyping()}
-                      partnerProfile={partnerProfile}
-                    />
-                  </div>
-
-                  {/* Mobile Backdrop & Slide-Up Chat Drawer */}
-                  <div
-                    className={`mobile-chat-backdrop ${mobileChatOpen ? 'open' : ''}`}
-                    onClick={() => setMobileChatOpen(false)}
-                  />
-
-                  <div className={`mobile-chat-drawer ${mobileChatOpen ? 'open' : ''}`}>
-                    <div className="mobile-chat-header">
-                      <div className="mobile-chat-title-group">
-                        <MessageCircle size={18} className="chat-header-icon" />
-                        <span>Stranger Text Chat</span>
-                      </div>
-                      <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)} aria-label="Close Chat">
-                        ✕
-                      </button>
+                      <ControlsBar
+                        connectionStatus={connectionStatus}
+                        isMuted={media.isMuted}
+                        isVideoOff={media.isVideoOff}
+                        onStart={() => startChat('video')}
+                        onStop={handleStop}
+                        onNext={handleNext}
+                        onToggleMute={media.toggleMute}
+                        onToggleVideo={media.toggleVideo}
+                        onOpenSettings={() => setIsSettingsOpen(true)}
+                        onFlipCamera={handleFlipCamera}
+                        mobileChatOpen={mobileChatOpen}
+                        onToggleChat={() => setMobileChatOpen(!mobileChatOpen)}
+                      />
                     </div>
-                    <ChatBox
-                      messages={chat.messages}
-                      connectionStatus={connectionStatus}
-                      onSendMessage={handleSendMessage}
-                      onNext={handleNext}
-                      onStart={() => startChat('video')}
-                      mode="video"
-                      isOverlay={true}
-                      isStrangerTyping={chat.isStrangerTyping}
-                      onTyping={() => callChannelRef.current?.sendTyping()}
-                      partnerProfile={partnerProfile}
+
+                    {/* PC Desktop Dedicated Chat Panel (No overlap) */}
+                    <div className="chat-column desktop-only-chat">
+                      <ChatBox
+                        messages={chat.messages}
+                        connectionStatus={connectionStatus}
+                        onSendMessage={handleSendMessage}
+                        onNext={handleNext}
+                        onStart={() => startChat('video')}
+                        mode="video"
+                        isStrangerTyping={chat.isStrangerTyping}
+                        onTyping={() => callChannelRef.current?.sendTyping()}
+                        partnerProfile={partnerProfile}
+                      />
+                    </div>
+
+                    {/* Mobile Backdrop & Slide-Up Chat Drawer */}
+                    <div
+                      className={`mobile-chat-backdrop ${mobileChatOpen ? 'open' : ''}`}
+                      onClick={() => setMobileChatOpen(false)}
                     />
+
+                    <div className={`mobile-chat-drawer ${mobileChatOpen ? 'open' : ''}`}>
+                      <div className="mobile-chat-header">
+                        <div className="mobile-chat-title-group">
+                          <MessageCircle size={18} className="chat-header-icon" />
+                          <span>Stranger Text Chat</span>
+                        </div>
+                        <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)} aria-label="Close Chat">
+                          ✕
+                        </button>
+                      </div>
+                      <ChatBox
+                        messages={chat.messages}
+                        connectionStatus={connectionStatus}
+                        onSendMessage={handleSendMessage}
+                        onNext={handleNext}
+                        onStart={() => startChat('video')}
+                        mode="video"
+                        isOverlay={true}
+                        isStrangerTyping={chat.isStrangerTyping}
+                        onTyping={() => callChannelRef.current?.sendTyping()}
+                        partnerProfile={partnerProfile}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          } />
-        </Routes>
+              )
+            } />
+          </Routes>
+
+          <Footer onOpenPage={openPage} />
+          <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}
+            settings={settings} onSaveSettings={updateSettings} />
+          <PreferencesModal isOpen={isPrefsOpen} onClose={() => setIsPrefsOpen(false)}
+            settings={settings} onSave={updateSettings} />
+          <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)}
+            onSubmitReport={(reason, details) => {
+              // Log report event and skip to next match
+              if (roomIdRef.current) {
+                Promise.resolve(
+                  supabase.from('reports').insert({
+                    room_id: roomIdRef.current,
+                    reason,
+                    details: details || null,
+                    created_at: new Date().toISOString()
+                  })
+                ).catch(() => { });
+              }
+              handleNext();
+            }} />
+        </React.Suspense>
       </main>
 
       <div className="ad-banner">
@@ -599,26 +623,6 @@ export const App: React.FC = () => {
         ` }} />
         <script src="https://www.highperformanceformat.com/8bdddf8feba87229589bd6c56db45ecd/invoke.js" async />
       </div>
-      <Footer onOpenPage={openPage} />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}
-        settings={settings} onSaveSettings={updateSettings} />
-      <PreferencesModal isOpen={isPrefsOpen} onClose={() => setIsPrefsOpen(false)}
-        settings={settings} onSave={updateSettings} />
-      <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)}
-        onSubmitReport={(reason, details) => {
-          // Log report event and skip to next match
-          if (roomIdRef.current) {
-            Promise.resolve(
-              supabase.from('reports').insert({
-                room_id: roomIdRef.current,
-                reason,
-                details: details || null,
-                created_at: new Date().toISOString()
-              })
-            ).catch(() => { });
-          }
-          handleNext();
-        }} />
       {!ageConfirmed && <AgeGateModal onConfirm={handleAgeConfirm} />}
       <PWAInstallPrompt />
 
