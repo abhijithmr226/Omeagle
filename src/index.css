@@ -304,7 +304,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
 .desktop-only-chat {
   display: flex;
   flex-direction: column;
-  height: min(76vh, 760px);
+  height: 100%;
+  max-height: clamp(380px, 66vh, 600px);
 }
 
 .mobile-chat-backdrop {
