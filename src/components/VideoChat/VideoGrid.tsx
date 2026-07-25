@@ -12,10 +12,11 @@ import {
   Sparkles,
   ShieldAlert,
   ChevronLeft,
-  Sliders,
-  Check
+  Check,
+  MoreVertical
 } from 'lucide-react';
 import type { ConnectionStatus } from '../../types/chat';
+import './VideoGrid.css';
 
 export interface VideoGridProps {
   localStream: MediaStream | null;
@@ -55,19 +56,36 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   const [objectFitMode, setObjectFitMode] = useState<ObjectFitMode>('cover');
   const [activeFilter, setActiveFilter] = useState<FilterMode>('normal');
   const [pipCorner, setPipCorner] = useState<PipCorner>('top-right');
-  const [isDraggingPip, setIsDraggingPip] = useState(false);
-  const [pipCustomPos, setPipCustomPos] = useState<{ x: number; y: number } | null>(null);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // Smooth Remote Video Transition Fade State
+  const [videoFadeIn, setVideoFadeIn] = useState(false);
+
+  // Touch Swipe Gesture State
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
-
   const touchStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const dragStartRef = useRef<{ x: number; y: number; pipX: number; pipY: number }>({ x: 0, y: 0, pipX: 0, pipY: 0 });
 
-  // Stream bindings
+  // Ultra-Smooth Dragging Refs using requestAnimationFrame
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ x: number; y: number; pipX: number; pipY: number }>({ x: 0, y: 0, pipX: 0, pipY: 0 });
+  const rafIdRef = useRef<number | null>(null);
+  const pipPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Stream bindings with Smooth Fade Transition
   useEffect(() => {
     if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = remoteStream;
+      if (remoteStream) {
+        remoteVideoRef.current.srcObject = remoteStream;
+        setVideoFadeIn(true);
+      } else {
+        setVideoFadeIn(false);
+        const timer = setTimeout(() => {
+          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+        }, 200);
+        return () => clearTimeout(timer);
+      }
     }
   }, [remoteStream]);
 
@@ -76,6 +94,39 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream]);
+
+  // Click-Outside Listener for Menus
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.otv-dropdown-wrap')) {
+        setShowFilterMenu(false);
+        setShowMobileMenu(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
+
+  // Desktop Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+      const key = e.key.toLowerCase();
+      if (key === 'f') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (key === 'n') {
+        e.preventDefault();
+        if (onNext) onNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNext]);
 
   // Fullscreen Listener
   useEffect(() => {
@@ -88,6 +139,14 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       document.removeEventListener('fullscreenchange', handleFsChange);
       document.removeEventListener('webkitfullscreenchange', handleFsChange);
     };
+  }, []);
+
+  const cycleFilter = useCallback(() => {
+    const filters: FilterMode[] = ['normal', 'beauty', 'vibrant', 'cyber', 'vintage'];
+    setActiveFilter(prev => {
+      const idx = filters.indexOf(prev);
+      return filters[(idx + 1) % filters.length];
+    });
   }, []);
 
   // Handlers
@@ -112,16 +171,11 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     setObjectFitMode(prev => (prev === 'cover' ? 'contain' : 'cover'));
   }, []);
 
-  const cycleFilter = useCallback(() => {
-    const filters: FilterMode[] = ['normal', 'beauty', 'vibrant', 'cyber', 'vintage'];
-    setActiveFilter(prev => {
-      const idx = filters.indexOf(prev);
-      return filters[(idx + 1) % filters.length];
-    });
-  }, []);
-
   const cyclePipCorner = useCallback(() => {
-    setPipCustomPos(null);
+    if (pipRef.current) {
+      pipRef.current.style.transform = '';
+      pipPosRef.current = null;
+    }
     const corners: PipCorner[] = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
     setPipCorner(prev => corners[(corners.indexOf(prev) + 1) % corners.length]);
   }, []);
@@ -155,7 +209,13 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     setIsSwiping(false);
   }, [isSwiping, swipeOffset, onNext]);
 
-  // PiP Drag & Snap to Nearest Corner
+  // Ultra-Smooth RequestAnimationFrame PiP Dragging
+  const updatePipPosDOM = (x: number, y: number) => {
+    if (pipRef.current) {
+      pipRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    }
+  };
+
   const handlePipMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     const isTouch = 'touches' in e;
@@ -165,19 +225,24 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     if (pipRef.current && containerRef.current) {
       const pipRect = pipRef.current.getBoundingClientRect();
       const containerRect = containerRef.current.getBoundingClientRect();
+
+      let currentX = pipPosRef.current ? pipPosRef.current.x : 0;
+      let currentY = pipPosRef.current ? pipPosRef.current.y : 0;
+
       dragStartRef.current = {
         x: clientX,
         y: clientY,
-        pipX: pipRect.left - containerRect.left,
-        pipY: pipRect.top - containerRect.top
+        pipX: currentX,
+        pipY: currentY
       };
-      setIsDraggingPip(true);
+      isDraggingRef.current = true;
+      if (pipRef.current) pipRef.current.classList.add('otv-pip-dragging');
     }
   };
 
   useEffect(() => {
     const handleMove = (e: MouseEvent | TouchEvent) => {
-      if (!isDraggingPip || !containerRef.current || !pipRef.current) return;
+      if (!isDraggingRef.current || !containerRef.current || !pipRef.current) return;
       const isTouch = 'touches' in e;
       const clientX = isTouch ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
       const clientY = isTouch ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
@@ -185,56 +250,53 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       const deltaX = clientX - dragStartRef.current.x;
       const deltaY = clientY - dragStartRef.current.y;
 
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const pipRect = pipRef.current.getBoundingClientRect();
+      const nextX = dragStartRef.current.pipX + deltaX;
+      const nextY = dragStartRef.current.pipY + deltaY;
 
-      let newX = dragStartRef.current.pipX + deltaX;
-      let newY = dragStartRef.current.pipY + deltaY;
-
-      // Constrain within bounds
-      newX = Math.max(12, Math.min(containerRect.width - pipRect.width - 12, newX));
-      newY = Math.max(12, Math.min(containerRect.height - pipRect.height - 12, newY));
-
-      setPipCustomPos({ x: newX, y: newY });
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = requestAnimationFrame(() => {
+        pipPosRef.current = { x: nextX, y: nextY };
+        updatePipPosDOM(nextX, nextY);
+      });
     };
 
     const handleEnd = () => {
-      if (!isDraggingPip || !containerRef.current || !pipRef.current) return;
-      setIsDraggingPip(false);
-
-      // Snap to nearest corner
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const pipRect = pipRef.current.getBoundingClientRect();
-      const currentX = pipRect.left - containerRect.left;
-      const currentY = pipRect.top - containerRect.top;
-
-      const isRight = currentX + pipRect.width / 2 > containerRect.width / 2;
-      const isBottom = currentY + pipRect.height / 2 > containerRect.height / 2;
-
-      setPipCustomPos(null);
-      if (isRight && !isBottom) setPipCorner('top-right');
-      else if (isRight && isBottom) setPipCorner('bottom-right');
-      else if (!isRight && isBottom) setPipCorner('bottom-left');
-      else setPipCorner('top-left');
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      if (pipRef.current) pipRef.current.classList.remove('otv-pip-dragging');
     };
 
-    if (isDraggingPip) {
-      window.addEventListener('mousemove', handleMove);
-      window.addEventListener('mouseup', handleEnd);
-      window.addEventListener('touchmove', handleMove);
-      window.addEventListener('touchend', handleEnd);
-    }
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('touchend', handleEnd);
+
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleEnd);
       window.removeEventListener('touchmove', handleMove);
       window.removeEventListener('touchend', handleEnd);
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
     };
-  }, [isDraggingPip]);
+  }, []);
 
-  // Derived States
+  // Derived Connection Status Details
   const isConnected = connectionStatus === 'connected';
   const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
+
+  const statusBadgeInfo = useMemo(() => {
+    switch (connectionStatus) {
+      case 'connected':
+        return { label: 'Live Match', dotClass: 'otv-dot-live' };
+      case 'searching':
+      case 'connecting':
+        return { label: 'Searching…', dotClass: 'otv-dot-search' };
+      case 'disconnected':
+        return { label: 'Disconnected', dotClass: 'otv-dot-idle' };
+      default:
+        return { label: 'Idle', dotClass: 'otv-dot-idle' };
+    }
+  }, [connectionStatus]);
 
   const filterCssClass = useMemo(() => {
     switch (activeFilter) {
@@ -267,20 +329,22 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           ref={remoteVideoRef}
           autoPlay
           playsInline
-          className={`otv-remote-video ${remoteStream ? 'otv-active' : ''} ${objectFitMode === 'contain' ? 'otv-contain' : 'otv-cover'} ${filterCssClass} ${isSearching ? 'otv-blur' : ''}`}
+          className={`otv-remote-video ${remoteStream && videoFadeIn ? 'otv-active' : ''} ${objectFitMode === 'contain' ? 'otv-contain' : 'otv-cover'} ${filterCssClass} ${isSearching ? 'otv-blur' : ''}`}
           aria-label="Remote Stranger Video Feed"
         />
 
-        {/* Remote Placeholders */}
+        {/* Remote Placeholders with Shimmer Loading Skeleton */}
         {!remoteStream && (
           <div className="otv-placeholder">
+            {isSearching && <div className="otv-shimmer-bg" />}
+
             {isSearching ? (
               <div className="otv-radar-wrap">
                 <div className="otv-radar-pulse-ring" />
                 <div className="otv-radar-pulse-ring delay-1" />
                 <div className="otv-radar-pulse-ring delay-2" />
                 <div className="otv-radar-center">
-                  <RefreshCw className="otv-spin-icon" size={36} />
+                  <RefreshCw className="otv-spin-icon" size={38} />
                 </div>
               </div>
             ) : (
@@ -296,7 +360,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
               <p className="otv-ph-sub">
                 {isSearching
                   ? 'Searching global live matching queue'
-                  : 'Tap Start or Swipe Left to connect instantly'}
+                  : 'Press Start (or N) or Swipe Left to connect'}
               </p>
             </div>
           </div>
@@ -315,24 +379,25 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       <div className="otv-header-bar">
         {/* Status Indicator */}
         <div className="otv-status-pill" role="status" aria-live="polite">
-          <span className={`otv-status-dot ${isConnected ? 'otv-dot-live' : isSearching ? 'otv-dot-search' : 'otv-dot-idle'}`} />
-          <span className="otv-status-text">
-            {isConnected ? 'Live Match' : isSearching ? 'Searching…' : 'Idle'}
-          </span>
+          <span className={`otv-status-dot ${statusBadgeInfo.dotClass}`} />
+          <span className="otv-status-text">{statusBadgeInfo.label}</span>
         </div>
 
         {/* Quick Action Badges */}
         <div className="otv-top-actions">
-          {/* Filter Dropdown Toggle */}
-          <div className="otv-dropdown-wrap">
+          {/* Desktop Controls */}
+          <div className="otv-dropdown-wrap otv-desktop-only">
             <button
               className={`otv-action-btn ${activeFilter !== 'normal' ? 'otv-active-pill' : ''}`}
-              onClick={() => setShowFilterMenu(prev => !prev)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowFilterMenu(prev => !prev);
+              }}
               title="Video Filters"
               aria-label="Toggle AI Video Filters Menu"
             >
               <Sparkles size={15} />
-              <span className="otv-btn-label capitalize">{activeFilter}</span>
+              <span className="capitalize">{activeFilter}</span>
             </button>
 
             {showFilterMenu && (
@@ -354,27 +419,27 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
             )}
           </div>
 
-          {/* Fit / Cover Toggle */}
+          {/* Fit / Cover Toggle (Desktop) */}
           <button
-            className="otv-action-btn"
+            className="otv-action-btn otv-desktop-only"
             onClick={toggleObjectFit}
             title={objectFitMode === 'cover' ? 'Fit Video to Screen' : 'Fill Screen'}
             aria-label="Toggle Aspect Ratio Fit Mode"
           >
             {objectFitMode === 'cover' ? <Shrink size={15} /> : <Expand size={15} />}
-            <span className="otv-btn-label">{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
+            <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
           </button>
 
           {/* Safety Center */}
           {onOpenSafety && (
             <button
-              className="otv-action-btn"
+              className="otv-action-btn otv-desktop-only"
               onClick={onOpenSafety}
-              title="Safety Center & Guidelines"
+              title="Safety Guidelines"
               aria-label="Open Safety Guidelines"
             >
               <ShieldAlert size={15} />
-              <span className="otv-btn-label">Safety</span>
+              <span>Safety</span>
             </button>
           )}
 
@@ -387,15 +452,49 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
               aria-label="Report Stranger"
             >
               <Flag size={15} />
-              <span className="otv-btn-label">Report</span>
+              <span className="otv-desktop-only">Report</span>
             </button>
           )}
+
+          {/* Mobile Popover Toggle (⋮) */}
+          <div className="otv-dropdown-wrap">
+            <button
+              className="otv-action-btn otv-icon-only"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMobileMenu(prev => !prev);
+              }}
+              title="More Actions"
+              aria-label="More Video Options"
+            >
+              <MoreVertical size={16} />
+            </button>
+
+            {showMobileMenu && (
+              <div className="otv-mobile-menu" onClick={e => e.stopPropagation()}>
+                <button className="otv-mobile-menu-item" onClick={cycleFilter}>
+                  <Sparkles size={15} />
+                  <span>Filter: {activeFilter}</span>
+                </button>
+                <button className="otv-mobile-menu-item" onClick={toggleObjectFit}>
+                  {objectFitMode === 'cover' ? <Shrink size={15} /> : <Expand size={15} />}
+                  <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'} Video</span>
+                </button>
+                {onOpenSafety && (
+                  <button className="otv-mobile-menu-item" onClick={onOpenSafety}>
+                    <ShieldAlert size={15} />
+                    <span>Safety Guide</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Fullscreen Toggle */}
           <button
             className="otv-action-btn otv-icon-only"
             onClick={toggleFullscreen}
-            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Enter Fullscreen (F)'}
             aria-label="Toggle Fullscreen Mode"
           >
             {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
@@ -403,11 +502,10 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
         </div>
       </div>
 
-      {/* ── Draggable Picture-in-Picture Self Camera ────────── */}
+      {/* ── Picture-in-Picture (PiP) Self Camera ────────── */}
       <div
         ref={pipRef}
-        className={`otv-pip ${!pipCustomPos ? `otv-pip-${pipCorner}` : ''} ${isDraggingPip ? 'otv-pip-dragging' : ''}`}
-        style={pipCustomPos ? { left: `${pipCustomPos.x}px`, top: `${pipCustomPos.y}px`, right: 'auto', bottom: 'auto' } : undefined}
+        className={`otv-pip otv-pip-${pipCorner}`}
         onMouseDown={handlePipMouseDown}
         onTouchStart={handlePipMouseDown}
         onClick={cyclePipCorner}
@@ -449,461 +547,6 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           </button>
         )}
       </div>
-
-      {/* ── Production Ready Scoped CSS Design System ──────── */}
-      <style>{`
-        /* Root Stage Container */
-        .otv-stage {
-          position: relative;
-          width: 100%;
-          height: clamp(380px, 68dvh, 760px);
-          max-height: calc(100dvh - 140px);
-          aspect-ratio: 16 / 9;
-          border-radius: clamp(12px, 2vw, 24px);
-          overflow: hidden;
-          background: #090d16;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-          user-select: none;
-          touch-action: pan-y;
-          padding-top: env(safe-area-inset-top, 0px);
-          padding-bottom: env(safe-area-inset-bottom, 0px);
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        /* Fullscreen Viewport Override */
-        .otv-stage.otv-fullscreen {
-          position: fixed;
-          inset: 0;
-          width: 100vw;
-          height: 100dvh;
-          max-height: 100dvh;
-          border-radius: 0;
-          border: none;
-          z-index: 99999;
-          background: #000000;
-        }
-
-        /* Remote Layer */
-        .otv-remote-layer {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-        }
-
-        .otv-remote-video {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          background: #000;
-          opacity: 0;
-          transition: opacity 0.35s ease, filter 0.3s ease;
-        }
-        .otv-remote-video.otv-active {
-          opacity: 1;
-        }
-        .otv-remote-video.otv-cover {
-          object-fit: cover !important;
-        }
-        .otv-remote-video.otv-contain {
-          object-fit: contain !important;
-        }
-        .otv-remote-video.otv-blur {
-          filter: blur(24px) brightness(0.5);
-          scale: 1.08;
-        }
-
-        /* AI Video Filter Styling */
-        .otv-filter-beauty  { filter: contrast(1.08) brightness(1.06) saturate(1.1) blur(0.2px); }
-        .otv-filter-vibrant { filter: sepia(0.18) saturate(1.45) contrast(1.12); }
-        .otv-filter-cyber   { filter: hue-rotate(170deg) saturate(1.5) contrast(1.2); }
-        .otv-filter-vintage { filter: grayscale(1) contrast(1.25) brightness(0.95); }
-
-        /* Remote Placeholders & Animations */
-        .otv-placeholder {
-          position: relative;
-          z-index: 2;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: clamp(12px, 2.5vw, 20px);
-          padding: 2rem;
-          text-align: center;
-          pointer-events: none;
-        }
-
-        .otv-radar-wrap {
-          position: relative;
-          width: 90px;
-          height: 90px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .otv-radar-center {
-          width: 64px;
-          height: 64px;
-          border-radius: 50%;
-          background: rgba(37, 99, 235, 0.25);
-          border: 1px solid rgba(59, 130, 246, 0.6);
-          backdrop-filter: blur(10px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 0 24px rgba(37, 99, 235, 0.4);
-          z-index: 2;
-        }
-        .otv-spin-icon {
-          color: #3b82f6;
-          animation: otv-spin 1.2s linear infinite;
-        }
-        .otv-radar-pulse-ring {
-          position: absolute;
-          inset: -12px;
-          border-radius: 50%;
-          border: 2px solid rgba(59, 130, 246, 0.6);
-          animation: otv-pulse-ring 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-        .otv-radar-pulse-ring.delay-1 { animation-delay: 0.6s; }
-        .otv-radar-pulse-ring.delay-2 { animation-delay: 1.2s; }
-
-        @keyframes otv-spin { to { transform: rotate(360deg); } }
-        @keyframes otv-pulse-ring {
-          0% { transform: scale(0.6); opacity: 1; }
-          100% { transform: scale(1.8); opacity: 0; }
-        }
-
-        .otv-avatar-wrap {
-          width: 88px;
-          height: 88px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .otv-avatar-icon { color: #64748b; }
-
-        .otv-placeholder-meta {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .otv-ph-title {
-          font-size: clamp(1rem, 1.6vw, 1.25rem);
-          font-weight: 700;
-          color: #f8fafc;
-          margin: 0;
-        }
-        .otv-ph-sub {
-          font-size: clamp(0.78rem, 1.1vw, 0.88rem);
-          color: #94a3b8;
-          margin: 0;
-        }
-
-        /* Swipe Left Indicator */
-        .otv-swipe-indicator {
-          position: absolute;
-          bottom: 16px;
-          left: 50%;
-          transform: translateX(-50%);
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: rgba(15, 23, 42, 0.75);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          padding: 6px 14px;
-          border-radius: 100px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: #cbd5e1;
-          pointer-events: none;
-          z-index: 5;
-        }
-        .otv-arrow-animated {
-          color: #3b82f6;
-          animation: otv-bounce-left 1.2s infinite;
-        }
-        @keyframes otv-bounce-left {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(-4px); }
-        }
-
-        /* Top Header Navigation & Controls */
-        .otv-header-bar {
-          position: absolute;
-          top: clamp(10px, 1.5vw, 16px);
-          left: clamp(10px, 1.5vw, 16px);
-          right: clamp(10px, 1.5vw, 16px);
-          z-index: 15;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          pointer-events: none;
-        }
-
-        .otv-status-pill {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          background: rgba(15, 23, 42, 0.8);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          border-radius: 100px;
-          padding: 6px 14px;
-          font-size: 0.78rem;
-          font-weight: 700;
-          color: #ffffff;
-          pointer-events: auto;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-        }
-
-        .otv-status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-        }
-        .otv-dot-live   { background: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.9); }
-        .otv-dot-search { background: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.9); }
-        .otv-dot-idle   { background: #64748b; }
-
-        .otv-top-actions {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          pointer-events: auto;
-        }
-
-        .otv-dropdown-wrap {
-          position: relative;
-        }
-
-        .otv-action-btn {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: rgba(15, 23, 42, 0.8);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          border-radius: 100px;
-          padding: 6px 12px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: #f1f5f9;
-          cursor: pointer;
-          transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
-          box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-        }
-        .otv-action-btn:hover {
-          background: rgba(255, 255, 255, 0.2);
-          transform: translateY(-1px);
-        }
-        .otv-action-btn:active {
-          transform: scale(0.95);
-        }
-
-        .otv-active-pill {
-          background: rgba(37, 99, 235, 0.35) !important;
-          border-color: #3b82f6 !important;
-          color: #93c5fd !important;
-        }
-        .otv-btn-danger {
-          color: #fca5a5;
-          border-color: rgba(239, 68, 68, 0.4);
-        }
-        .otv-btn-danger:hover {
-          background: rgba(239, 68, 68, 0.25);
-          color: #fff;
-        }
-        .otv-icon-only {
-          padding: 6px 9px;
-        }
-
-        /* Filter Dropdown Menu */
-        .otv-filter-dropdown {
-          position: absolute;
-          top: calc(100% + 8px);
-          right: 0;
-          background: rgba(15, 23, 42, 0.95);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 14px;
-          padding: 6px;
-          min-width: 130px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          z-index: 30;
-          animation: otv-scale-in 0.15s ease;
-        }
-
-        .otv-filter-option {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 8px 12px;
-          border-radius: 8px;
-          background: none;
-          border: none;
-          color: #cbd5e1;
-          font-size: 0.78rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.15s ease;
-        }
-        .otv-filter-option:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: #fff;
-        }
-        .otv-filter-option.selected {
-          color: #3b82f6;
-        }
-
-        @keyframes otv-scale-in {
-          from { opacity: 0; transform: scale(0.92); }
-          to   { opacity: 1; transform: scale(1); }
-        }
-
-        /* ── Picture-in-Picture (PiP) Self View ────────────── */
-        .otv-pip {
-          position: absolute;
-          width: clamp(100px, 14vw, 150px);
-          height: clamp(130px, 18vw, 195px);
-          border-radius: clamp(10px, 1.5vw, 16px);
-          overflow: hidden;
-          background: #000;
-          border: 2px solid rgba(255, 255, 255, 0.25);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-          z-index: 20;
-          cursor: grab;
-          transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
-        }
-        .otv-pip:hover {
-          transform: scale(1.03);
-          border-color: rgba(255, 255, 255, 0.5);
-        }
-        .otv-pip-dragging {
-          cursor: grabbing !important;
-          transform: scale(1.05) !important;
-          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8) !important;
-          transition: none !important;
-        }
-
-        /* PiP Corner Presets */
-        .otv-pip-top-right    { top: clamp(52px, 6vw, 68px); right: clamp(10px, 1.5vw, 16px); }
-        .otv-pip-top-left     { top: clamp(52px, 6vw, 68px); left: clamp(10px, 1.5vw, 16px); }
-        .otv-pip-bottom-right { bottom: clamp(10px, 1.5vw, 16px); right: clamp(10px, 1.5vw, 16px); }
-        .otv-pip-bottom-left  { bottom: clamp(10px, 1.5vw, 16px); left: clamp(10px, 1.5vw, 16px); }
-
-        .otv-pip-video {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transform: scaleX(-1);
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-        .otv-pip-video.otv-active {
-          opacity: 1;
-        }
-
-        .otv-pip-placeholder {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #0f172a;
-        }
-        .otv-icon-muted { color: #64748b; }
-
-        .otv-pip-badge {
-          position: absolute;
-          bottom: 6px;
-          left: 6px;
-          background: rgba(15, 23, 42, 0.75);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          padding: 2px 7px;
-          border-radius: 100px;
-          font-size: 0.65rem;
-          font-weight: 700;
-          color: #f1f5f9;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          pointer-events: none;
-        }
-        .otv-pip-muted-tag {
-          color: #fca5a5;
-        }
-
-        .otv-pip-flip {
-          position: absolute;
-          top: 6px;
-          right: 6px;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: rgba(15, 23, 42, 0.75);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .otv-pip-flip:hover {
-          background: rgba(37, 99, 235, 0.8);
-          transform: scale(1.1);
-        }
-
-        /* ── Breakpoints & Responsiveness ──────────────────── */
-        @media (max-width: 640px) {
-          .otv-stage {
-            height: clamp(340px, 75dvh, 540px);
-            border-radius: 14px;
-          }
-          .otv-btn-label {
-            display: none;
-          }
-          .otv-action-btn {
-            padding: 6px 9px;
-          }
-          .otv-pip {
-            width: 105px;
-            height: 140px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .otv-stage {
-            height: calc(100dvh - 160px);
-            min-height: 320px;
-            border-radius: 0;
-            border-left: none;
-            border-right: none;
-          }
-          .otv-pip-top-right, .otv-pip-top-left {
-            top: 50px;
-          }
-        }
-      `}</style>
     </div>
   );
 });
