@@ -6,10 +6,13 @@ const ICE_SERVERS: RTCConfiguration = {
     { urls: 'stun:stun3.l.google.com:19302' },
     { urls: 'stun:stun4.l.google.com:19302' },
     { urls: 'stun:global.stun.twilio.com:3478' },
+    { urls: 'stun:stun.cloudflare.com:3478' },
     { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
     { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
     { urls: 'turns:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
   ],
+  iceCandidatePoolSize: 10,
 };
 
 export type SignalSender = {
@@ -57,6 +60,19 @@ export class PeerConnectionManager {
     pc.onconnectionstatechange = () => {
       if (pc === this.pc) {
         callbacks.onConnectionStateChange(pc.connectionState);
+      }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      if (pc === this.pc && (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected')) {
+        console.warn('[webrtc] ICE connection degraded/failed, triggering ICE restart...');
+        try {
+          if ('restartIce' in pc && typeof pc.restartIce === 'function') {
+            pc.restartIce();
+          }
+        } catch (err) {
+          console.warn('[webrtc] restartIce failed:', err);
+        }
       }
     };
 
