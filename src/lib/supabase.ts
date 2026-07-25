@@ -1,27 +1,25 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+// Public credentials — safe to commit (anon/publishable key is client-side by design)
+const SUPABASE_URL = 'https://bhrsheykwaduhpxiyqlw.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_bCGSsLILysA90c5tDryyww_gvhDPaNW';
 
-/** True when both env vars are present. Used to guard all Supabase calls. */
-export const supabaseReady = !!(supabaseUrl && supabaseKey);
+// Fall back to env vars if set (useful for forks / local overrides)
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || SUPABASE_URL;
+const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) || SUPABASE_PUBLISHABLE_KEY;
 
-/**
- * Supabase client. Only safe to use when `supabaseReady === true`.
- * Accessing this when credentials are missing will throw at call-time
- * (not at import time), so the UI can render a setup screen first.
- */
-export const supabase: SupabaseClient = supabaseReady
-  ? createClient(supabaseUrl!, supabaseKey!, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: false,
-      },
-      realtime: {
-        params: {
-          eventsPerSecond: 30,
-        },
-      },
-    })
-  : (null as unknown as SupabaseClient);
+/** Always true — credentials are baked in. */
+export const supabaseReady = true;
+
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 30,
+    },
+  },
+});

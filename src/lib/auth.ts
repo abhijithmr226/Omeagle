@@ -1,19 +1,20 @@
-import { supabase, supabaseReady } from './supabase';
+import { supabase } from './supabase';
 import type { User } from '@supabase/supabase-js';
+
+// Public credentials (mirrored here for the keepalive fetch on page unload)
+const SUPABASE_URL = 'https://bhrsheykwaduhpxiyqlw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_bCGSsLILysA90c5tDryyww_gvhDPaNW';
 
 let cachedUser: User | null = null;
 
-// Keep cachedUser in sync with Supabase auth state changes (e.g. token refresh).
-// Guard against missing credentials — supabase is null when env vars aren't set.
-if (supabaseReady) {
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session?.user) {
-      cachedUser = session.user;
-    } else if (event === 'SIGNED_OUT') {
-      cachedUser = null;
-    }
-  });
-}
+// Keep cachedUser in sync with auth state changes (e.g. token refresh)
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session?.user) {
+    cachedUser = session.user;
+  } else if (event === 'SIGNED_OUT') {
+    cachedUser = null;
+  }
+});
 
 export async function initializeAuth(): Promise<User> {
   const { data: { session } } = await supabase.auth.getSession();
@@ -35,9 +36,8 @@ export async function initializeAuth(): Promise<User> {
   return data.user;
 }
 
-// Active heartbeat to update last_seen timestamp every 20 seconds.
-// Only starts when Supabase is configured.
-if (typeof window !== 'undefined' && supabaseReady) {
+// Active heartbeat — update last_seen every 20 seconds
+if (typeof window !== 'undefined') {
   setInterval(() => {
     if (cachedUser?.id) {
       setOnlineStatus(cachedUser.id, true).catch(() => {});
@@ -77,11 +77,7 @@ export async function setOnlineStatus(userId: string, online: boolean) {
   const now = new Date().toISOString();
   const { error } = await supabase
     .from('users')
-    .update({
-      online,
-      last_seen: now,
-      updated_at: now,
-    })
+    .update({ online, last_seen: now, updated_at: now })
     .eq('id', userId);
   if (error) console.error('[auth] setOnlineStatus error:', error);
 }
@@ -89,7 +85,7 @@ export async function setOnlineStatus(userId: string, online: boolean) {
 export async function getOnlineCount(): Promise<number> {
   const { data, error } = await supabase.rpc('get_online_count');
   if (error) return 1;
-  return Number(data ?? 1);   // FIX: removed artificial +1 inflation
+  return Number(data ?? 1);
 }
 
 export async function signOut() {
@@ -101,30 +97,22 @@ export async function signOut() {
 }
 
 export function setupOnlineWatchdog() {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-  // FIX: Use fetch with keepalive instead of sendBeacon.
-  // sendBeacon cannot set custom headers, so the Supabase REST endpoint
-  // would reject it with 401. fetch + keepalive behaves identically but
-  // supports headers and completes even after the page unloads.
+  // Use fetch + keepalive (not sendBeacon) so custom headers work on page unload
   const setOfflineViaFetch = () => {
     if (!cachedUser) return;
-    fetch(`${supabaseUrl}/rest/v1/rpc/set_user_offline`, {
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/set_user_offline`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': anonKey,
-        'Authorization': `Bearer ${anonKey}`,
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
       },
       body: JSON.stringify({ uid: cachedUser.id }),
       keepalive: true,
     }).catch(() => {});
   };
 
-  const handleBeforeUnload = () => {
-    setOfflineViaFetch();
-  };
+  const handleBeforeUnload = () => setOfflineViaFetch();
 
   const handleVisibilityChange = () => {
     if (!cachedUser) return;
