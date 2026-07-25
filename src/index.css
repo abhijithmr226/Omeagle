@@ -276,36 +276,35 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   .chevron-right-icon { color: #64748b; flex-shrink: 0; }
 }
 
-/* Azar Web PC Desktop Layout Architecture (azarlive.com standard) */
+/* Classic Omegle Desktop & Laptop Layout Architecture */
 .chat-layout-wrapper {
   width: 100%;
-  max-width: 1040px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0.5rem 0;
+  padding: 0.5rem;
 }
 
 .chat-layout-grid {
   display: grid;
-  grid-template-columns: 460px 1fr;
-  gap: 1.5rem;
+  grid-template-columns: 360px 1fr;
+  gap: 1.25rem;
   width: 100%;
   align-items: start;
-  justify-content: center;
 }
 
 .video-column {
   position: relative;
   width: 100%;
-  max-width: 460px;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin: 0 auto;
 }
 
 .desktop-only-chat {
-  display: block;
-  height: 575px;
+  display: flex;
+  flex-direction: column;
+  height: 545px;
 }
 
 .mobile-chat-drawer {
@@ -346,14 +345,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   cursor: pointer;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 840px) {
   .chat-layout-wrapper {
     max-width: 100%;
     padding: 0;
   }
   .chat-layout-grid {
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: 0.5rem;
   }
   .video-column {
     max-width: 100%;
@@ -366,6 +365,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
     flex-direction: column;
   }
 }
+
 
 
 
