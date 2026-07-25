@@ -405,6 +405,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
     display: flex;
     flex-direction: column;
   }
+}
+
 /* ── Quick Icebreaker Chips ───────────────────────────────────────── */
 .icebreaker-chips-bar {
   display: flex;
