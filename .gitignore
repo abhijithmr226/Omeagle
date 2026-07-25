@@ -16,3 +16,10 @@ supabase/.temp
 supabase/.env.local
 
 .env*
+
+# Replit — dev environment config (not needed by other devs)
+.replit
+replit.nix
+replit.md
+.cache/
+.local/

@@ -50,11 +50,12 @@ export const SetupScreen: React.FC = () => (
         background: '#1e293b', border: '1px solid #334155', borderRadius: '10px',
         padding: '1rem', textAlign: 'left',
       }}>
-        <div style={{ fontSize: '1.2rem', marginBottom: '0.4rem' }}>🔒</div>
-        <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.3rem' }}>Local dev (Replit)</div>
+        <div style={{ fontSize: '1.2rem', marginBottom: '0.4rem' }}>📄</div>
+        <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.3rem' }}>Local dev (.env)</div>
         <div style={{ fontSize: '0.78rem', color: '#64748b', lineHeight: 1.5 }}>
-          Add to <strong style={{ color: '#94a3b8' }}>Secrets</strong> in the left sidebar,
-          then restart the workflow.
+          Copy <strong style={{ color: '#94a3b8' }}>.env.example</strong> to{' '}
+          <strong style={{ color: '#94a3b8' }}>.env.local</strong> and fill in the values,
+          then restart the dev server.
         </div>
       </div>
       <div style={{
