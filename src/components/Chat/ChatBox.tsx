@@ -147,9 +147,32 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
+        {isConnected && messages.length <= 3 && (
+          <div className="icebreaker-chips-bar">
+            {[
+              { label: '👋 Hi!', text: 'Hi! 👋' },
+              { label: '🌍 Where from?', text: 'Where are you from? 🌍' },
+              { label: '👫 M / F?', text: 'M / F? 👫' },
+              { label: '🎧 Hobbies?', text: 'What are your hobbies? 🎧' },
+            ].map(item => (
+              <button
+                key={item.label}
+                type="button"
+                className="icebreaker-chip"
+                onClick={() => {
+                  onSendMessage(item.text);
+                  trackSendMessage(mode);
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {showEmojiPicker && (
           <div className="emoji-picker-popover" role="listbox">
-            {['👋', '😊', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😍', '💯'].map(emoji => (
+            {['👋', '😊', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😍', '💯', '🙈', '😎', '🙌', '✨', '💬', '🎶'].map(emoji => (
               <button key={emoji} className="emoji-btn" role="option" aria-label={emoji}
                 onClick={() => setInputText(prev => prev + emoji)}>{emoji}</button>
             ))}
