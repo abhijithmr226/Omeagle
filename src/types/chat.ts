@@ -17,6 +17,7 @@ export interface UserSettings {
   interests?: string[];
   preferredGender?: string;
   preferredCountries?: string[];
+  soundEnabled?: boolean;
 }
 
 export interface PartnerProfile {

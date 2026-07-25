@@ -162,6 +162,41 @@ export async function playSwipeSwoosh(): Promise<void> {
 }
 
 /**
+ * Play a soft downward chime when a stranger disconnects.
+ */
+export async function playStrangerDisconnected(): Promise<void> {
+  try {
+    const ctx = getCtx();
+    if (ctx.state === 'suspended') await ctx.resume();
+    const now = ctx.currentTime;
+
+    const tones = [
+      { freq: 440.00, start: 0,    dur: 0.18 },  // A4
+      { freq: 349.23, start: 0.12, dur: 0.25 },  // F4
+    ];
+
+    tones.forEach(({ freq, start, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      gain.gain.setValueAtTime(0, now + start);
+      gain.gain.linearRampToValueAtTime(0.2, now + start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + start + dur);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + start);
+      osc.stop(now + start + dur + 0.05);
+    });
+  } catch {
+    // Silently fail
+  }
+}
+
+/**
  * Resume AudioContext after user gesture (required by browsers).
  * Call this on any user interaction.
  */

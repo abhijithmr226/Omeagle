@@ -29,7 +29,7 @@ import { getOnlineCount } from './lib/auth';
 import { supabase } from './lib/supabase';
 import { getCurrentUserId } from './lib/auth';
 import { trackChatStart, trackMatchFound, trackChatEnd, trackSkipNext } from './services/gtm';
-import { playMatchFound, playMessageReceived, playStrangerConnected, unlockAudio } from './services/sounds';
+import { playMatchFound, playMessageReceived, playStrangerConnected, playStrangerDisconnected, playSwipeSwoosh, unlockAudio } from './services/sounds';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 
 // Polling fallback intervals (used only when Realtime match detection is unavailable)
@@ -123,6 +123,9 @@ export const App: React.FC = () => {
   }, []);
 
   const handleStrangerDisconnected = useCallback(() => {
+    if (settings.soundEnabled !== false) {
+      playStrangerDisconnected();
+    }
     setConnectionStatus('disconnected');
     setRemoteStream(null);
     setPartnerProfile(null);
@@ -131,7 +134,7 @@ export const App: React.FC = () => {
     callChannelRef.current = null;
     webrtc.cleanup();
     chat.addSystemMessage('Stranger has disconnected.');
-  }, [webrtc, chat]);
+  }, [webrtc, chat, settings.soundEnabled]);
 
   const handleStrangerTimeout = useCallback(() => {
     setConnectionStatus('timed-out');
@@ -185,7 +188,9 @@ export const App: React.FC = () => {
     setConnectionStatus('connecting');
 
     trackMatchFound(currentModeRef.current);
-    playMatchFound();
+    if (settings.soundEnabled !== false) {
+      playMatchFound();
+    }
 
     const channel = createCallChannel(callId, {
       onOffer: handleOffer,
