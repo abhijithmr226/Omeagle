@@ -67,11 +67,65 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   const [isSwiping, setIsSwiping] = useState(false);
   const touchStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Ultra-Smooth Dragging Refs using requestAnimationFrame
+  // Ultra-Smooth Dragging & Click Prevention Refs
   const isDraggingRef = useRef(false);
+  const hasDraggedRef = useRef(false);
   const dragStartRef = useRef<{ x: number; y: number; pipX: number; pipY: number }>({ x: 0, y: 0, pipX: 0, pipY: 0 });
   const rafIdRef = useRef<number | null>(null);
   const pipPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Handlers (Defined first before useEffect hooks)
+  const toggleFullscreen = useCallback(() => {
+    const fsElem = document.fullscreenElement ||
+      (document as any).webkitFullscreenElement ||
+      (document as any).mozFullScreenElement ||
+      (document as any).msFullscreenElement;
+
+    if (!fsElem) {
+      const elem = containerRef.current as any;
+      if (elem?.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+      } else if (elem?.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem?.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+      } else if (elem?.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
+    }
+  }, []);
+
+  const toggleObjectFit = useCallback(() => {
+    setObjectFitMode(prev => (prev === 'cover' ? 'contain' : 'cover'));
+  }, []);
+
+  const cycleFilter = useCallback(() => {
+    const filters: FilterMode[] = ['normal', 'beauty', 'vibrant', 'cyber', 'vintage'];
+    setActiveFilter(prev => {
+      const idx = filters.indexOf(prev);
+      return filters[(idx + 1) % filters.length];
+    });
+  }, []);
+
+  const cyclePipCorner = useCallback(() => {
+    if (hasDraggedRef.current) return; // Prevent corner cycle if user was dragging
+    if (pipRef.current) {
+      pipRef.current.style.transform = '';
+      pipPosRef.current = null;
+    }
+    const corners: PipCorner[] = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
+    setPipCorner(prev => corners[(corners.indexOf(prev) + 1) % corners.length]);
+  }, []);
 
   // Stream bindings with Smooth Fade Transition
   useEffect(() => {
@@ -108,7 +162,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     return () => document.removeEventListener('click', handleOutsideClick);
   }, []);
 
-  // Desktop Keyboard Shortcuts
+  // Desktop Keyboard Shortcuts (F, N, C)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -121,63 +175,37 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       } else if (key === 'n') {
         e.preventDefault();
         if (onNext) onNext();
+      } else if (key === 'c') {
+        e.preventDefault();
+        if (onFlipCamera) onFlipCamera();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNext]);
+  }, [toggleFullscreen, onNext, onFlipCamera]);
 
-  // Fullscreen Listener
+  // Fullscreen Listener with Vendor Prefixes
   useEffect(() => {
     const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const fsElem = document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement;
+      setIsFullscreen(!!fsElem);
     };
+
     document.addEventListener('fullscreenchange', handleFsChange);
     document.addEventListener('webkitfullscreenchange', handleFsChange);
+    document.addEventListener('mozfullscreenchange', handleFsChange);
+    document.addEventListener('MSFullscreenChange', handleFsChange);
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFsChange);
       document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      document.removeEventListener('mozfullscreenchange', handleFsChange);
+      document.removeEventListener('MSFullscreenChange', handleFsChange);
     };
-  }, []);
-
-  const cycleFilter = useCallback(() => {
-    const filters: FilterMode[] = ['normal', 'beauty', 'vibrant', 'cyber', 'vintage'];
-    setActiveFilter(prev => {
-      const idx = filters.indexOf(prev);
-      return filters[(idx + 1) % filters.length];
-    });
-  }, []);
-
-  // Handlers
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      const elem = containerRef.current as any;
-      if (elem?.requestFullscreen) {
-        elem.requestFullscreen().catch(() => {});
-      } else if (elem?.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      } else if ((document as any).webkitExitFullscreen) {
-        (document as any).webkitExitFullscreen();
-      }
-    }
-  }, []);
-
-  const toggleObjectFit = useCallback(() => {
-    setObjectFitMode(prev => (prev === 'cover' ? 'contain' : 'cover'));
-  }, []);
-
-  const cyclePipCorner = useCallback(() => {
-    if (pipRef.current) {
-      pipRef.current.style.transform = '';
-      pipPosRef.current = null;
-    }
-    const corners: PipCorner[] = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
-    setPipCorner(prev => corners[(corners.indexOf(prev) + 1) % corners.length]);
   }, []);
 
   // Mobile Swipe Gesture to Skip Stranger
@@ -209,7 +237,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     setIsSwiping(false);
   }, [isSwiping, swipeOffset, onNext]);
 
-  // Ultra-Smooth RequestAnimationFrame PiP Dragging
+  // Ultra-Smooth RequestAnimationFrame PiP Dragging with Boundary Clamping
   const updatePipPosDOM = (x: number, y: number) => {
     if (pipRef.current) {
       pipRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
@@ -218,14 +246,12 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
 
   const handlePipMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
+    hasDraggedRef.current = false;
     const isTouch = 'touches' in e;
     const clientX = isTouch ? (e as React.TouchEvent).touches[0].clientX : (e as React.MouseEvent).clientX;
     const clientY = isTouch ? (e as React.TouchEvent).touches[0].clientY : (e as React.MouseEvent).clientY;
 
     if (pipRef.current && containerRef.current) {
-      const pipRect = pipRef.current.getBoundingClientRect();
-      const containerRect = containerRef.current.getBoundingClientRect();
-
       let currentX = pipPosRef.current ? pipPosRef.current.x : 0;
       let currentY = pipPosRef.current ? pipPosRef.current.y : 0;
 
@@ -250,13 +276,26 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       const deltaX = clientX - dragStartRef.current.x;
       const deltaY = clientY - dragStartRef.current.y;
 
-      const nextX = dragStartRef.current.pipX + deltaX;
-      const nextY = dragStartRef.current.pipY + deltaY;
+      if (Math.hypot(deltaX, deltaY) > 5) {
+        hasDraggedRef.current = true;
+      }
+
+      const unconstrainedX = dragStartRef.current.pipX + deltaX;
+      const unconstrainedY = dragStartRef.current.pipY + deltaY;
+
+      // Clamping PiP position strictly within container bounds
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const pipRect = pipRef.current.getBoundingClientRect();
+      const maxX = containerRect.width - pipRect.width - 12;
+      const maxY = containerRect.height - pipRect.height - 12;
+
+      const clampedX = Math.max(12, Math.min(maxX, unconstrainedX));
+      const clampedY = Math.max(12, Math.min(maxY, unconstrainedY));
 
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = requestAnimationFrame(() => {
-        pipPosRef.current = { x: nextX, y: nextY };
-        updatePipPosDOM(nextX, nextY);
+        pipPosRef.current = { x: clampedX, y: clampedY };
+        updatePipPosDOM(clampedX, clampedY);
       });
     };
 
