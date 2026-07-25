@@ -59,7 +59,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  // Smooth Remote Video Transition Fade State
+  // Smooth Remote Video Fade State
   const [videoFadeIn, setVideoFadeIn] = useState(false);
 
   // Touch Swipe Gesture State
@@ -73,6 +73,13 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   const dragStartRef = useRef<{ x: number; y: number; pipX: number; pipY: number }>({ x: 0, y: 0, pipX: 0, pipY: 0 });
   const rafIdRef = useRef<number | null>(null);
   const pipPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Update PiP Position in DOM
+  const updatePipPosDOM = useCallback((x: number, y: number) => {
+    if (pipRef.current) {
+      pipRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    }
+  }, []);
 
   // Handlers (Defined first before useEffect hooks)
   const toggleFullscreen = useCallback(() => {
@@ -127,12 +134,11 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     setPipCorner(prev => corners[(corners.indexOf(prev) + 1) % corners.length]);
   }, []);
 
-  // Stream bindings with Smooth Fade Transition
+  // Stream bindings with Event-Driven Fade Transition
   useEffect(() => {
     if (remoteVideoRef.current) {
       if (remoteStream) {
         remoteVideoRef.current.srcObject = remoteStream;
-        setVideoFadeIn(true);
       } else {
         setVideoFadeIn(false);
         const timer = setTimeout(() => {
@@ -208,7 +214,33 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     };
   }, []);
 
-  // Mobile Swipe Gesture to Skip Stranger
+  // Window Resize / Orientation Change Handler for Reclamping PiP
+  useEffect(() => {
+    const handleResize = () => {
+      if (!pipPosRef.current || !containerRef.current || !pipRef.current) return;
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const pipWidth = pipRef.current.offsetWidth;
+      const pipHeight = pipRef.current.offsetHeight;
+
+      const maxX = Math.max(12, containerRect.width - pipWidth - 12);
+      const maxY = Math.max(12, containerRect.height - pipHeight - 12);
+
+      const clampedX = Math.max(12, Math.min(maxX, pipPosRef.current.x));
+      const clampedY = Math.max(12, Math.min(maxY, pipPosRef.current.y));
+
+      pipPosRef.current = { x: clampedX, y: clampedY };
+      updatePipPosDOM(clampedX, clampedY);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [updatePipPosDOM]);
+
+  // Mobile Touch Swipe Gesture
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('.otv-interactive') || target.closest('.otv-pip')) return;
@@ -237,13 +269,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     setIsSwiping(false);
   }, [isSwiping, swipeOffset, onNext]);
 
-  // Ultra-Smooth RequestAnimationFrame PiP Dragging with Boundary Clamping
-  const updatePipPosDOM = (x: number, y: number) => {
-    if (pipRef.current) {
-      pipRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    }
-  };
-
+  // Ultra-Smooth Dragging with Non-Passive Touch Scroll Lock
   const handlePipMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     hasDraggedRef.current = false;
@@ -270,6 +296,10 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     const handleMove = (e: MouseEvent | TouchEvent) => {
       if (!isDraggingRef.current || !containerRef.current || !pipRef.current) return;
       const isTouch = 'touches' in e;
+      if (isTouch && e.cancelable) {
+        e.preventDefault(); // Lock page scroll during PiP drag
+      }
+
       const clientX = isTouch ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
       const clientY = isTouch ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
 
@@ -288,8 +318,8 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       const pipWidth = pipRef.current.offsetWidth;
       const pipHeight = pipRef.current.offsetHeight;
 
-      const maxX = containerRect.width - pipWidth - 12;
-      const maxY = containerRect.height - pipHeight - 12;
+      const maxX = Math.max(12, containerRect.width - pipWidth - 12);
+      const maxY = Math.max(12, containerRect.height - pipHeight - 12);
 
       const clampedX = Math.max(12, Math.min(maxX, unconstrainedX));
       const clampedY = Math.max(12, Math.min(maxY, unconstrainedY));
@@ -313,7 +343,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
 
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleEnd);
-    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('touchmove', handleMove, { passive: false });
     window.addEventListener('touchend', handleEnd);
 
     return () => {
@@ -323,7 +353,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       window.removeEventListener('touchend', handleEnd);
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
     };
-  }, []);
+  }, [updatePipPosDOM]);
 
   // Derived Connection Status Details
   const isConnected = connectionStatus === 'connected';
@@ -374,6 +404,8 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           ref={remoteVideoRef}
           autoPlay
           playsInline
+          onLoadedMetadata={() => setVideoFadeIn(true)}
+          onPlaying={() => setVideoFadeIn(true)}
           className={`otv-remote-video ${remoteStream && videoFadeIn ? 'otv-active' : ''} ${objectFitMode === 'contain' ? 'otv-contain' : 'otv-cover'} ${filterCssClass} ${isSearching ? 'otv-blur' : ''}`}
           aria-label="Remote Stranger Video Feed"
         />
@@ -440,6 +472,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
               }}
               title="Video Filters"
               aria-label="Toggle AI Video Filters Menu"
+              aria-expanded={showFilterMenu}
             >
               <Sparkles size={15} />
               <span className="capitalize">{activeFilter}</span>
@@ -470,6 +503,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
             onClick={toggleObjectFit}
             title={objectFitMode === 'cover' ? 'Fit Video to Screen' : 'Fill Screen'}
             aria-label="Toggle Aspect Ratio Fit Mode"
+            aria-pressed={objectFitMode === 'contain'}
           >
             {objectFitMode === 'cover' ? <Shrink size={15} /> : <Expand size={15} />}
             <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
@@ -511,6 +545,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
               }}
               title="More Actions"
               aria-label="More Video Options"
+              aria-expanded={showMobileMenu}
             >
               <MoreVertical size={16} />
             </button>
@@ -541,6 +576,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
             onClick={toggleFullscreen}
             title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Enter Fullscreen (F)'}
             aria-label="Toggle Fullscreen Mode"
+            aria-pressed={isFullscreen}
           >
             {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
