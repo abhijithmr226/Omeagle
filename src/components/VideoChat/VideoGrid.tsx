@@ -83,6 +83,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   const [matchTime, setMatchTime] = useState(0);
   const [floatingEmojis, setFloatingEmojis] = useState<FloatingEmoji[]>([]);
   const [videoFadeIn, setVideoFadeIn] = useState(false);
+  const [fitToastMessage, setFitToastMessage] = useState<string | null>(null);
 
   // Double Tap & Long Press Timers for PiP
   const lastTapRef = useRef<number>(0);
@@ -160,7 +161,12 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   }, []);
 
   const toggleObjectFit = useCallback(() => {
-    setObjectFitMode(prev => (prev === 'cover' ? 'contain' : 'cover'));
+    setObjectFitMode(prev => {
+      const next = prev === 'cover' ? 'contain' : 'cover';
+      setFitToastMessage(next === 'contain' ? 'Mode: Fit (Uncropped Video)' : 'Mode: Fill (Screen Zoom/Crop)');
+      setTimeout(() => setFitToastMessage(null), 1800);
+      return next;
+    });
   }, []);
 
   const cycleFilter = useCallback(() => {
@@ -480,9 +486,17 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           playsInline
           onLoadedMetadata={() => setVideoFadeIn(true)}
           onPlaying={() => setVideoFadeIn(true)}
+          style={{ objectFit: objectFitMode }}
           className={`otv-remote-video ${remoteStream && videoFadeIn ? 'otv-active' : ''} ${objectFitMode === 'contain' ? 'otv-contain' : 'otv-cover'} ${filterCssClass} ${isSearching ? 'otv-blur' : ''}`}
           aria-label="Remote Stranger Video Feed"
         />
+
+        {/* Fit/Fill Toggle Toast Feedback */}
+        {fitToastMessage && (
+          <div className="otv-toast-pill">
+            <span>{fitToastMessage}</span>
+          </div>
+        )}
 
         <div className="otv-bottom-gradient" />
 
@@ -622,16 +636,16 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
             )}
           </div>
 
-          {/* Fit / Cover Toggle (Desktop) */}
+          {/* Fit / Cover Toggle (Available on Desktop & Mobile) */}
           <button
-            className={`otv-action-btn otv-desktop-only ${objectFitMode === 'contain' ? 'otv-active-pill' : ''}`}
+            className={`otv-action-btn ${objectFitMode === 'contain' ? 'otv-active-pill' : ''}`}
             onClick={toggleObjectFit}
             title={objectFitMode === 'contain' ? 'Switch to Fill / Crop Screen' : 'Switch to Fit Entire Video (Uncropped)'}
             aria-label="Toggle Aspect Ratio Fit Mode"
             aria-pressed={objectFitMode === 'contain'}
           >
             {objectFitMode === 'contain' ? <Shrink size={15} /> : <Expand size={15} />}
-            <span>{objectFitMode === 'contain' ? 'Fit (Uncropped)' : 'Fill (Cropped)'}</span>
+            <span>{objectFitMode === 'contain' ? 'Fit' : 'Fill'}</span>
           </button>
 
           {/* Safety Guidelines */}
@@ -681,9 +695,15 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
                   <Sparkles size={15} />
                   <span>Filter: {activeFilter}</span>
                 </button>
-                <button className="otv-mobile-menu-item" onClick={toggleObjectFit}>
+                <button
+                  className="otv-mobile-menu-item"
+                  onClick={() => {
+                    toggleObjectFit();
+                    setShowMobileMenu(false);
+                  }}
+                >
                   {objectFitMode === 'contain' ? <Shrink size={15} /> : <Expand size={15} />}
-                  <span>{objectFitMode === 'contain' ? 'Fit (Uncropped)' : 'Fill (Cropped)'}</span>
+                  <span>{objectFitMode === 'contain' ? 'Mode: Fit (Uncropped)' : 'Mode: Fill (Cropped)'}</span>
                 </button>
                 {onOpenSafety && (
                   <button className="otv-mobile-menu-item" onClick={onOpenSafety}>
@@ -726,6 +746,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           autoPlay
           playsInline
           muted
+          style={{ objectFit: objectFitMode }}
           className={`otv-pip-video ${localStream && !isVideoOff ? 'otv-active' : ''} ${objectFitMode === 'contain' ? 'otv-contain' : 'otv-cover'} ${filterCssClass}`}
           aria-label="Your Camera Feed"
         />
