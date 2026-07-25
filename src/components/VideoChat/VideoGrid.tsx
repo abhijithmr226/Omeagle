@@ -58,13 +58,49 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
     setActiveFilter(filters[nextIdx]);
   };
 
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const touchStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('.action-pill')) return;
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    setIsSwiping(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isSwiping) return;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    if (deltaX < 0) {
+      setSwipeOffset(deltaX);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isSwiping) return;
+    if (swipeOffset < -60 && onNext) {
+      onNext();
+    }
+    setSwipeOffset(0);
+    setIsSwiping(false);
+  };
+
   const isConnected = connectionStatus === 'connected';
   const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
 
   return (
     <div className="omegle-vg-wrapper" ref={wrapperRef}>
       {/* ── Stranger Panel (Classic 4:3 Omegle Video Box) ─────── */}
-      <div className="omegle-panel stranger-panel">
+      <div
+        className="omegle-panel stranger-panel"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined }}
+      >
         <video
           ref={remoteVideoRef}
           autoPlay playsInline
@@ -156,14 +192,15 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           width: 100%;
           height: 265px;
           aspect-ratio: 4 / 3;
-          border-radius: 12px;
+          border-radius: var(--radius-md, 12px);
           overflow: hidden;
-          background: #000000;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+          background: var(--bg-video-frame, #0f172a);
+          border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+          box-shadow: var(--shadow-md);
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: transform 0.15s ease-out;
         }
 
         .omegle-video {
@@ -171,7 +208,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           inset: 0;
           width: 100%;
           height: 100%;
-          background: #000;
+          background: #090d14;
           opacity: 0;
           transition: opacity 0.3s ease, filter 0.3s ease;
           display: block;
@@ -202,10 +239,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           text-align: center;
           pointer-events: none;
         }
-        .idle-icon { color: #475569; }
-        .blue-spin { color: #3b82f6; animation: spin 1.2s linear infinite; }
+        .idle-icon { color: var(--text-muted, #64748b); }
+        .blue-spin { color: var(--brand-blue, #3b82f6); animation: spin 1.2s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .placeholder-text { font-size: 0.88rem; font-weight: 600; color: #94a3b8; }
+        .placeholder-text { font-size: 0.88rem; font-weight: 600; color: var(--text-secondary, #94a3b8); }
 
         /* Overlay Header */
         .panel-overlay-top {
@@ -224,18 +261,19 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           display: flex;
           align-items: center;
           gap: 6px;
-          background: rgba(15, 23, 42, 0.75);
+          background: rgba(15, 23, 42, 0.85);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.2);
           border-radius: 100px;
           padding: 4px 10px;
           font-size: 0.75rem;
           font-weight: 700;
-          color: #f1f5f9;
+          color: #ffffff;
           text-transform: uppercase;
           letter-spacing: 0.04em;
           pointer-events: auto;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .dot { width: 7px; height: 7px; border-radius: 50%; }
         .dot-live { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.9); }
@@ -253,17 +291,18 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           display: flex;
           align-items: center;
           gap: 4px;
-          background: rgba(15, 23, 42, 0.75);
+          background: rgba(15, 23, 42, 0.85);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.2);
           border-radius: 100px;
-          padding: 4px 9px;
+          padding: 4px 10px;
           font-size: 0.72rem;
           font-weight: 600;
-          color: #f1f5f9;
+          color: #ffffff;
           cursor: pointer;
           transition: all 0.15s ease;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .action-pill:hover { background: rgba(255,255,255,0.2); }
         .icon-only { padding: 4px 7px; }
