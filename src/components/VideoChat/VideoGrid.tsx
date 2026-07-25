@@ -190,7 +190,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         .omegle-panel {
           position: relative;
           width: 100%;
-          height: 265px;
+          height: 260px;
           aspect-ratio: 4 / 3;
           border-radius: var(--radius-md, 12px);
           overflow: hidden;

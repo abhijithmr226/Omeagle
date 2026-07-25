@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { ArrowLeftRight, Users, ChevronRight } from 'lucide-react';
+import { ArrowLeftRight, Users, ChevronRight, MessageCircle } from 'lucide-react';
 import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
 import { VideoGrid } from './components/VideoChat/VideoGrid';
@@ -539,11 +539,21 @@ export const App: React.FC = () => {
                     />
                   </div>
 
-                  {/* Mobile Slide-Up Chat Drawer (Opens only on tap, zero video overlap) */}
+                  {/* Mobile Backdrop & Slide-Up Chat Drawer */}
+                  <div
+                    className={`mobile-chat-backdrop ${mobileChatOpen ? 'open' : ''}`}
+                    onClick={() => setMobileChatOpen(false)}
+                  />
+
                   <div className={`mobile-chat-drawer ${mobileChatOpen ? 'open' : ''}`}>
                     <div className="mobile-chat-header">
-                      <span>Live Chat</span>
-                      <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)}>✕</button>
+                      <div className="mobile-chat-title-group">
+                        <MessageCircle size={18} className="chat-header-icon" />
+                        <span>Stranger Text Chat</span>
+                      </div>
+                      <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)} aria-label="Close Chat">
+                        ✕
+                      </button>
                     </div>
                     <ChatBox
                       messages={chat.messages}
