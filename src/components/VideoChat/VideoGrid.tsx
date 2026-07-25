@@ -71,7 +71,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
 
   // States
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [objectFitMode, setObjectFitMode] = useState<ObjectFitMode>('cover');
+  const [objectFitMode, setObjectFitMode] = useState<ObjectFitMode>('contain');
   const [activeFilter, setActiveFilter] = useState<FilterMode>('normal');
   const [pipCorner, setPipCorner] = useState<PipCorner>('top-right');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -624,14 +624,14 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
 
           {/* Fit / Cover Toggle (Desktop) */}
           <button
-            className="otv-action-btn otv-desktop-only"
+            className={`otv-action-btn otv-desktop-only ${objectFitMode === 'contain' ? 'otv-active-pill' : ''}`}
             onClick={toggleObjectFit}
-            title={objectFitMode === 'cover' ? 'Fit Video to Screen' : 'Fill Screen'}
+            title={objectFitMode === 'contain' ? 'Switch to Fill / Crop Screen' : 'Switch to Fit Entire Video (Uncropped)'}
             aria-label="Toggle Aspect Ratio Fit Mode"
             aria-pressed={objectFitMode === 'contain'}
           >
-            {objectFitMode === 'cover' ? <Shrink size={15} /> : <Expand size={15} />}
-            <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
+            {objectFitMode === 'contain' ? <Shrink size={15} /> : <Expand size={15} />}
+            <span>{objectFitMode === 'contain' ? 'Fit (Uncropped)' : 'Fill (Cropped)'}</span>
           </button>
 
           {/* Safety Guidelines */}
@@ -682,8 +682,8 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
                   <span>Filter: {activeFilter}</span>
                 </button>
                 <button className="otv-mobile-menu-item" onClick={toggleObjectFit}>
-                  {objectFitMode === 'cover' ? <Shrink size={15} /> : <Expand size={15} />}
-                  <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'} Video</span>
+                  {objectFitMode === 'contain' ? <Shrink size={15} /> : <Expand size={15} />}
+                  <span>{objectFitMode === 'contain' ? 'Fit (Uncropped)' : 'Fill (Cropped)'}</span>
                 </button>
                 {onOpenSafety && (
                   <button className="otv-mobile-menu-item" onClick={onOpenSafety}>
@@ -726,7 +726,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           autoPlay
           playsInline
           muted
-          className={`otv-pip-video ${localStream && !isVideoOff ? 'otv-active' : ''} ${filterCssClass}`}
+          className={`otv-pip-video ${localStream && !isVideoOff ? 'otv-active' : ''} ${objectFitMode === 'contain' ? 'otv-contain' : 'otv-cover'} ${filterCssClass}`}
           aria-label="Your Camera Feed"
         />
 

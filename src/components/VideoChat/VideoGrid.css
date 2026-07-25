@@ -640,6 +640,8 @@
   transition: opacity 0.3s ease;
 }
 .otv-pip-video.otv-active { opacity: 1; }
+.otv-pip-video.otv-contain { object-fit: contain !important; }
+.otv-pip-video.otv-cover   { object-fit: cover !important; }
 
 .otv-pip-placeholder {
   position: absolute;
