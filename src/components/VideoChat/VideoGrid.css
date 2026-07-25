@@ -1,4 +1,4 @@
-/* ── VideoGrid Widescreen UI System ────────────────────────────── */
+/* ── VideoGrid Dual 4:3 Classic Desktop & Mobile UI System ────────────────── */
 
 :root {
   --glass-bg: rgba(15, 23, 42, 0.75);
@@ -18,13 +18,10 @@
   --glow-red: 0 0 20px rgba(239, 68, 68, 0.5);
 }
 
-/* Root Stage Container (Cinematic 16:9 Aspect Ratio on Desktop/Laptop) */
+/* Root Stage Container */
 .otv-stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  height: auto;
-  max-height: clamp(380px, 66vh, 600px);
   border-radius: 20px;
   overflow: hidden;
   background: #090d16;
@@ -35,9 +32,6 @@
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Fullscreen Viewport Override */
@@ -51,6 +45,77 @@
   border: none;
   z-index: 99999;
   background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Classic Omegle Desktop Layout (Stacked Dual 4:3 Panels) ─────────────── */
+@media (min-width: 900px) {
+  .otv-stage:not(.otv-fullscreen) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  /* Stranger Video Box (Top 4:3 Box) */
+  .otv-stage:not(.otv-fullscreen) .otv-remote-layer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    height: auto;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #000000;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* You Video Box (Bottom 4:3 Box) */
+  .otv-stage:not(.otv-fullscreen) .otv-pip {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+    height: auto !important;
+    border-radius: 16px !important;
+    cursor: default !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+}
+
+/* ── Mobile Layout (Single Stage with Floating PiP Overlay) ──────────────── */
+@media (max-width: 899px) {
+  .otv-stage:not(.otv-fullscreen) {
+    height: min(72vh, 640px);
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .otv-stage:not(.otv-fullscreen) .otv-remote-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .otv-stage:not(.otv-fullscreen) .otv-pip {
+    position: absolute;
+    width: clamp(120px, 28vw, 160px);
+    aspect-ratio: 3 / 4;
+    height: auto;
+    border-radius: 14px;
+    z-index: 20;
+    cursor: grab;
+  }
 }
 
 /* Bottom Video Gradient Overlay */
@@ -59,21 +124,17 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 120px;
+  height: 100px;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
   pointer-events: none;
   z-index: 4;
 }
 
-/* Remote Video Layer */
+/* Remote Video Element */
 .otv-remote-layer {
-  position: relative;
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
 .otv-remote-video {
@@ -124,9 +185,9 @@
   animation: otv-blob-float 10s infinite ease-in-out alternate;
 }
 
-.otv-blob-1 { width: 340px; height: 340px; background: var(--brand-purple); top: 10%; left: 15%; }
-.otv-blob-2 { width: 380px; height: 380px; background: var(--brand-blue); bottom: 10%; right: 15%; animation-delay: -3s; }
-.otv-blob-3 { width: 300px; height: 300px; background: var(--brand-pink); top: 40%; right: 30%; animation-delay: -6s; }
+.otv-blob-1 { width: 300px; height: 300px; background: var(--brand-purple); top: 10%; left: 15%; }
+.otv-blob-2 { width: 340px; height: 340px; background: var(--brand-blue); bottom: 10%; right: 15%; animation-delay: -3s; }
+.otv-blob-3 { width: 260px; height: 260px; background: var(--brand-pink); top: 40%; right: 30%; animation-delay: -6s; }
 
 @keyframes otv-blob-float {
   0%   { transform: translate(0, 0) scale(1); }
@@ -141,8 +202,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(14px, 2.5vw, 22px);
-  padding: 2rem;
+  gap: clamp(12px, 2vw, 18px);
+  padding: 1.5rem;
   text-align: center;
   pointer-events: none;
   width: 100%;
@@ -152,8 +213,8 @@
 
 .otv-radar-wrap {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,8 +222,8 @@
 }
 
 .otv-radar-center {
-  width: 72px;
-  height: 72px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background: rgba(37, 99, 235, 0.35);
   border: 1.5px solid rgba(59, 130, 246, 0.8);
@@ -181,7 +242,7 @@
 
 .otv-radar-pulse-ring {
   position: absolute;
-  inset: -16px;
+  inset: -14px;
   border-radius: 50%;
   border: 2px solid rgba(59, 130, 246, 0.6);
   animation: otv-pulse-ring 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
@@ -202,9 +263,9 @@
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  padding: 6px 16px;
+  padding: 5px 14px;
   border-radius: 100px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #f8fafc;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
@@ -214,18 +275,17 @@
 .otv-placeholder-meta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   z-index: 2;
 }
 .otv-ph-title {
-  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
   font-weight: 800;
   color: #f8fafc;
   margin: 0;
-  letter-spacing: -0.01em;
 }
 .otv-ph-sub {
-  font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+  font-size: clamp(0.75rem, 1vw, 0.85rem);
   color: #94a3b8;
   margin: 0;
 }
@@ -234,7 +294,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #38bdf8;
   margin-top: 4px;
@@ -243,12 +303,12 @@
 /* Stranger Overlay Info Card */
 .otv-stranger-overlay {
   position: absolute;
-  bottom: 16px;
-  left: 16px;
+  bottom: 12px;
+  left: 12px;
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   pointer-events: auto;
 }
 
@@ -261,8 +321,8 @@
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: 100px;
-  padding: 5px 12px;
-  font-size: 0.72rem;
+  padding: 4px 10px;
+  font-size: 0.7rem;
   font-weight: 700;
   color: #ffffff;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
@@ -272,7 +332,7 @@
   background: linear-gradient(135deg, #2563eb, #7c3aed);
   border: none;
   font-size: 0.65rem;
-  padding: 3px 8px;
+  padding: 3px 7px;
 }
 
 /* Live Floating Reactions (👍, 😂, ❤️, 🔥, ⚡) */
@@ -293,55 +353,44 @@
 }
 
 @keyframes otv-float-up {
-  0% {
-    opacity: 1;
-    transform: translateY(0) scale(0.6) rotate(0deg);
-  }
-  50% {
-    opacity: 0.9;
-    transform: translateY(-120px) scale(1.3) rotate(12deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-240px) scale(1.6) rotate(-12deg);
-  }
+  0% { opacity: 1; transform: translateY(0) scale(0.6) rotate(0deg); }
+  50% { opacity: 0.9; transform: translateY(-120px) scale(1.3) rotate(12deg); }
+  100% { opacity: 0; transform: translateY(-240px) scale(1.6) rotate(-12deg); }
 }
 
 .otv-reaction-bar {
   position: absolute;
-  bottom: 16px;
-  right: 16px;
+  bottom: 12px;
+  right: 12px;
   z-index: 20;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: 100px;
-  padding: 4px 8px;
+  padding: 3px 6px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
 .otv-reaction-btn {
   background: none;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
-  padding: 4px;
+  padding: 3px;
   border-radius: 50%;
   transition: transform 0.15s ease;
 }
-.otv-reaction-btn:hover {
-  transform: scale(1.3);
-}
+.otv-reaction-btn:hover { transform: scale(1.3); }
 
 /* Top Header Navigation & Controls */
 .otv-header-bar {
   position: absolute;
-  top: clamp(10px, 1.5vw, 16px);
-  left: clamp(10px, 1.5vw, 16px);
-  right: clamp(10px, 1.5vw, 16px);
+  top: clamp(8px, 1.2vw, 12px);
+  left: clamp(8px, 1.2vw, 12px);
+  right: clamp(8px, 1.2vw, 12px);
   z-index: 15;
   display: flex;
   align-items: center;
@@ -352,14 +401,14 @@
 .otv-status-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: 100px;
-  padding: 6px 14px;
-  font-size: 0.78rem;
+  padding: 5px 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #ffffff;
   pointer-events: auto;
@@ -377,7 +426,7 @@
 
 .otv-timer {
   font-family: monospace;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #a7f3d0;
 }
 
@@ -401,8 +450,8 @@
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: 100px;
-  padding: 6px 12px;
-  font-size: 0.75rem;
+  padding: 5px 10px;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #f1f5f9;
   cursor: pointer;
@@ -415,13 +464,12 @@
 }
 
 .otv-kbd-badge {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 800;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
-  padding: 1px 5px;
-  margin-left: 2px;
+  padding: 1px 4px;
   color: #38bdf8;
 }
 
@@ -434,64 +482,14 @@
   color: #fff;
 }
 
-/* Filter Dropdown Menu */
-.otv-filter-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 6px;
-  min-width: 140px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  z-index: 30;
-  animation: otv-scale-in 0.15s ease;
-}
-
-.otv-filter-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: none;
-  border: none;
-  color: #cbd5e1;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.otv-filter-option:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.otv-filter-option.selected {
-  color: var(--brand-blue);
-}
-
-@keyframes otv-scale-in {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-/* ── Compact Picture-in-Picture (PiP) Self Camera (16:9 Aspect Ratio) ────── */
+/* Picture-in-Picture Self Camera (You) Video Styling */
 .otv-pip {
-  position: absolute;
-  width: clamp(120px, 12vw, 160px);
-  aspect-ratio: 16 / 9;
-  height: auto;
-  border-radius: clamp(10px, 1.2vw, 14px);
+  position: relative;
   overflow: hidden;
   background: #000;
   border: 2px solid var(--brand-blue);
   box-shadow: var(--glow-blue);
   z-index: 20;
-  cursor: grab;
   will-change: transform;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -505,17 +503,6 @@
   box-shadow: var(--glow-red);
 }
 
-.otv-pip-dragging {
-  cursor: grabbing !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85) !important;
-}
-
-/* PiP Corner Presets */
-.otv-pip-top-right    { top: clamp(52px, 6vw, 68px); right: clamp(10px, 1.5vw, 16px); }
-.otv-pip-top-left     { top: clamp(52px, 6vw, 68px); left: clamp(10px, 1.5vw, 16px); }
-.otv-pip-bottom-right { bottom: clamp(10px, 1.5vw, 16px); right: clamp(10px, 1.5vw, 16px); }
-.otv-pip-bottom-left  { bottom: clamp(10px, 1.5vw, 16px); left: clamp(10px, 1.5vw, 16px); }
-
 .otv-pip-video {
   width: 100%;
   height: 100%;
@@ -525,6 +512,16 @@
   transition: opacity 0.3s ease;
 }
 .otv-pip-video.otv-active { opacity: 1; }
+
+.otv-pip-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  color: #64748b;
+}
 
 .otv-pip-badge {
   position: absolute;
@@ -544,32 +541,20 @@
   pointer-events: none;
 }
 
-.otv-pip-menu {
+.otv-pip-flip {
   position: absolute;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: var(--glass-blur);
+  top: 8px;
+  right: 8px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: #fff;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  z-index: 10;
-  animation: otv-scale-in 0.15s ease;
-}
-
-.otv-pip-menu-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid var(--glass-border);
-  border-radius: 100px;
-  padding: 4px 12px;
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 /* Reduced Motion Accessibility */

@@ -276,7 +276,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   .chevron-right-icon { color: #64748b; flex-shrink: 0; }
 }
 
-/* Modern Widescreen Video Chat Layout Architecture (70% Video / 30% Chat) */
+/* Classic Omegle Desktop Layout Architecture (360px Video Column + Full Width Chat) */
 .chat-layout-wrapper {
   width: 100%;
   max-width: 1440px;
@@ -286,7 +286,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
 
 .chat-layout-grid {
   display: grid;
-  grid-template-columns: minmax(620px, 2.2fr) minmax(320px, 1fr);
+  grid-template-columns: 360px 1fr;
   gap: 1.25rem;
   width: 100%;
   align-items: start;
@@ -295,7 +295,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
 .video-column {
   position: relative;
   width: 100%;
-  max-width: 100%;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -304,8 +304,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
 .desktop-only-chat {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  max-height: clamp(380px, 66vh, 600px);
+  height: 560px;
 }
 
 .mobile-chat-backdrop {
