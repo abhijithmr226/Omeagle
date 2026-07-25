@@ -13,7 +13,9 @@ import {
   ShieldAlert,
   ChevronLeft,
   Check,
-  MoreVertical
+  MoreVertical,
+  Zap,
+  Globe2
 } from 'lucide-react';
 import type { ConnectionStatus } from '../../types/chat';
 import './VideoGrid.css';
@@ -33,6 +35,22 @@ export interface VideoGridProps {
 type FilterMode = 'normal' | 'beauty' | 'vibrant' | 'cyber' | 'vintage';
 type ObjectFitMode = 'cover' | 'contain';
 type PipCorner = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+
+interface FloatingEmoji {
+  id: number;
+  emoji: string;
+  left: number;
+}
+
+const COUNTRY_QUEUE = [
+  { name: 'Tokyo, Japan', flag: '🇯🇵' },
+  { name: 'Kerala, India', flag: '🇮🇳' },
+  { name: 'New York, USA', flag: '🇺🇸' },
+  { name: 'London, UK', flag: '🇬🇧' },
+  { name: 'Paris, France', flag: '🇫🇷' },
+  { name: 'Seoul, S. Korea', flag: '🇰🇷' },
+  { name: 'São Paulo, Brazil', flag: '🇧🇷' }
+];
 
 export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   localStream,
@@ -58,21 +76,58 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   const [pipCorner, setPipCorner] = useState<PipCorner>('top-right');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showPipMenu, setShowPipMenu] = useState(false);
 
-  // Smooth Remote Video Fade State
+  // Matchmaking & Reaction States
+  const [countryIndex, setCountryIndex] = useState(0);
+  const [matchTime, setMatchTime] = useState(0);
+  const [floatingEmojis, setFloatingEmojis] = useState<FloatingEmoji[]>([]);
   const [videoFadeIn, setVideoFadeIn] = useState(false);
 
-  // Touch Swipe Gesture State
+  // Double Tap & Long Press Timers for PiP
+  const lastTapRef = useRef<number>(0);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Swipe Gesture States
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const touchStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Ultra-Smooth Dragging & Click Prevention Refs
+  // Ultra-Smooth Dragging Refs
   const isDraggingRef = useRef(false);
   const hasDraggedRef = useRef(false);
   const dragStartRef = useRef<{ x: number; y: number; pipX: number; pipY: number }>({ x: 0, y: 0, pipX: 0, pipY: 0 });
   const rafIdRef = useRef<number | null>(null);
   const pipPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Live Timer Effect for Connected Call
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (connectionStatus === 'connected') {
+      setMatchTime(0);
+      interval = setInterval(() => {
+        setMatchTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      setMatchTime(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [connectionStatus]);
+
+  // Global Country Cycling during Matchmaking Search
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (connectionStatus === 'searching' || connectionStatus === 'connecting') {
+      interval = setInterval(() => {
+        setCountryIndex(prev => (prev + 1) % COUNTRY_QUEUE.length);
+      }, 1400);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [connectionStatus]);
 
   // Update PiP Position in DOM
   const updatePipPosDOM = useCallback((x: number, y: number) => {
@@ -81,7 +136,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     }
   }, []);
 
-  // Handlers (Defined first before useEffect hooks)
+  // Handlers
   const toggleFullscreen = useCallback(() => {
     const fsElem = document.fullscreenElement ||
       (document as any).webkitFullscreenElement ||
@@ -94,20 +149,12 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
         elem.requestFullscreen().catch(() => {});
       } else if (elem?.webkitRequestFullscreen) {
         elem.webkitRequestFullscreen();
-      } else if (elem?.mozRequestFullScreen) {
-        elem.mozRequestFullScreen();
-      } else if (elem?.msRequestFullscreen) {
-        elem.msRequestFullscreen();
       }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen().catch(() => {});
       } else if ((document as any).webkitExitFullscreen) {
         (document as any).webkitExitFullscreen();
-      } else if ((document as any).mozCancelFullScreen) {
-        (document as any).mozCancelFullScreen();
-      } else if ((document as any).msExitFullscreen) {
-        (document as any).msExitFullscreen();
       }
     }
   }, []);
@@ -125,7 +172,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   }, []);
 
   const cyclePipCorner = useCallback(() => {
-    if (hasDraggedRef.current) return; // Prevent corner cycle if user was dragging
+    if (hasDraggedRef.current) return;
     if (pipRef.current) {
       pipRef.current.style.transform = '';
       pipPosRef.current = null;
@@ -134,7 +181,20 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     setPipCorner(prev => corners[(corners.indexOf(prev) + 1) % corners.length]);
   }, []);
 
-  // Stream bindings with Event-Driven Fade Transition
+  // Trigger Floating Emoji Reaction Animation
+  const triggerReaction = (emoji: string) => {
+    const newEmoji: FloatingEmoji = {
+      id: Date.now() + Math.random(),
+      emoji,
+      left: Math.random() * 60 + 20
+    };
+    setFloatingEmojis(prev => [...prev.slice(-10), newEmoji]);
+    setTimeout(() => {
+      setFloatingEmojis(prev => prev.filter(e => e.id !== newEmoji.id));
+    }, 2200);
+  };
+
+  // Stream bindings
   useEffect(() => {
     if (remoteVideoRef.current) {
       if (remoteStream) {
@@ -159,9 +219,10 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.otv-dropdown-wrap')) {
+      if (!target.closest('.otv-dropdown-wrap') && !target.closest('.otv-pip')) {
         setShowFilterMenu(false);
         setShowMobileMenu(false);
+        setShowPipMenu(false);
       }
     };
     document.addEventListener('click', handleOutsideClick);
@@ -191,26 +252,17 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleFullscreen, onNext, onFlipCamera]);
 
-  // Fullscreen Listener with Vendor Prefixes
+  // Fullscreen Listener
   useEffect(() => {
     const handleFsChange = () => {
-      const fsElem = document.fullscreenElement ||
-        (document as any).webkitFullscreenElement ||
-        (document as any).mozFullScreenElement ||
-        (document as any).msFullscreenElement;
+      const fsElem = document.fullscreenElement || (document as any).webkitFullscreenElement;
       setIsFullscreen(!!fsElem);
     };
-
     document.addEventListener('fullscreenchange', handleFsChange);
     document.addEventListener('webkitfullscreenchange', handleFsChange);
-    document.addEventListener('mozfullscreenchange', handleFsChange);
-    document.addEventListener('MSFullscreenChange', handleFsChange);
-
     return () => {
       document.removeEventListener('fullscreenchange', handleFsChange);
       document.removeEventListener('webkitfullscreenchange', handleFsChange);
-      document.removeEventListener('mozfullscreenchange', handleFsChange);
-      document.removeEventListener('MSFullscreenChange', handleFsChange);
     };
   }, []);
 
@@ -269,7 +321,26 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     setIsSwiping(false);
   }, [isSwiping, swipeOffset, onNext]);
 
-  // Ultra-Smooth Dragging with Non-Passive Touch Scroll Lock
+  // PiP Double Tap & Long Press Touch Handlers
+  const handlePipTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    handlePipMouseDown(e);
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      // Double Tap ➔ Flip Camera
+      if (onFlipCamera) onFlipCamera();
+    }
+    lastTapRef.current = now;
+
+    longPressTimerRef.current = setTimeout(() => {
+      setShowPipMenu(true);
+    }, 550);
+  };
+
+  const handlePipTouchEnd = () => {
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+  };
+
+  // Ultra-Smooth Dragging
   const handlePipMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     hasDraggedRef.current = false;
@@ -297,7 +368,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       if (!isDraggingRef.current || !containerRef.current || !pipRef.current) return;
       const isTouch = 'touches' in e;
       if (isTouch && e.cancelable) {
-        e.preventDefault(); // Lock page scroll during PiP drag
+        e.preventDefault();
       }
 
       const clientX = isTouch ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
@@ -308,12 +379,12 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
 
       if (Math.hypot(deltaX, deltaY) > 5) {
         hasDraggedRef.current = true;
+        if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
       }
 
       const unconstrainedX = dragStartRef.current.pipX + deltaX;
       const unconstrainedY = dragStartRef.current.pipY + deltaY;
 
-      // Clamping PiP position strictly within container bounds
       const containerRect = containerRef.current.getBoundingClientRect();
       const pipWidth = pipRef.current.offsetWidth;
       const pipHeight = pipRef.current.offsetHeight;
@@ -335,7 +406,6 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       if (!isDraggingRef.current) return;
       isDraggingRef.current = false;
       pipRef.current?.classList.remove('otv-pip-dragging');
-
       requestAnimationFrame(() => {
         hasDraggedRef.current = false;
       });
@@ -349,29 +419,22 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleEnd);
-      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchmove', handleMove, { passive: false } as any);
       window.removeEventListener('touchend', handleEnd);
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
     };
   }, [updatePipPosDOM]);
 
-  // Derived Connection Status Details
+  // Derived States
   const isConnected = connectionStatus === 'connected';
   const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
 
-  const statusBadgeInfo = useMemo(() => {
-    switch (connectionStatus) {
-      case 'connected':
-        return { label: 'Live Match', dotClass: 'otv-dot-live' };
-      case 'searching':
-      case 'connecting':
-        return { label: 'Searching…', dotClass: 'otv-dot-search' };
-      case 'disconnected':
-        return { label: 'Disconnected', dotClass: 'otv-dot-idle' };
-      default:
-        return { label: 'Idle', dotClass: 'otv-dot-idle' };
-    }
-  }, [connectionStatus]);
+  // Format Timer string
+  const formatTimer = (secs: number) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   const filterCssClass = useMemo(() => {
     switch (activeFilter) {
@@ -383,6 +446,8 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
     }
   }, [activeFilter]);
 
+  const currentCountry = COUNTRY_QUEUE[countryIndex];
+
   return (
     <div
       ref={containerRef}
@@ -392,6 +457,15 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       onTouchEnd={handleTouchEnd}
       aria-label="Video Chat View"
     >
+      {/* ── Floating Reaction Emoji Overlay ──────────────────── */}
+      <div className="otv-reactions-overlay">
+        {floatingEmojis.map(item => (
+          <div key={item.id} className="otv-floating-emoji" style={{ left: `${item.left}%` }}>
+            {item.emoji}
+          </div>
+        ))}
+      </div>
+
       {/* ── Main Remote Video Panel (Stranger) ──────────────── */}
       <div
         className="otv-remote-layer"
@@ -410,11 +484,18 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           aria-label="Remote Stranger Video Feed"
         />
 
-        {/* Remote Placeholders with Shimmer Loading Skeleton */}
+        {/* Searching Ambient Aurora Blobs Background */}
+        {isSearching && (
+          <div className="otv-ambient-bg">
+            <div className="otv-blob otv-blob-1" />
+            <div className="otv-blob otv-blob-2" />
+            <div className="otv-blob otv-blob-3" />
+          </div>
+        )}
+
+        {/* Remote Placeholders & Matchmaking Global Queue */}
         {!remoteStream && (
           <div className="otv-placeholder">
-            {isSearching && <div className="otv-shimmer-bg" />}
-
             {isSearching ? (
               <div className="otv-radar-wrap">
                 <div className="otv-radar-pulse-ring" />
@@ -430,16 +511,57 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
               </div>
             )}
 
+            {isSearching && (
+              <div className="otv-country-pill">
+                <span>{currentCountry.flag}</span>
+                <span>Connecting to {currentCountry.name}</span>
+              </div>
+            )}
+
             <div className="otv-placeholder-meta">
               <h3 className="otv-ph-title">
-                {isSearching ? 'Connecting with a Stranger…' : 'Ready to Meet New People'}
+                {isSearching ? 'Matching with live stranger…' : 'Ready to Meet New People'}
               </h3>
               <p className="otv-ph-sub">
                 {isSearching
                   ? 'Searching global live matching queue'
                   : 'Press Start (or N) or Swipe Left to connect'}
               </p>
+              {isSearching && (
+                <div className="otv-online-badge">
+                  <Globe2 size={13} />
+                  <span>14,892 users online live</span>
+                </div>
+              )}
             </div>
+          </div>
+        )}
+
+        {/* Stranger Info & Location Card Overlay */}
+        {isConnected && (
+          <div className="otv-stranger-overlay">
+            <div className="otv-overlay-pill">
+              <span>🇮🇳 India</span>
+              <span>• 18+</span>
+            </div>
+            <div className="otv-overlay-pill otv-hd-tag">
+              <span>HD</span>
+            </div>
+            <div className="otv-overlay-pill">
+              <Zap size={11} className="text-yellow-400" />
+              <span>42ms</span>
+            </div>
+          </div>
+        )}
+
+        {/* Interactive Floating Reaction Emoji Dock */}
+        {isConnected && (
+          <div className="otv-reaction-bar">
+            {['👍', '❤️', '😂', '🔥', '⚡'].map(emoji => (
+              <button key={emoji} className="otv-reaction-btn" onClick={() => triggerReaction(emoji)}>
+                {emoji}
+              </button>
+            ))}
           </div>
         )}
 
@@ -454,15 +576,16 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
 
       {/* ── Top Bar Control Pills ───────────────────────────── */}
       <div className="otv-header-bar">
-        {/* Status Indicator */}
+        {/* Status Indicator & Live Timer */}
         <div className="otv-status-pill" role="status" aria-live="polite">
-          <span className={`otv-status-dot ${statusBadgeInfo.dotClass}`} />
-          <span className="otv-status-text">{statusBadgeInfo.label}</span>
+          <span className={`otv-status-dot ${isConnected ? 'otv-dot-live' : isSearching ? 'otv-dot-search' : 'otv-dot-idle'}`} />
+          <span>{isConnected ? 'LIVE' : isSearching ? 'Searching…' : 'Idle'}</span>
+          {isConnected && <span className="otv-timer">{formatTimer(matchTime)}</span>}
         </div>
 
         {/* Quick Action Badges */}
         <div className="otv-top-actions">
-          {/* Desktop Controls */}
+          {/* Desktop Filter Toggle */}
           <div className="otv-dropdown-wrap otv-desktop-only">
             <button
               className={`otv-action-btn ${activeFilter !== 'normal' ? 'otv-active-pill' : ''}`}
@@ -509,7 +632,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
             <span>{objectFitMode === 'cover' ? 'Fit' : 'Fill'}</span>
           </button>
 
-          {/* Safety Center */}
+          {/* Safety Guidelines */}
           {onOpenSafety && (
             <button
               className="otv-action-btn otv-desktop-only"
@@ -570,7 +693,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
             )}
           </div>
 
-          {/* Fullscreen Toggle */}
+          {/* Fullscreen Toggle with Kbd Badge */}
           <button
             className="otv-action-btn otv-icon-only"
             onClick={toggleFullscreen}
@@ -579,6 +702,7 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
             aria-pressed={isFullscreen}
           >
             {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+            <span className="otv-kbd-badge otv-desktop-only">F</span>
           </button>
         </div>
       </div>
@@ -586,11 +710,12 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
       {/* ── Picture-in-Picture (PiP) Self Camera ────────── */}
       <div
         ref={pipRef}
-        className={`otv-pip otv-pip-${pipCorner}`}
-        onMouseDown={handlePipMouseDown}
-        onTouchStart={handlePipMouseDown}
+        className={`otv-pip otv-pip-${pipCorner} ${isConnected ? 'pip-live' : ''} ${isMuted ? 'pip-muted' : ''}`}
+        onMouseDown={handlePipTouchStart}
+        onTouchStart={handlePipTouchStart}
+        onTouchEnd={handlePipTouchEnd}
         onClick={cyclePipCorner}
-        title="Drag to reposition or click to snap corner"
+        title="Double-tap to flip camera, drag to reposition, or click to snap corner"
         role="region"
         aria-label="Local Camera Self-View Picture in Picture"
       >
@@ -626,6 +751,20 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           >
             <RotateCcw size={13} />
           </button>
+        )}
+
+        {/* Long Press Quick Action Menu */}
+        {showPipMenu && (
+          <div className="otv-pip-menu" onClick={e => e.stopPropagation()}>
+            {onFlipCamera && (
+              <button className="otv-pip-menu-btn" onClick={() => { onFlipCamera(); setShowPipMenu(false); }}>
+                <RotateCcw size={12} /><span>Flip</span>
+              </button>
+            )}
+            <button className="otv-pip-menu-btn" onClick={() => { cyclePipCorner(); setShowPipMenu(false); }}>
+              <span>Snap Corner</span>
+            </button>
+          </div>
         )}
       </div>
     </div>
