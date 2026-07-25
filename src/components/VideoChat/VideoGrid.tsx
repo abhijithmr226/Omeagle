@@ -484,6 +484,8 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
           aria-label="Remote Stranger Video Feed"
         />
 
+        <div className="otv-bottom-gradient" />
+
         {/* Searching Ambient Aurora Blobs Background */}
         {isSearching && (
           <div className="otv-ambient-bg">

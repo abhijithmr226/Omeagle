@@ -1,10 +1,10 @@
-/* ── VideoGrid Ultra-Premium CSS System ────────────────────────────── */
+/* ── VideoGrid Widescreen UI System ────────────────────────────── */
 
 :root {
-  --glass-bg: rgba(15, 23, 42, 0.72);
-  --glass-bg-hover: rgba(30, 41, 59, 0.85);
+  --glass-bg: rgba(15, 23, 42, 0.75);
+  --glass-bg-hover: rgba(30, 41, 59, 0.88);
   --glass-border: rgba(255, 255, 255, 0.18);
-  --glass-blur: blur(18px);
+  --glass-blur: blur(20px);
 
   --brand-blue: #3b82f6;
   --brand-purple: #8b5cf6;
@@ -13,23 +13,23 @@
   --brand-orange: #f59e0b;
   --brand-red: #ef4444;
 
-  --glow-blue: 0 0 20px rgba(59, 130, 246, 0.6);
-  --glow-green: 0 0 20px rgba(34, 197, 94, 0.6);
-  --glow-red: 0 0 20px rgba(239, 68, 68, 0.6);
+  --glow-blue: 0 0 20px rgba(59, 130, 246, 0.5);
+  --glow-green: 0 0 20px rgba(34, 197, 94, 0.5);
+  --glow-red: 0 0 20px rgba(239, 68, 68, 0.5);
 }
 
 /* Root Stage Container */
 .otv-stage {
   position: relative;
   width: 100%;
-  height: 100%;
-  min-height: clamp(380px, 70dvh, 760px);
+  height: min(76vh, 760px);
+  min-height: 460px;
   aspect-ratio: auto;
-  border-radius: clamp(14px, 2vw, 24px);
+  border-radius: 24px;
   overflow: hidden;
   background: #090d16;
   border: 1px solid var(--glass-border);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   user-select: none;
   touch-action: pan-y;
   padding-top: env(safe-area-inset-top, 0px);
@@ -53,6 +53,18 @@
   background: #000000;
 }
 
+/* Bottom Video Gradient Overlay */
+.otv-bottom-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 4;
+}
+
 /* Remote Video Layer */
 .otv-remote-layer {
   position: relative;
@@ -64,7 +76,6 @@
   overflow: hidden;
 }
 
-/* Stranger Video Zoom + Fade Reveal Animation */
 .otv-remote-video {
   position: absolute;
   inset: 0;
@@ -72,7 +83,7 @@
   height: 100%;
   background: #000;
   opacity: 0;
-  transform: scale(1.1);
+  transform: scale(1.08);
   filter: blur(12px);
   transition: opacity 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
               transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -88,7 +99,7 @@
 
 .otv-remote-video.otv-cover { object-fit: cover !important; }
 .otv-remote-video.otv-contain { object-fit: contain !important; }
-.otv-remote-video.otv-blur { filter: blur(28px) brightness(0.5); scale: 1.06; }
+.otv-remote-video.otv-blur { filter: blur(28px) brightness(0.5); scale: 1.05; }
 
 /* AI Video Filter Styling */
 .otv-filter-beauty  { filter: contrast(1.08) brightness(1.06) saturate(1.1) blur(0.2px); }
@@ -96,7 +107,7 @@
 .otv-filter-cyber   { filter: hue-rotate(170deg) saturate(1.5) contrast(1.2); }
 .otv-filter-vintage { filter: grayscale(1) contrast(1.25) brightness(0.95); }
 
-/* Ambient Aurora Blobs Background during searching (Discord + Azar style) */
+/* Ambient Aurora Blobs Background during searching */
 .otv-ambient-bg {
   position: absolute;
   inset: 0;
@@ -109,27 +120,13 @@
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
-  opacity: 0.6;
+  opacity: 0.65;
   animation: otv-blob-float 10s infinite ease-in-out alternate;
 }
 
-.otv-blob-1 {
-  width: 320px; height: 320px;
-  background: var(--brand-purple);
-  top: 10%; left: 15%;
-}
-.otv-blob-2 {
-  width: 360px; height: 360px;
-  background: var(--brand-blue);
-  bottom: 10%; right: 15%;
-  animation-delay: -3s;
-}
-.otv-blob-3 {
-  width: 280px; height: 280px;
-  background: var(--brand-pink);
-  top: 40%; right: 30%;
-  animation-delay: -6s;
-}
+.otv-blob-1 { width: 340px; height: 340px; background: var(--brand-purple); top: 10%; left: 15%; }
+.otv-blob-2 { width: 380px; height: 380px; background: var(--brand-blue); bottom: 10%; right: 15%; animation-delay: -3s; }
+.otv-blob-3 { width: 300px; height: 300px; background: var(--brand-pink); top: 40%; right: 30%; animation-delay: -6s; }
 
 @keyframes otv-blob-float {
   0%   { transform: translate(0, 0) scale(1); }
@@ -233,7 +230,6 @@
   margin: 0;
 }
 
-/* Online Counter Badge */
 .otv-online-badge {
   display: flex;
   align-items: center;
@@ -483,12 +479,13 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* ── Picture-in-Picture (PiP) Self Camera with Dynamic Border Glow ────── */
+/* ── Proportional Picture-in-Picture (PiP) Self Camera (20-25% of Video) ────── */
 .otv-pip {
   position: absolute;
-  width: clamp(120px, 18vw, 260px);
-  height: clamp(155px, 24vw, 340px);
-  border-radius: clamp(12px, 1.5vw, 20px);
+  width: clamp(160px, 16vw, 220px);
+  aspect-ratio: 3 / 4;
+  height: auto;
+  border-radius: clamp(12px, 1.5vw, 18px);
   overflow: hidden;
   background: #000;
   border: 2px solid var(--brand-blue);
