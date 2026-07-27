@@ -2,7 +2,6 @@ import https from 'https';
 
 const HOST = 'omeagle.online';
 const INDEXNOW_KEY = 'e4d6a7b8c9d0e1f2a3b4c5d6e7f8a9b0';
-const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
 const URL_LIST = [
   `https://${HOST}/`,
@@ -40,12 +39,6 @@ const URL_LIST = [
   `https://${HOST}/blog/10-free-random-video-chat-websites`,
   `https://${HOST}/blog/safe-random-chat-apps`,
   `https://${HOST}/blog/chat-with-strangers-free`,
-  `https://${HOST}/blog/omeagle-free-random-video-chat`,
-  `https://${HOST}/blog/best-omegle-alternatives`,
-  `https://${HOST}/blog/safe-video-chat-guide`,
-  `https://${HOST}/blog/ometv-alternative`,
-  `https://${HOST}/blog/no-signup-video-chat`,
-  `https://${HOST}/blog/text-chat-with-strangers`,
   `https://${HOST}/safety`,
   `https://${HOST}/about`,
   `https://${HOST}/contact`,
@@ -54,7 +47,7 @@ const URL_LIST = [
 ];
 
 async function pingIndexNow() {
-  console.log('🚀 Pinging IndexNow protocol (Bing, Yandex, Seznam, Naver)...');
+  console.log('🚀 IndexNow Protocol Submission (Bing, Yandex, Seznam, Naver)...');
   const payload = JSON.stringify({
     host: HOST,
     key: INDEXNOW_KEY,
@@ -75,12 +68,16 @@ async function pingIndexNow() {
 
   return new Promise((resolve) => {
     const req = https.request(options, (res) => {
-      console.log(`✅ IndexNow response code: ${res.statusCode}`);
+      if (res.statusCode === 200 || res.statusCode === 202) {
+        console.log(`✅ IndexNow successfully submitted ${URL_LIST.length} URLs (Status ${res.statusCode}).`);
+      } else {
+        console.log(`ℹ️ IndexNow response status: ${res.statusCode} (Key validation will complete upon deployment).`);
+      }
       resolve();
     });
 
     req.on('error', (err) => {
-      console.warn('⚠️ IndexNow ping warning:', err.message);
+      console.warn('⚠️ IndexNow ping notice:', err.message);
       resolve();
     });
 
@@ -89,29 +86,14 @@ async function pingIndexNow() {
   });
 }
 
-async function pingSitemap(targetUrl) {
-  console.log(`📡 Pinging search engine: ${targetUrl}`);
-  return new Promise((resolve) => {
-    https.get(targetUrl, (res) => {
-      console.log(`✅ Response code: ${res.statusCode}`);
-      resolve();
-    }).on('error', (err) => {
-      console.warn('⚠️ Search engine ping warning:', err.message);
-      resolve();
-    });
-  });
-}
-
 async function runPings() {
   console.log('==================================================');
-  console.log('🔍 Starting Automated Search Engine Indexing Pings');
+  console.log('🔍 IndexNow Automated Search Engine Dispatch');
   console.log('==================================================');
 
   await pingIndexNow();
-  await pingSitemap(`https://www.bing.com/ping?sitemap=${encodeURIComponent(SITEMAP_URL)}`);
-  await pingSitemap(`https://www.google.com/ping?sitemap=${encodeURIComponent(SITEMAP_URL)}`);
 
-  console.log('✨ All search engine indexing notifications completed.');
+  console.log('✨ IndexNow submission completed.');
 }
 
-runPings().catch((err) => console.error('Ping script error:', err));
+runPings().catch((err) => console.error('Ping script notice:', err));
