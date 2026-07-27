@@ -6,6 +6,7 @@ import {
   Mic,
   MicOff,
   Settings,
+  SlidersHorizontal,
   Camera,
   SkipForward,
   MessageCircle,
@@ -24,6 +25,7 @@ export interface ControlsBarProps {
   onToggleMute: () => void;
   onToggleVideo: () => void;
   onOpenSettings: () => void;
+  onOpenPrefs?: () => void;
   onFlipCamera?: () => void;
   mobileChatOpen?: boolean;
   onToggleChat?: () => void;
@@ -39,6 +41,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = React.memo(({
   onToggleMute,
   onToggleVideo,
   onOpenSettings,
+  onOpenPrefs,
   onFlipCamera,
   mobileChatOpen,
   onToggleChat
@@ -156,17 +159,30 @@ export const ControlsBar: React.FC<ControlsBarProps> = React.memo(({
           </button>
         )}
 
-        {/* 7. Dedicated Match Preferences / Settings */}
+        {/* 7. Dedicated Match Filter Preferences */}
+        <button
+          className="azar-action-btn"
+          onClick={() => (onOpenPrefs ? onOpenPrefs() : onOpenSettings())}
+          title="Matching Filters (Gender, Country, Interests)"
+          aria-label="Matching Filters"
+        >
+          <div className="azar-circle-btn">
+            <SlidersHorizontal size={19} />
+          </div>
+          <span className="azar-action-label">Filter</span>
+        </button>
+
+        {/* 8. AV Settings */}
         <button
           className="azar-action-btn"
           onClick={onOpenSettings}
-          title="Match Preferences & Settings"
-          aria-label="Match Preferences and Settings"
+          title="Camera & Microphone Settings"
+          aria-label="Camera and Microphone Settings"
         >
           <div className="azar-circle-btn">
             <Settings size={19} />
           </div>
-          <span className="azar-action-label">Filter</span>
+          <span className="azar-action-label">Settings</span>
         </button>
       </div>
     </div>

@@ -549,6 +549,7 @@ export const App: React.FC = () => {
                         onToggleMute={media.toggleMute}
                         onToggleVideo={media.toggleVideo}
                         onOpenSettings={() => setIsSettingsOpen(true)}
+                        onOpenPrefs={() => setIsPrefsOpen(true)}
                         onFlipCamera={handleFlipCamera}
                         mobileChatOpen={mobileChatOpen}
                         onToggleChat={() => setMobileChatOpen(!mobileChatOpen)}
