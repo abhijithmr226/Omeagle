@@ -4,11 +4,11 @@ import { ArrowLeft, Calendar, Clock, Users, Shield, Globe, Video, MessageCircle,
 
 interface BlogPageProps {
   onBack?: () => void;
-  initialArticle?: 'index' | 'article1' | 'article2' | 'article3' | 'article4' | 'article5' | 'article6';
+  initialArticle?: string;
 }
 
 export const BlogPage: React.FC<BlogPageProps> = ({ onBack, initialArticle }) => {
-  const [activeArticle, setActiveArticle] = useState<'index' | 'article1' | 'article2' | 'article3' | 'article4' | 'article5' | 'article6'>(initialArticle || 'index');
+  const [activeArticle, setActiveArticle] = useState<string>(initialArticle || 'index');
 
   const articles = [
     {
@@ -64,6 +64,51 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBack, initialArticle }) =>
       readTime: '7 min read',
       title: 'Text Chat with Strangers — Free Anonymous Text Chat in 2026',
       description: 'Not ready for video? Anonymous text chat with strangers is faster, more private, and less awkward. Here is everything you need to know to get started safely.',
+    },
+    {
+      id: 'is-omegle-still-available',
+      slug: 'is-omegle-still-available',
+      tag: 'News',
+      date: 'July 22, 2026',
+      readTime: '5 min read',
+      title: 'Is Omegle Still Available in 2026? Official Shutdown History & Replacements',
+      description: 'Is Omegle still working or shut down permanently? Read the official history of Omegle closure and what alternatives replace it in 2026.',
+    },
+    {
+      id: 'what-replaced-omegle',
+      slug: 'what-replaced-omegle',
+      tag: 'Guide',
+      date: 'July 23, 2026',
+      readTime: '8 min read',
+      title: 'What Replaced Omegle? Top 5 Next-Gen Stranger Video Chat Platforms',
+      description: 'Wondering what website replaced Omegle? Here are the top 5 next-generation random video chat platforms with zero signup and AI safety.',
+    },
+    {
+      id: 'is-random-video-chat-safe',
+      slug: 'is-random-video-chat-safe',
+      tag: 'Safety',
+      date: 'July 24, 2026',
+      readTime: '9 min read',
+      title: 'Is Random Video Chat Safe? Complete Safety & Privacy Analysis 2026',
+      description: 'Is it safe to talk to strangers on live camera? Expert safety analysis, privacy tips, and WebRTC security facts for anonymous video chat.',
+    },
+    {
+      id: 'how-to-talk-to-strangers-online',
+      slug: 'how-to-talk-to-strangers-online',
+      tag: 'Tips',
+      date: 'July 25, 2026',
+      readTime: '6 min read',
+      title: 'How to Talk to Strangers Online Without Awkwardness (15 Best Icebreakers)',
+      description: 'Struggling to make conversation on video chat? 15 proven icebreakers and psychological tips for talking to strangers naturally.',
+    },
+    {
+      id: 'best-video-chat-sites-for-india',
+      slug: 'best-video-chat-sites-for-india',
+      tag: 'Regional',
+      date: 'July 26, 2026',
+      readTime: '7 min read',
+      title: 'Best Free Random Video Chat Sites for India in 2026',
+      description: 'Looking for India random video chat? Connect with strangers in Delhi, Mumbai, Bangalore & regional languages free without coin traps.',
     },
   ];
 
