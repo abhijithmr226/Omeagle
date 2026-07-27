@@ -18,6 +18,7 @@ const Safety = React.lazy(() => import('./pages/Safety').then(m => ({ default: m
 const SettingsModal = React.lazy(() => import('./components/Modals/SettingsModal').then(m => ({ default: m.SettingsModal })));
 const PreferencesModal = React.lazy(() => import('./components/Modals/PreferencesModal').then(m => ({ default: m.PreferencesModal })));
 const ReportModal = React.lazy(() => import('./components/Modals/ReportModal').then(m => ({ default: m.ReportModal })));
+const LandingPageVariant = React.lazy(() => import('./pages/LandingPageVariant').then(m => ({ default: m.LandingPageVariant })));
 import type { ChatMode, ConnectionStatus, PartnerProfile } from './types/chat';
 import { joinQueue, pollMatch, leaveQueue, endCall, cleanupAfterSkip } from './services/queue';
 import { createCallChannel, type CallChannel } from './services/signaling';
@@ -491,7 +492,24 @@ export const App: React.FC = () => {
             <Route path="/blog/ometv-alternative" element={<Blog article="article4" />} />
             <Route path="/blog/no-signup-video-chat" element={<Blog article="article5" />} />
             <Route path="/blog/text-chat-with-strangers" element={<Blog article="article6" />} />
+            <Route path="/blog/is-omegle-still-available" element={<Blog article="is-omegle-still-available" />} />
+            <Route path="/blog/what-replaced-omegle" element={<Blog article="what-replaced-omegle" />} />
+            <Route path="/blog/is-random-video-chat-safe" element={<Blog article="is-random-video-chat-safe" />} />
+            <Route path="/blog/how-to-talk-to-strangers-online" element={<Blog article="how-to-talk-to-strangers-online" />} />
+            <Route path="/blog/best-video-chat-sites-for-india" element={<Blog article="best-video-chat-sites-for-india" />} />
+            <Route path="/blog/anonymous-video-chat-guide" element={<Blog article="anonymous-video-chat-guide" />} />
+            <Route path="/blog/how-to-meet-people-online-safely" element={<Blog article="how-to-meet-people-online-safely" />} />
+            <Route path="/blog/10-free-random-video-chat-websites" element={<Blog article="10-free-random-video-chat-websites" />} />
+            <Route path="/blog/safe-random-chat-apps" element={<Blog article="safe-random-chat-apps" />} />
+            <Route path="/blog/chat-with-strangers-free" element={<Blog article="chat-with-strangers-free" />} />
             <Route path="/safety" element={<Safety />} />
+            <Route path="/omegle-alternative-no-login" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/random-video-chat-no-signup" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/talk-to-strangers-free" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/anonymous-video-chat-no-signup" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/chat/india" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/ometv-alternative" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/:slug" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
             <Route path="/*" element={
               mode === 'landing' ? (
                 <LandingPage onStartChat={startChat} onlineCount={onlineCount}

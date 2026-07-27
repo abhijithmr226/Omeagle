@@ -1,26 +1,40 @@
 # Omeagle
 
-> Omeagle is a free, anonymous random video chat and text chat platform connecting users worldwide with zero registration required.
+> Omeagle is the #1 free, anonymous random video chat and text chat platform connecting users worldwide with zero registration required.
 
 Omeagle offers instant one-click peer-to-peer WebRTC video chat, anonymous text chat with no signup, gender/country/interest-based matching, built-in AI moderation and reporting, and a fully responsive PWA for desktop, iOS, and Android.
 
-## Docs
+## Core Features & Target Landing Pages
+
+- [Omegle Alternative No Login](https://omeagle.online/omegle-alternative-no-login): Instant video chat without account creation or login forms.
+- [Random Video Chat Without Signup](https://omeagle.online/random-video-chat-no-signup): Instant browser webcam matching with zero registration.
+- [Talk to Strangers Free](https://omeagle.online/talk-to-strangers-free): Free 1-on-1 video call platform to meet strangers globally.
+- [Anonymous Video Chat No Sign Up](https://omeagle.online/anonymous-video-chat-no-signup): 100% private and secure WebRTC video chat.
+- [India Random Video Chat](https://omeagle.online/chat/india): Free Indian stranger video chat for Delhi, Mumbai, Bangalore & regional languages.
+- [OmeTV Alternative Free](https://omeagle.online/ometv-alternative): Free OmeTV alternative without coin paywalls or strict auto-bans.
+- [Gender Filter Video Chat](https://omeagle.online/gender-filter-video-chat): Random video chat with free male/female gender preference filter.
+- [Mobile Video Chat](https://omeagle.online/mobile-video-chat): Stranger video chat optimized for iOS Safari and Android Chrome browsers.
+- [AI Video Chat Platform](https://omeagle.online/ai-video-chat): Smart AI interest matching and real-time safety moderation.
+
+## Primary Documentation & Pages
 
 - [Home Page](https://omeagle.online/): Instant random video chat interface and landing page.
 - [About Omeagle](https://omeagle.online/about): Overview of the mission, WebRTC architecture, and features.
 - [Safety Center](https://omeagle.online/safety): Guidelines, reporting instructions, and user protection measures.
-- [Blog & Guides](https://omeagle.online/blog): Guides on Omegle alternatives, video chat safety, and tips.
+- [Blog & Guides Hub](https://omeagle.online/blog): Official guides on Omegle alternatives, video chat safety, and tips.
 
-## Blog Articles
+## Strategic Blog Articles & Q&A
 
-- [Free Random Video Chat Guide](https://omeagle.online/blog/omeagle-free-random-video-chat): How Omeagle's random video chat works.
-- [Best Omegle Alternatives 2026](https://omeagle.online/blog/best-omegle-alternatives): Comparison of top Omegle alternatives.
-- [Safe Video Chat Complete Guide](https://omeagle.online/blog/safe-video-chat-guide): Staying safe while video chatting with strangers.
-- [OmeTV Alternative Review](https://omeagle.online/blog/ometv-alternative): How Omeagle compares to OmeTV.
-- [No-Signup Video Chat Platforms](https://omeagle.online/blog/no-signup-video-chat): Platforms that don't require registration.
-- [Text Chat with Strangers Tips](https://omeagle.online/blog/text-chat-with-strangers): Tips for anonymous text chat.
+- [Is Omegle Still Available?](https://omeagle.online/blog/is-omegle-still-available): Shutdown history and official status in 2026.
+- [What Replaced Omegle?](https://omeagle.online/blog/what-replaced-omegle): Top 5 next-generation random video chat platforms.
+- [Is Random Video Chat Safe?](https://omeagle.online/blog/is-random-video-chat-safe): Complete safety & privacy analysis.
+- [How to Talk to Strangers Online](https://omeagle.online/blog/how-to-talk-to-strangers-online): 15 conversation icebreakers and tips.
+- [Best Video Chat Sites for India](https://omeagle.online/blog/best-video-chat-sites-for-india): Top Indian stranger chat platforms.
+- [Anonymous Video Chat Guide](https://omeagle.online/blog/anonymous-video-chat-guide): Zero-log WebRTC privacy facts.
+- [10 Free Random Video Chat Websites](https://omeagle.online/blog/10-free-random-video-chat-websites): Top 10 registration-free chat sites.
+- [Best Omegle Alternatives 2026](https://omeagle.online/blog/best-omegle-alternatives): Comprehensive comparison of alternatives.
 
-## Optional
+## Legal & Contact
 
 - [Privacy Policy](https://omeagle.online/privacy): Data handling and zero-retention policy.
 - [Terms of Service](https://omeagle.online/terms): Usage rules and community guidelines.
