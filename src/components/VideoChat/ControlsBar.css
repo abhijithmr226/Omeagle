@@ -211,20 +211,31 @@
 }
 
 @media (max-width: 480px) {
-  /* Hide text labels on very small screens */
-  .azar-action-label { display: none; }
+  .azar-action-label {
+    display: block;
+    font-size: 0.64rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+
+  [data-theme='light'] .azar-action-label {
+    color: #475569;
+  }
 
   .azar-circle-btn {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
   }
 
   .azar-hero-next-btn {
-    padding: 10px 16px;
+    padding: 8px 14px;
+    border-radius: 100px;
   }
 
   .azar-hero-text {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
   }
 }
 

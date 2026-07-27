@@ -616,14 +616,14 @@
 /* ── Picture-in-Picture (PiP) ─────────────────────────────────────── */
 .otv-pip {
   position: absolute;
-  width: clamp(110px, 14vw, 190px);
-  aspect-ratio: 16 / 9;
+  width: clamp(110px, 15vw, 180px);
+  aspect-ratio: 3 / 4;
   height: auto;
-  border-radius: clamp(10px, 1.2vw, 16px);
+  border-radius: 16px;
   overflow: hidden;
   background: #000;
   border: 2px solid var(--vg-blue);
-  box-shadow: var(--glow-blue);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), var(--glow-blue);
   z-index: 20;
   cursor: grab;
   will-change: transform;
@@ -633,15 +633,16 @@
 
 @media (max-width: 480px) {
   .otv-pip {
-    width: clamp(90px, 28vw, 130px);
-    border-radius: 10px;
+    width: clamp(96px, 30vw, 135px);
+    aspect-ratio: 3 / 4;
+    border-radius: 14px;
   }
 }
 
 .otv-pip-top-right    { top: clamp(48px, 6vw, 60px); right: clamp(8px, 1.5vw, 14px); }
 .otv-pip-top-left     { top: clamp(48px, 6vw, 60px); left: clamp(8px, 1.5vw, 14px); }
-.otv-pip-bottom-right { bottom: clamp(8px, 1.5vw, 14px); right: clamp(8px, 1.5vw, 14px); }
-.otv-pip-bottom-left  { bottom: clamp(8px, 1.5vw, 14px); left: clamp(8px, 1.5vw, 14px); }
+.otv-pip-bottom-right { bottom: clamp(72px, 10vh, 88px); right: clamp(10px, 2vw, 16px); }
+.otv-pip-bottom-left  { bottom: clamp(72px, 10vh, 88px); left: clamp(10px, 2vw, 16px); }
 
 .otv-pip.pip-live  { border-color: var(--vg-green); box-shadow: var(--glow-green); }
 .otv-pip.pip-muted { border-color: var(--vg-red);   box-shadow: var(--glow-red); }
