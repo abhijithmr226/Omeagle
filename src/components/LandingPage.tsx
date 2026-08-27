@@ -269,6 +269,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartChat, onlineCou
             Every <strong>video chat with strangers</strong> session on Omeagle is protected by end-to-end encryption, a report &amp; block system, and 24/7 AI-powered content moderation. No personal data is collected. No accounts are required. When you close your browser, your session disappears completely. <strong>Talk with strangers</strong> from any country — all you need is a browser.
           </p>
 
+          <h2 className="seo-title">Trending Interest Tags &amp; Topics</h2>
+          <p>Click any topic to pair instantly with strangers who share your passions:</p>
+          <div className="flex flex-wrap gap-2 my-4">
+            {['cricket', 'anime', 'college', 'coding', 'gaming', 'music', 'movies', 'languages', 'hindi', 'dosti', 'travel', 'fitness'].map(tag => (
+              <a key={tag} href={`/tag/${tag}`} className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>
+                #{tag}
+              </a>
+            ))}
+          </div>
+
+          <h2 className="seo-title">Regional Language Hubs &amp; Countries</h2>
+          <p>Connect with people in your native language or explore conversations worldwide:</p>
+          <div className="flex flex-wrap gap-2 my-4">
+            <a href="/hi" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇮🇳 हिन्दी (Hindi)</a>
+            <a href="/ar" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇦🇪 العربية (Arabic)</a>
+            <a href="/bn" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇧🇩 বাংলা (Bengali)</a>
+            <a href="/ta" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇮🇳 தமிழ் (Tamil)</a>
+            <a href="/te" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇮🇳 తెలుగు (Telugu)</a>
+            <a href="/mr" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇮🇳 मराठी (Marathi)</a>
+            <a href="/ur" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇵🇰 اردو (Urdu)</a>
+            <a href="/ne" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇳🇵 नेपाली (Nepali)</a>
+            <a href="/si" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇱🇰 සිංහල (Sinhala)</a>
+            <a href="/chat/india" className="pref-chip" style={{ fontSize: '0.88rem', padding: '0.4rem 0.85rem' }}>🇮🇳 India Hub</a>
+          </div>
+
           <h2 className="seo-title">Start Your Free Video Chat Now</h2>
           <p>
             Thousands of people are online right now ready to chat. Whether you want to make a new friend, practice a language, or just have an interesting conversation, it starts with one click. Choose <strong>Video Chat</strong> for face-to-face or <strong>Text Chat</strong> for anonymous messaging. Set preferences for country, gender, and interests to find your ideal match.
