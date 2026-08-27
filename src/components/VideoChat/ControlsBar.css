@@ -1,4 +1,4 @@
-/* ── ControlsBar Stylesheet ─────────────────────────────────────── */
+/* ── ControlsBar Stylesheet — Omeagle Online Premium Dock ───────── */
 
 .azar-controls-root {
   position: relative;
@@ -9,28 +9,29 @@
   padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 
-/* Glass pill bar */
+/* Glass pill floating dock */
 .azar-glass-bar {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 8px clamp(10px, 2.5vw, 18px);
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  min-height: 72px;
+  padding: 8px clamp(12px, 2.5vw, 24px);
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 100px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  gap: clamp(4px, 1.5vw, 10px);
-  max-width: 680px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  gap: clamp(6px, 1.5vw, 12px);
+  max-width: 720px;
   margin: 0 auto;
 }
 
-/* Light theme overrides for the bar */
+/* Light theme overrides for the floating dock */
 [data-theme='light'] .azar-glass-bar {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(0, 0, 0, 0.1);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #E5E7EB;
+  box-shadow: 0 12px 36px rgba(249, 115, 22, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* ── Individual Action Button ─────────────────────────────────── */
@@ -38,7 +39,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   background: none;
   border: none;
   color: #94a3b8;
@@ -53,7 +54,7 @@
 }
 
 [data-theme='light'] .azar-action-btn {
-  color: #475569;
+  color: #4B5563;
 }
 
 .azar-action-btn:hover  { color: #ffffff; transform: translateY(-2px); }
@@ -64,93 +65,117 @@
   transform: none !important;
 }
 
-[data-theme='light'] .azar-action-btn:hover { color: #0f172a; }
+[data-theme='light'] .azar-action-btn:hover { color: #111827; }
 
-/* Circle icon container */
+/* Circle icon container (White default) */
 .azar-circle-btn {
-  width: clamp(40px, 5vw, 46px);
-  height: clamp(40px, 5vw, 46px);
+  width: clamp(42px, 5vw, 48px);
+  height: clamp(42px, 5vw, 48px);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.09);
-  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.12);
+  color: #F8FAFC;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   flex-shrink: 0;
 }
 
 [data-theme='light'] .azar-circle-btn {
-  background: rgba(0, 0, 0, 0.06);
-  color: #1e293b;
-  border-color: rgba(0, 0, 0, 0.1);
+  background: #FFFFFF;
+  color: #1F2937;
+  border-color: #E5E7EB;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .azar-action-btn:hover .azar-circle-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 [data-theme='light'] .azar-action-btn:hover .azar-circle-btn {
-  background: rgba(0, 0, 0, 0.1);
-  color: #0f172a;
+  background: #F3F4F6;
+  border-color: #D1D5DB;
+  color: #111827;
 }
 
-/* Muted state */
+/* AI Sparkle / Translate Purple Button */
+.circle-ai {
+  background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%) !important;
+  border-color: #C4B5FD !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.45) !important;
+}
+.btn-ai-sparkle:hover .circle-ai {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.65) !important;
+}
+.text-purple {
+  color: #A78BFA !important;
+  font-weight: 700 !important;
+}
+[data-theme='light'] .text-purple {
+  color: #7C3AED !important;
+}
+
+/* Muted state (Red) */
 .active-muted .azar-circle-btn {
-  background: rgba(239, 68, 68, 0.22) !important;
-  border-color: #ef4444 !important;
-  color: #fca5a5 !important;
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: #EF4444 !important;
+  color: #F87171 !important;
 }
 
-/* Video off state */
+/* Video off state (Red) */
 .active-video-off .azar-circle-btn {
-  background: rgba(239, 68, 68, 0.22) !important;
-  border-color: #ef4444 !important;
-  color: #fca5a5 !important;
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: #EF4444 !important;
+  color: #F87171 !important;
 }
 
-/* Chat open state */
+/* Chat open state (Orange) */
 .active-chat .azar-circle-btn {
-  background: rgba(59, 130, 246, 0.22) !important;
-  border-color: #3b82f6 !important;
-  color: #93c5fd !important;
+  background: rgba(249, 115, 22, 0.25) !important;
+  border-color: #F97316 !important;
+  color: #FB923C !important;
 }
 
-/* Stop button */
+/* Stop button (Danger Red) */
 .circle-stop {
-  background: #ef4444 !important;
-  border-color: #f87171 !important;
-  box-shadow: 0 0 14px rgba(239, 68, 68, 0.55) !important;
-  color: #ffffff !important;
+  background: #EF4444 !important;
+  border-color: #F87171 !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6) !important;
+  color: #FFFFFF !important;
+}
+.text-red {
+  color: #EF4444 !important;
+  font-weight: 700 !important;
 }
 
 /* Label under icon */
 .azar-action-label {
-  font-size: clamp(0.6rem, 0.8vw, 0.7rem);
+  font-size: clamp(0.62rem, 0.8vw, 0.72rem);
   font-weight: 600;
-  color: #64748b;
+  color: #94A3B8;
   letter-spacing: 0.02em;
   line-height: 1;
 }
 
 [data-theme='light'] .azar-action-label {
-  color: #94a3b8;
+  color: #6B7280;
 }
 
-/* ── Hero Primary Button (START / SEARCHING / NEXT) ──────────── */
+/* ── Hero Next Button (Orange Gradient #F97316 ➔ #FB923C) ──────────── */
 .azar-hero-next-btn {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 100px;
-  padding: clamp(10px, 1.2vw, 12px) clamp(20px, 2.5vw, 30px);
-  color: #ffffff;
+  padding: clamp(10px, 1.2vw, 14px) clamp(22px, 2.5vw, 34px);
+  color: #FFFFFF;
   cursor: pointer;
-  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255,255,255,0.35);
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.55), inset 0 1px 0 rgba(255,255,255,0.4);
   transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   will-change: transform;
   flex-shrink: 0;
@@ -158,7 +183,7 @@
   touch-action: manipulation;
 }
 
-.azar-hero-next-btn:hover  { transform: scale(1.05); box-shadow: 0 8px 28px rgba(124,58,237,0.6); }
+.azar-hero-next-btn:hover  { transform: scale(1.05); box-shadow: 0 10px 32px rgba(249, 115, 22, 0.7); }
 .azar-hero-next-btn:active { transform: scale(0.95); }
 
 .azar-hero-content {
@@ -168,7 +193,7 @@
 }
 
 .azar-hero-text {
-  font-size: clamp(0.8rem, 1.1vw, 0.93rem);
+  font-size: clamp(0.85rem, 1.1vw, 1rem);
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -177,8 +202,8 @@
 
 /* Searching pulsing state */
 .azar-hero-next-btn.is-searching {
-  background: linear-gradient(135deg, #d97706, #dc2626);
-  box-shadow: 0 6px 24px rgba(217, 119, 6, 0.55);
+  background: linear-gradient(135deg, #F59E0B, #EA580C);
+  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.55);
   animation: azar-hero-pulse 1.5s ease-in-out infinite;
 }
 
@@ -187,41 +212,32 @@
 }
 
 @keyframes azar-hero-pulse {
-  0%   { transform: scale(1);    box-shadow: 0 6px 20px rgba(217,119,6,0.5); }
-  50%  { transform: scale(1.04); box-shadow: 0 10px 30px rgba(220,38,38,0.8); }
-  100% { transform: scale(1);    box-shadow: 0 6px 20px rgba(217,119,6,0.5); }
+  0%   { transform: scale(1);    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5); }
+  50%  { transform: scale(1.04); box-shadow: 0 10px 30px rgba(249, 115, 22, 0.8); }
+  100% { transform: scale(1);    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5); }
 }
 
 @keyframes azar-spin { to { transform: rotate(360deg); } }
 
-.red-icon { color: #f87171; }
+.red-icon { color: #F87171; }
 
 /* ── Mobile Optimisation ──────────────────────────────────────── */
 @media (max-width: 1024px) {
   .azar-controls-root {
-    /* Stick to the bottom of the video column (flex child) */
     padding: 0.4rem 0.75rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
   }
 
   .azar-glass-bar {
     border-radius: 100px;
+    min-height: 64px;
     padding: 6px clamp(8px, 2vw, 14px);
-    gap: clamp(2px, 1.5vw, 8px);
+    gap: clamp(4px, 1.5vw, 8px);
   }
 }
 
 @media (max-width: 480px) {
   .azar-action-label {
-    display: block;
-    font-size: 0.64rem;
-    font-weight: 600;
-    color: #94a3b8;
-    margin-top: 1px;
-    white-space: nowrap;
-  }
-
-  [data-theme='light'] .azar-action-label {
-    color: #475569;
+    font-size: 0.62rem;
   }
 
   .azar-circle-btn {
@@ -230,21 +246,11 @@
   }
 
   .azar-hero-next-btn {
-    padding: 8px 14px;
+    padding: 8px 16px;
     border-radius: 100px;
   }
 
   .azar-hero-text {
-    font-size: 0.76rem;
+    font-size: 0.78rem;
   }
-}
-
-/* Landscape phone — keep bar compact */
-@media (max-height: 500px) and (orientation: landscape) {
-  .azar-controls-root {
-    padding: 0.25rem 0.5rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
-  }
-  .azar-glass-bar { padding: 4px 10px; }
-  .azar-action-label { display: none; }
-  .azar-circle-btn { width: 36px; height: 36px; }
 }

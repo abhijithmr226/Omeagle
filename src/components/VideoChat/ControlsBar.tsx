@@ -29,6 +29,7 @@ export interface ControlsBarProps {
   onFlipCamera?: () => void;
   mobileChatOpen?: boolean;
   onToggleChat?: () => void;
+  onOpenAI?: () => void;
 }
 
 export const ControlsBar: React.FC<ControlsBarProps> = React.memo(({
@@ -44,7 +45,8 @@ export const ControlsBar: React.FC<ControlsBarProps> = React.memo(({
   onOpenPrefs,
   onFlipCamera,
   mobileChatOpen,
-  onToggleChat
+  onToggleChat,
+  onOpenAI
 }) => {
   const isConnected = connectionStatus === 'connected';
   const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
@@ -117,7 +119,20 @@ export const ControlsBar: React.FC<ControlsBarProps> = React.memo(({
           <span className="azar-action-label">{isMuted ? 'Unmute' : 'Mute'}</span>
         </button>
 
-        {/* 4. Hero Action Button (START ➔ SEARCHING... ➔ NEXT ◄) */}
+        {/* 4. AI Icebreakers & Translation (Purple Accent) */}
+        <button
+          className="azar-action-btn btn-ai-sparkle"
+          onClick={onOpenAI}
+          title="AI Icebreakers & Translation Help"
+          aria-label="AI Icebreakers and Translation Help"
+        >
+          <div className="azar-circle-btn circle-ai">
+            <span style={{ fontSize: '1.05rem' }}>✨</span>
+          </div>
+          <span className="azar-action-label text-purple">AI Help</span>
+        </button>
+
+        {/* 5. Hero Action Button (START ➔ SEARCHING... ➔ NEXT ◄) */}
         <button
           className={`azar-hero-next-btn ${heroButtonInfo.className}`}
           onClick={isConnected ? onNext : onStart}
@@ -130,7 +145,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = React.memo(({
           </div>
         </button>
 
-        {/* 5. Chat Toggle */}
+        {/* 6. Chat Toggle */}
         <button
           className={`azar-action-btn ${mobileChatOpen ? 'active-chat' : ''}`}
           onClick={onToggleChat}
@@ -144,22 +159,22 @@ export const ControlsBar: React.FC<ControlsBarProps> = React.memo(({
           <span className="azar-action-label">Chat</span>
         </button>
 
-        {/* 6. Dedicated Stop Call */}
+        {/* 7. Dedicated Stop / End Call */}
         {(isConnected || isSearching) && (
           <button
             className="azar-action-btn"
             onClick={onStop}
-            title="Stop Video Chat"
-            aria-label="Stop Video Chat"
+            title="End Video Chat"
+            aria-label="End Video Chat"
           >
             <div className="azar-circle-btn circle-stop">
               <Square size={16} fill="#fff" color="#fff" />
             </div>
-            <span className="azar-action-label">Stop</span>
+            <span className="azar-action-label text-red">End</span>
           </button>
         )}
 
-        {/* 7. Dedicated Match Filter Preferences */}
+        {/* 8. Dedicated Match Filter Preferences */}
         <button
           className="azar-action-btn"
           onClick={() => (onOpenPrefs ? onOpenPrefs() : onOpenSettings())}
@@ -172,7 +187,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = React.memo(({
           <span className="azar-action-label">Filter</span>
         </button>
 
-        {/* 8. AV Settings */}
+        {/* 9. AV Settings */}
         <button
           className="azar-action-btn"
           onClick={onOpenSettings}

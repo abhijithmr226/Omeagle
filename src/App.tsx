@@ -5,6 +5,8 @@ import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
 import { VideoGrid } from './components/VideoChat/VideoGrid';
 import { ControlsBar } from './components/VideoChat/ControlsBar';
+import { MatchingPanel } from './components/VideoChat/MatchingPanel';
+import { AIIcebreakersModal } from './components/VideoChat/AIIcebreakersModal';
 import { ChatBox } from './components/Chat/ChatBox';
 import { Footer } from './components/Footer';
 import { AgeGateModal } from './components/Modals/AgeGateModal';
@@ -72,6 +74,7 @@ export const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPrefsOpen, setIsPrefsOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isAIOpen, setIsAIOpen] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [searchStep, setSearchStep] = useState(0);
   const [partnerProfile, setPartnerProfile] = useState<PartnerProfile | null>(null);
@@ -545,6 +548,23 @@ export const App: React.FC = () => {
               ) : (
                 <div className="chat-layout-wrapper">
                   <div className="chat-layout-grid">
+                    {/* Desktop Left Sidebar: Matching Panel & Filters */}
+                    <div className="sidebar-column desktop-only-sidebar">
+                      <MatchingPanel
+                        settings={settings}
+                        onUpdateSettings={updateSettings}
+                        onlineCount={onlineCount}
+                        onOpenPreferences={() => setIsPrefsOpen(true)}
+                        onSelectInterest={(tag) => {
+                          const current = settings.interests || [];
+                          if (!current.includes(tag)) {
+                            updateSettings({ interests: [...current, tag] });
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* Center: Video Stage & Controls */}
                     <div className="video-column">
                       <VideoGrid
                         localStream={media.localStream}
@@ -572,6 +592,7 @@ export const App: React.FC = () => {
                         onFlipCamera={handleFlipCamera}
                         mobileChatOpen={mobileChatOpen}
                         onToggleChat={() => setMobileChatOpen(!mobileChatOpen)}
+                        onOpenAI={() => setIsAIOpen(true)}
                       />
                     </div>
 
@@ -620,6 +641,61 @@ export const App: React.FC = () => {
                       />
                     </div>
                   </div>
+
+                  {/* AI Conversation Starters & Games Modal */}
+                  <AIIcebreakersModal
+                    isOpen={isAIOpen}
+                    onClose={() => setIsAIOpen(false)}
+                    onSendToChat={(text) => {
+                      handleSendMessage(text);
+                      setIsAIOpen(false);
+                    }}
+                  />
+
+                  {/* SEO & Trust Section Below Video */}
+                  <section className="seo-content mt-8">
+                    <div className="seo-inner">
+                      <h2 className="seo-title">Why Omeagle is the #1 Ranked Stranger Video Chat</h2>
+                      <p>
+                        Omeagle Online provides peer-to-peer, encrypted WebRTC connections with zero registration. Meet strangers, practice languages, and discover authentic conversations across South Asia and worldwide.
+                      </p>
+
+                      <div className="seo-features">
+                        <div className="seo-feature">
+                          <strong>⚡ Ultra-Fast 1-Click Matching</strong>
+                          <p>Average connection time under 0.8 seconds. Hit NEXT to instantly jump to your next peer.</p>
+                        </div>
+                        <div className="seo-feature">
+                          <strong>🛡️ 24/7 AI Shield &amp; Safe Community</strong>
+                          <p>Automated client-side filters protect your screen from inappropriate content.</p>
+                        </div>
+                        <div className="seo-feature">
+                          <strong>🌐 13+ Regional Languages</strong>
+                          <p>Explore native Devanagari Hindi, Arabic RTL, Bengali, Tamil, Telugu, and Urdu hubs.</p>
+                        </div>
+                        <div className="seo-feature">
+                          <strong>🔒 100% Zero-Log Privacy</strong>
+                          <p>No phone numbers, emails, or personal tracking. Your conversations remain completely anonymous.</p>
+                        </div>
+                      </div>
+
+                      <h3 className="seo-title text-base mt-6">Frequently Asked Questions</h3>
+                      <div className="faq-accordion-group">
+                        <div className="faq-card">
+                          <h4>Is Omeagle Online completely free?</h4>
+                          <p>Yes, Omeagle is 100% free with no coins, credit card requirements, or hidden paywalls.</p>
+                        </div>
+                        <div className="faq-card">
+                          <h4>How do I filter by country or interests?</h4>
+                          <p>Use the Matching Panel on the left to select your preferred interests and country preferences.</p>
+                        </div>
+                        <div className="faq-card">
+                          <h4>Is video chat encrypted?</h4>
+                          <p>All video and audio streams travel directly peer-to-peer using modern WebRTC DTLS-SRTP encryption.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
                 </div>
               )
             } />
