@@ -1,0 +1,7 @@
+Contact: mailto:support@omeagle.online
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en, hi, ar, bn
+Canonical: https://www.omeagle.online/.well-known/security.txt
+Policy: https://www.omeagle.online/safety
+Hiring: https://www.omeagle.online/about
+Acknowledgments: https://www.omeagle.online/about

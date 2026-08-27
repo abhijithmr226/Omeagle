@@ -500,9 +500,28 @@ export const App: React.FC = () => {
             <Route path="/blog/anonymous-video-chat-guide" element={<Blog article="anonymous-video-chat-guide" />} />
             <Route path="/blog/how-to-meet-people-online-safely" element={<Blog article="how-to-meet-people-online-safely" />} />
             <Route path="/blog/10-free-random-video-chat-websites" element={<Blog article="10-free-random-video-chat-websites" />} />
-            <Route path="/blog/safe-random-chat-apps" element={<Blog article="safe-random-chat-apps" />} />
             <Route path="/blog/chat-with-strangers-free" element={<Blog article="chat-with-strangers-free" />} />
+            <Route path="/blog/anjaan-logo-se-video-call-baat-kaise-kare" element={<Blog article="anjaan-logo-se-video-call-baat-kaise-kare" />} />
+            <Route path="/blog/bina-registration-online-text-chat" element={<Blog article="bina-registration-online-text-chat" />} />
+            <Route path="/blog/online-dost-kaise-banaye-videshi-friends" element={<Blog article="online-dost-kaise-banaye-videshi-friends" />} />
+            <Route path="/blog/live-webcam-chat-strangers-free" element={<Blog article="live-webcam-chat-strangers-free" />} />
             <Route path="/safety" element={<Safety />} />
+            <Route path="/compare/:slug" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/tag/:slug" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/hi" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/bn" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/ta" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/te" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/mr" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/gu" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/kn" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/ml" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/pa" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/ur" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/ar" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/ne" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/si" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
+            <Route path="/:lang/:slug" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
             <Route path="/omegle-alternative-no-login" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
             <Route path="/random-video-chat-no-signup" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
             <Route path="/talk-to-strangers-free" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />

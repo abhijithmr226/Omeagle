@@ -1,6 +1,36 @@
 User-agent: *
 Allow: /
-Disallow: /api/
-Disallow: /server/
+Allow: /hi
+Allow: /bn
+Allow: /ta
+Allow: /te
+Allow: /mr
+Allow: /gu
+Allow: /kn
+Allow: /ml
+Allow: /pa
+Allow: /ur
+Allow: /ne
+Allow: /si
+Allow: /compare/
+Allow: /tag/
+Allow: /sitemaps/
 
-Sitemap: https://omeagle.online/sitemap.xml
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*?*session_id=
+
+# AI Search Crawlers Explicit Access (Google AI Overviews, ChatGPT Search, Perplexity, Claude)
+User-agent: Google-Extended
+Allow: /
+User-agent: GPTBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://www.omeagle.online/sitemap-index.xml
+Sitemap: https://www.omeagle.online/sitemap.xml

@@ -71,6 +71,22 @@ const ARTICLE_TITLES: Record<string, { title: string; desc: string }> = {
   'chat-with-strangers-free': {
     title: 'Chat With Strangers for Free — 1-on-1 Instant Video & Text Matching',
     desc: 'Talk to random people around the globe for free. Instant 1-on-1 webcam matching with zero subscription fees or coin requirements.'
+  },
+  'anjaan-logo-se-video-call-baat-kaise-kare': {
+    title: 'Video Baat Karo Anjaan Se — Free Stranger Video Call India (2026)',
+    desc: 'Anjaan logo se video call baat kare bina registration. Free random video chat in Hindi, live Indian stranger video call, and Omegle alternative on Omeagle Online.'
+  },
+  'bina-registration-online-text-chat': {
+    title: 'Bina Registration Online Text Chat Kare — Anonymous Stranger Chat Free',
+    desc: 'Start free anonymous text chat with strangers online in India. Bina registration, no phone number, zero log stranger chat room on Omeagle Online.'
+  },
+  'online-dost-kaise-banaye-videshi-friends': {
+    title: 'Online Dost Kaise Banaye — Videshi Dosto Se Baat Karne Ka Free App',
+    desc: 'Videshi dosto se baat kare online bina registration. Learn naye dost kaise banaye, global chat app free, and make international friends on Omeagle Online.'
+  },
+  'live-webcam-chat-strangers-free': {
+    title: 'Live Webcam Chat with Strangers Free — Real-Time Social Discovery (2026)',
+    desc: 'Experience free live webcam chat with strangers online. Fast WebRTC streaming, instant camera connection, and social discovery on Omeagle Online.'
   }
 };
 

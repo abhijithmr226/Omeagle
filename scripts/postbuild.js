@@ -1,5 +1,12 @@
 import { execSync } from 'child_process';
 
+try {
+  console.log('Generating Enterprise Multi-Sitemap Architecture and updating robots.txt...');
+  execSync('node scripts/generate-sitemaps.js', { stdio: 'inherit' });
+} catch (err) {
+  console.warn('Sitemap generation finished with notice:', err.message);
+}
+
 if (!process.env.VERCEL) {
   try {
     console.log('Running react-snap static prerender...');

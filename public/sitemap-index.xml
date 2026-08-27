@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://www.omeagle.online/sitemaps/sitemap-core.xml</loc>
+    <lastmod>2026-08-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.omeagle.online/sitemaps/sitemap-languages.xml</loc>
+    <lastmod>2026-08-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.omeagle.online/sitemaps/sitemap-comparisons.xml</loc>
+    <lastmod>2026-08-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.omeagle.online/sitemaps/sitemap-cities-india.xml</loc>
+    <lastmod>2026-08-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.omeagle.online/sitemaps/sitemap-cities-southasia.xml</loc>
+    <lastmod>2026-08-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.omeagle.online/sitemaps/sitemap-blog.xml</loc>
+    <lastmod>2026-08-27</lastmod>
+  </sitemap>
+</sitemapindex>

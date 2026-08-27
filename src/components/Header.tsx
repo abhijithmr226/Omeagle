@@ -59,6 +59,9 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="online-number">{onlineCount.toLocaleString()}</span>
             <span className="online-label">online</span>
           </div>
+          <button className="theme-toggle-btn" onClick={() => setMobileMenuOpen(true)} title="Select Language" aria-label="Select Language">
+            <span style={{ fontSize: '1.1rem' }}>🌐</span>
+          </button>
           <button className="theme-toggle-btn" onClick={onToggleTheme} title="Toggle theme" aria-label="Toggle theme">
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} className="sun-icon" />}
           </button>
@@ -79,6 +82,24 @@ export const Header: React.FC<HeaderProps> = ({
           <button className="mobile-drawer-item" onClick={() => { onSelectMode('text'); setMobileMenuOpen(false); }}>
             <MessageSquare size={20} /> <span>Text Chat</span>
           </button>
+          <div className="mobile-drawer-divider" />
+          <div style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+            REGIONAL LANGUAGES
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', padding: '0 1rem 1rem' }}>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/hi'); setMobileMenuOpen(false); }}>🇮🇳 हिन्दी</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/bn'); setMobileMenuOpen(false); }}>🇧🇩 বাংলা</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/ta'); setMobileMenuOpen(false); }}>🇮🇳 தமிழ்</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/te'); setMobileMenuOpen(false); }}>🇮🇳 తెలుగు</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/mr'); setMobileMenuOpen(false); }}>🇮🇳 मराठी</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/gu'); setMobileMenuOpen(false); }}>🇮🇳 ગુજરાતી</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/kn'); setMobileMenuOpen(false); }}>🇮🇳 ಕನ್ನಡ</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/ml'); setMobileMenuOpen(false); }}>🇮🇳 മലയാളം</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/pa'); setMobileMenuOpen(false); }}>🇮🇳 ਪੰਜਾਬੀ</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/ur'); setMobileMenuOpen(false); }}>🇵🇰 اردو</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/ne'); setMobileMenuOpen(false); }}>🇳🇵 नेपाली</button>
+            <button className="mobile-drawer-lang-btn" onClick={() => { navigate('/si'); setMobileMenuOpen(false); }}>🇱🇰 සිංහල</button>
+          </div>
           <div className="mobile-drawer-divider" />
           <button className="mobile-drawer-item" onClick={() => { navigate('/about'); setMobileMenuOpen(false); }}>
             <Info size={20} /> <span>About</span>
@@ -118,9 +139,10 @@ export const Header: React.FC<HeaderProps> = ({
         .mobile-nav-drawer { display: none; flex-direction: column; background-color: var(--bg-surface); overflow: hidden; }
         .mobile-drawer-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border-color); margin: 0.5rem auto 0; flex-shrink: 0; }
         .mobile-drawer-content { display: flex; flex-direction: column; padding: 0.5rem 0.75rem 1rem; gap: 0.15rem; }
-        .mobile-drawer-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1rem; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); border-radius: var(--radius-md); min-height: 52px; transition: all 0.15s ease; }
-        .mobile-drawer-item:active { background-color: var(--bg-surface-secondary); transform: scale(0.98); }
-        .mobile-drawer-item svg { color: var(--text-secondary); flex-shrink: 0; }
+        .mobile-drawer-item { width: 100%; display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1rem; border-radius: var(--radius-md); font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+        .mobile-drawer-item:hover, .mobile-drawer-item:active { background: var(--bg-surface-secondary); color: var(--brand-blue); }
+        .mobile-drawer-lang-btn { text-align: left; padding: 0.5rem 0.75rem; font-size: 0.82rem; font-weight: 600; background: var(--bg-surface-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color); color: var(--text-primary); }
+        .mobile-drawer-lang-btn:active { background: var(--bg-surface-secondary); border-color: var(--brand-blue); color: var(--brand-blue); }
         .mobile-drawer-divider { height: 1px; background: var(--border-color); margin: 0.5rem 0.5rem; }
 
         @media (max-width: 1024px) {

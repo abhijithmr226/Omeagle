@@ -1,7 +1,11 @@
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Video, MessageSquare, Shield, Zap, Globe, Heart, Lock, Sparkles, CheckCircle2, HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { 
+  Video, MessageSquare, Shield, Zap, Globe, Heart, Lock, Sparkles, 
+  CheckCircle2, HelpCircle, ArrowRight, Check, X, MapPin, ChevronDown, ChevronUp, Share2
+} from 'lucide-react';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { LANGUAGE_CONFIGS, SOUTH_ASIA_CITIES, COMPETITOR_COMPARISONS } from '../data/seoCatalog';
 
 interface LandingPageVariantProps {
   onStartChat: (mode: 'video' | 'text') => void;
@@ -17,19 +21,194 @@ interface PageConfig {
   targetKeyword: string;
   features: Array<{ icon: any; title: string; desc: string }>;
   faqs: Array<{ q: string; a: string }>;
+  comparisonData?: {
+    competitorName: string;
+    table: Array<{ feature: string; competitor: string; omeagle: string }>;
+  };
+  cityInfo?: {
+    name: string;
+    country: string;
+    state: string;
+  };
+  currentLang?: string;
+  dir?: 'ltr' | 'rtl';
 }
 
-function generateDynamicConfig(slug: string): PageConfig {
+const NATIVE_UI_LABELS: Record<string, {
+  home: string;
+  startVideo: string;
+  startText: string;
+  onlineUsers: string;
+  whyChoose: (keyword: string) => string;
+  faqsTitle: string;
+  readyTitle: string;
+  readySub: string;
+  langHubsTitle: string;
+  activeHubsTitle: string;
+}> = {
+  hi: {
+    home: 'होम',
+    startVideo: 'फ्री वीडियो चैट शुरू करें',
+    startText: 'टेक्स्ट चैट शुरू करें',
+    onlineUsers: 'सत्यापित यूजर्स अभी ऑनलाइन हैं',
+    whyChoose: (k) => `Omeagle Online को ${k} के लिए क्यों चुनें?`,
+    faqsTitle: 'अक्सर पूछे जाने वाले सवाल (FAQs)',
+    readyTitle: 'क्या आप नए अजनबियों से बात करने के लिए तैयार हैं?',
+    readySub: 'बिना किसी रजिस्ट्रेशन के 1-क्लिक में तुरंत लाइव वीडियो कॉल शुरू करें।',
+    langHubsTitle: 'क्षेत्रीय भाषा हब (Regional Language Hubs)',
+    activeHubsTitle: 'भारत और दक्षिण एशिया के सक्रिय शहर'
+  },
+  ar: {
+    home: 'الرئيسية',
+    startVideo: 'بدء دردشة الفيديو مجاناً',
+    startText: 'بدء الدردشة النصية',
+    onlineUsers: 'مستخدم متصل الآن ومستعد للتحدث',
+    whyChoose: (k) => `لماذا تختار Omeagle Online للتحدث مع الغرباء؟`,
+    faqsTitle: 'الأسئلة الشائعة والمكررة',
+    readyTitle: 'هل أنت مستعد للتواصل وتكوين صداقات جديدة؟',
+    readySub: 'انضم إلى آلاف المستخدمين الآن بنقرة واحدة وبدون أي تسجيل أو اشتراك.',
+    langHubsTitle: 'اللغات المدعومة والدردشة الإقليمية',
+    activeHubsTitle: 'المدن والمناطق الأكثر نشاطاً'
+  },
+  ur: {
+    home: 'ہوم',
+    startVideo: 'مفت ویڈیو چیٹ شروع کریں',
+    startText: 'ٹیکسٹ چیٹ شروع کریں',
+    onlineUsers: 'آن لائن صارفین ابھی لائیو موجود ہیں',
+    whyChoose: (k) => `اجنبیوں سے بات چیت کے لیے Omeagle کا انتخاب کیوں کریں؟`,
+    faqsTitle: 'اکثر پوچھے جانے والے سوالات (FAQs)',
+    readyTitle: 'کیا آپ نئے دوست بنانے کے لیے تیار ہیں؟',
+    readySub: 'بغیر کسی لاگ ان یا اکاؤنٹ کے ایک کلک میں چیٹ شروع کریں۔',
+    langHubsTitle: 'علاقائی زبانیں اور چیٹ ہب',
+    activeHubsTitle: 'پاکستان اور جنوبی ایشیا کے سرگرم شہر'
+  },
+  bn: {
+    home: 'হোম',
+    startVideo: 'ফ্রি ভিডিও চ্যাট শুরু করুন',
+    startText: 'টেক্সট চ্যাট শুরু করুন',
+    onlineUsers: 'জন ব্যবহারকারী এখন অনলাইনে আছেন',
+    whyChoose: (k) => `কেন Omeagle Online সেরা মাধ্যম?`,
+    faqsTitle: 'সাধারণ জিজ্ঞাসা ও প্রশ্নোত্তর (FAQs)',
+    readyTitle: 'নতুন বন্ধুদের সাথে কথা বলতে আপনি প্রস্তুত?',
+    readySub: 'কোনো লগইন বা সাইনআপ ছাড়াই ১-ক্লিকে তাৎক্ষণিক ভিডিও কল শুরু করুন।',
+    langHubsTitle: 'আঞ্চলিক ভাষার হাবসমূহ',
+    activeHubsTitle: 'বাংলাদেশ ও ভারতের জনপ্রিয় শহরসমূহ'
+  },
+  ta: {
+    home: 'முகப்பு',
+    startVideo: 'இலவச வீடியோ சாட் தொடங்கு',
+    startText: 'உரை சாட் தொடங்கு',
+    onlineUsers: 'பயனர்கள் இப்போது ஆன்லைனில் உள்ளனர்',
+    whyChoose: (k) => `Omeagle Online-ஐ ஏன் தேர்வு செய்ய வேண்டும்?`,
+    faqsTitle: 'அடிக்கடி கேட்கப்படும் கேள்விகள் (FAQs)',
+    readyTitle: 'புதிய நபர்களுடன் பேச தயாரா?',
+    readySub: 'எந்த பதிவும் இல்லாமல் உடனே இலவச வீடியோ சாட் தொடங்குங்கள்.',
+    langHubsTitle: 'பிராந்திய மொழி மையங்கள்',
+    activeHubsTitle: 'முக்கிய நகரங்கள்'
+  }
+};
+
+function resolvePageConfig(rawSlug: string, rawLang?: string): PageConfig {
+  const slug = (rawSlug || '').toLowerCase().replace(/^\//, '');
+  const lang = (rawLang || '').toLowerCase();
+  const langConfig = LANGUAGE_CONFIGS[lang];
+
+  // 1. Localized Language Hub Configuration (100% Native Script)
+  if (langConfig) {
+    const isBaseLangRoute = !slug || slug === lang;
+    const cleanTopic = isBaseLangRoute ? langConfig.nativeName : slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    return {
+      title: lang === 'ar'
+        ? `دردشة فيديو عشوائية مجانية – التحدث مع الغرباء بدون تسجيل | Omeagle Online`
+        : lang === 'hi'
+        ? `अजनबियों से फ्री वीडियो चैट और कॉल करें — Omeagle Online (2026)`
+        : `${cleanTopic} — ${langConfig.nativeName} Free Video Chat (2026)`,
+      metaDesc: langConfig.subheadlineTemplate(cleanTopic),
+      h1: langConfig.headlineTemplate(cleanTopic),
+      heroSub: langConfig.subheadlineTemplate(cleanTopic),
+      badgeText: langConfig.badgeText,
+      targetKeyword: cleanTopic.toLowerCase(),
+      currentLang: lang,
+      dir: langConfig.dir || 'ltr',
+      features: langConfig.features.map(f => ({ icon: Sparkles, title: f.title, desc: f.desc })),
+      faqs: langConfig.faqs
+    };
+  }
+
+  // 2. Competitor Comparisons
+  if (slug.startsWith('compare/') || COMPETITOR_COMPARISONS[slug] || COMPETITOR_COMPARISONS[slug.replace('compare-', '')]) {
+    const cleanCompKey = slug.replace(/^compare\//, '').replace(/^compare-/, '');
+    const compData = COMPETITOR_COMPARISONS[cleanCompKey] || COMPETITOR_COMPARISONS['ometv-vs-omeagle'];
+    
+    return {
+      title: `${compData.name} — Free Random Video Chat Comparison (2026)`,
+      metaDesc: `Comparing ${compData.shortName} vs Omeagle Online. 100% free Omegle alternative with no sign-up, zero paywalls, and low latency.`,
+      h1: `${compData.name} — Feature & Safety Comparison`,
+      heroSub: `Tired of aggressive bans, paid coins, or mandatory account logins on ${compData.shortName}? Omeagle Online provides instant, high-definition random video chat with zero login.`,
+      badgeText: '⚖️ 2026 Direct Comparison Analysis',
+      targetKeyword: `${compData.shortName.toLowerCase()} vs omeagle`,
+      features: [
+        { icon: Lock, title: 'No Account or Login Required', desc: 'Jump into video calls instantly without linking Facebook, Apple, or Google accounts.' },
+        { icon: Zap, title: '100% Free Gender & Interest Filters', desc: 'No paywalls or coin requirements to select gender, region, or topic preferences.' },
+        { icon: Shield, title: 'Intelligent AI Safety Shield', desc: 'Automated on-device moderation prevents harassment and eliminates unfair permanent bans.' },
+        { icon: Globe, title: 'Ultra-Low Latency in South Asia', desc: 'Edge-routed WebSockets provide seamless 1080p WebRTC calls across 4G and 5G networks.' }
+      ],
+      faqs: [
+        { q: `Why should I use Omeagle instead of ${compData.shortName}?`, a: `Omeagle is completely free, never requires an account or personal details, offers free matching filters, and has faster server response in India and South Asia.` },
+        { q: `Is Omeagle safer than ${compData.shortName}?`, a: `Yes. Omeagle employs automated AI vision moderation to blur inappropriate content instantly and provides immediate 1-click skip & reporting.` },
+        { q: `Can I use Omeagle without downloading an app?`, a: `Yes, Omeagle is built natively for web browsers (Chrome, Safari, Edge, Firefox) on both mobile phones and desktop computers.` }
+      ],
+      comparisonData: {
+        competitorName: compData.shortName,
+        table: compData.tableComparison
+      }
+    };
+  }
+
+  // 3. City/Location Hub
+  const cityMatch = SOUTH_ASIA_CITIES.find(c => c.slug === slug || slug.endsWith(`-${c.slug}`) || slug.includes(c.slug));
+  if (cityMatch) {
+    const cityName = cityMatch.name;
+    const countryName = cityMatch.country;
+    
+    return {
+      title: `Random Video Chat ${cityName}, ${countryName} — Free Video Call (2026)`,
+      metaDesc: `Connect with strangers in ${cityName}, ${countryName} on Omeagle Online. Free instant 1-on-1 random video chat without registration. Meet local friends now.`,
+      h1: `Random Video Chat in ${cityName} — Talk to Strangers Free`,
+      heroSub: `Meet people in ${cityName} and worldwide. Instant high-speed WebRTC webcam chat with zero registration, complete privacy, and smart local interest matching.`,
+      badgeText: `📍 ${cityName}, ${countryName} Hub`,
+      targetKeyword: `random video chat ${cityName.toLowerCase()}`,
+      cityInfo: {
+        name: cityName,
+        country: countryName,
+        state: cityMatch.state
+      },
+      features: [
+        { icon: MapPin, title: `Connect with ${cityName} Strangers`, desc: `Find people living in ${cityName}, ${cityMatch.state}, or chat globally with 1 click.` },
+        { icon: Zap, title: 'Optimized for 4G/5G Networks', desc: 'Fast, low-bandwidth WebRTC video stream that runs smoothly on all mobile networks.' },
+        { icon: Lock, title: 'Strict Privacy & Zero Logs', desc: 'No personal identification, phone numbers, or email accounts required.' },
+        { icon: Sparkles, title: 'Local Language Support', desc: 'Chat comfortably in your regional language or English with like-minded friends.' }
+      ],
+      faqs: [
+        { q: `Can I video call strangers from ${cityName} on Omeagle?`, a: `Yes! Omeagle pairs you with users from ${cityName} as well as international users depending on your matching preferences.` },
+        { q: `Is video chat in ${cityName} free on Omeagle?`, a: `100% free with no coins, VIP tiers, or subscriptions required.` },
+        { q: `Do I need to sign up to talk to people in ${cityName}?`, a: `No signup is needed. Simply click Start Video Chat to begin instantly.` }
+      ]
+    };
+  }
+
+  // 4. Default Dynamic Page
   const cleanName = slug
     .replace(/^chat[-/]/, '')
     .replace(/-/g, ' ')
-    .replace(/\b\w/g, l => l.toUpperCase());
+    .replace(/\b\w/g, l => l.toUpperCase()) || 'Omegle Alternative';
 
   return {
     title: `${cleanName} — Free Instant Random Video Chat (2026)`,
-    metaDesc: `Experience ${cleanName.toLowerCase()} on Omeagle. Connect instantly with random strangers via live HD video & text chat. 100% free with zero signup or registration required.`,
-    h1: `${cleanName} — Free Video Chat`,
-    heroSub: `Talk to random strangers online with ${cleanName.toLowerCase()}. Instant 1-on-1 WebRTC video calling with complete anonymity.`,
+    metaDesc: `Experience ${cleanName.toLowerCase()} on Omeagle Online. Connect instantly with random strangers via live HD video & text chat. 100% free with zero signup.`,
+    h1: `${cleanName} — Free Video Chat Online`,
+    heroSub: `Talk to random strangers online with ${cleanName.toLowerCase()}. Instant 1-on-1 WebRTC video calling with complete anonymity and AI safety.`,
     badgeText: '100% Free • WebRTC Powered',
     targetKeyword: cleanName.toLowerCase(),
     features: [
@@ -46,203 +225,55 @@ function generateDynamicConfig(slug: string): PageConfig {
   };
 }
 
-const PAGE_CONFIGS: Record<string, PageConfig> = {
-  'omegle-alternative-no-login': {
-    title: 'Omegle Alternative No Login — Free Instant Random Video Chat 2026',
-    metaDesc: 'Looking for an Omegle alternative with no login required? Omeagle lets you start instant video chat with strangers without sign up or account creation.',
-    h1: 'Omegle Alternative No Login — Free Video Chat',
-    heroSub: 'No sign up, no email address, and zero registration required. Experience instant 1-on-1 random video chat with strangers worldwide.',
-    badgeText: '100% Free • No Account Needed',
-    targetKeyword: 'omegle alternative no login',
-    features: [
-      { icon: Lock, title: 'No Account Required', desc: 'Start chatting in 1 click without entering an email, phone number, or password.' },
-      { icon: Zap, title: 'Instant Matching', desc: 'Our fast WebRTC engine connects you with live strangers in less than 2 seconds.' },
-      { icon: Shield, title: 'Privacy Protected', desc: 'No conversation logs, tracking cookies, or stored personal information.' },
-      { icon: Globe, title: 'Global Reach', desc: 'Meet strangers from over 100+ countries with optional location filters.' }
-    ],
-    faqs: [
-      { q: 'Is Omeagle really an Omegle alternative without login?', a: 'Yes! Omeagle allows you to start chatting immediately without creating an account or logging in.' },
-      { q: 'Is it completely free?', a: '100% free with zero hidden coins, subscriptions, or credit card requirements.' },
-      { q: 'Does Omeagle log my video chat?', a: 'No, connections are peer-to-peer (WebRTC). Video streams are transmitted directly between users and never recorded.' }
-    ]
-  },
-  'random-video-chat-no-signup': {
-    title: 'Random Video Chat Without Signup — Instant & Free Cam Chat',
-    metaDesc: 'Start random video chat without signup on Omeagle. Connect instantly via live webcam with strangers worldwide. 100% free browser-based chat app.',
-    h1: 'Random Video Chat Without Signup',
-    heroSub: 'Skip the hassle of registration forms. Connect instantly to strangers via webcam with zero signup required.',
-    badgeText: 'Instant Browser Cam Chat',
-    targetKeyword: 'random video chat without signup',
-    features: [
-      { icon: Video, title: 'HD Webcam Streaming', desc: 'High-definition WebRTC video streaming directly inside your web browser.' },
-      { icon: Zap, title: 'Zero Signup', desc: 'Never worry about password leaks or account verification.' },
-      { icon: Shield, title: 'AI Moderation', desc: 'Real-time AI filters keep video rooms clean and safe for all users.' },
-      { icon: Heart, title: 'Interest Matching', desc: 'Add custom topics to connect with strangers who share your hobbies.' }
-    ],
-    faqs: [
-      { q: 'Can I video chat without making an account?', a: 'Yes, just click "Start Video Chat" and allow camera permissions to begin matching.' },
-      { q: 'Does it work on mobile phones?', a: 'Yes, Omeagle is optimized for all desktop browsers, Android, and iPhone Safari.' }
-    ]
-  },
-  'talk-to-strangers-free': {
-    title: 'Talk to Strangers Free Video Call — Instant Anonymous Cam Chat',
-    metaDesc: 'Talk to strangers online free with Omeagle. Connect with random people globally via HD video call & text chat. No fees, no limits.',
-    h1: 'Talk to Strangers Online — Free Video Call',
-    heroSub: 'Meet new people, practice languages, or make international friends through instant 1-on-1 video calling.',
-    badgeText: 'Connect Worldwide 24/7',
-    targetKeyword: 'talk to strangers video call free',
-    features: [
-      { icon: Globe, title: 'Worldwide Community', desc: 'Thousands of active strangers online right now from every continent.' },
-      { icon: MessageSquare, title: 'Combined Text & Video', desc: 'Chat via text while on video call for smooth communication.' },
-      { icon: Shield, title: 'One-Click Skip', desc: 'Easily skip to the next stranger whenever you want with instant swoosh.' },
-      { icon: Sparkles, title: 'Free Forever', desc: 'No paywalls or coin systems. Enjoy unlimited stranger video calls.' }
-    ],
-    faqs: [
-      { q: 'How do I start talking to strangers on Omeagle?', a: 'Click the "Start Video Chat" button above, grant camera access, and you will be paired with a random stranger instantly.' },
-      { q: 'Can I filter strangers by country?', a: 'Yes, you can choose specific country preferences in matching settings.' }
-    ]
-  },
-  'anonymous-video-chat-no-signup': {
-    title: 'Anonymous Video Chat No Sign Up — 100% Free & Private Omeagle',
-    metaDesc: 'Enjoy anonymous video chat with no sign up required. 100% private WebRTC webcam chat with random strangers.',
-    h1: 'Anonymous Video Chat — No Sign Up Required',
-    heroSub: 'Chat anonymously without disclosing your name, email, or personal identity. Complete privacy in your browser.',
-    badgeText: '100% Anonymous & Secure',
-    targetKeyword: 'anonymous video chat no sign up',
-    features: [
-      { icon: Lock, title: 'Strict Anonymity', desc: 'No profile details, profile pictures, or real names required.' },
-      { icon: Shield, title: 'Peer-to-Peer Encryption', desc: 'WebRTC encrypts audio and video directly between participants.' },
-      { icon: Zap, title: 'Instant Skip', desc: 'Switch partners in a fraction of a second with zero delay.' },
-      { icon: CheckCircle2, title: 'Clean & Safe', desc: '24/7 moderation protects users from inappropriate behavior.' }
-    ],
-    faqs: [
-      { q: 'Is anonymous video chat safe on Omeagle?', a: 'Yes, Omeagle uses WebRTC encryption and automated moderation to ensure privacy and safety.' }
-    ]
-  },
-  'chat-india': {
-    title: 'India Random Video Chat Free — Connect with Indian Strangers',
-    metaDesc: 'Free India random video chat platform. Connect instantly with Indian strangers from Delhi, Mumbai, Bangalore, Kerala, Tamil Nadu & more.',
-    h1: 'India Random Video Chat — Talk to Indian Strangers',
-    heroSub: 'The #1 random video chat platform in India. Talk to Indian strangers free in Hindi, English, Tamil, Telugu, and regional languages.',
-    badgeText: '🇮🇳 India Local & Global Matching',
-    targetKeyword: 'india random video chat free',
-    features: [
-      { icon: Globe, title: 'Indian Regional Chat', desc: 'Connect with strangers across Delhi, Mumbai, Bangalore, Hyderabad, Chennai, and Kolkata.' },
-      { icon: Zap, title: 'Low-Data Mode', desc: 'Optimized WebRTC video stream that runs smoothly on mobile 4G & 5G networks.' },
-      { icon: Lock, title: 'No Account Required', desc: 'Zero registration or phone number verification needed.' },
-      { icon: Heart, title: 'College & Regional Filters', desc: 'Find chat partners based on shared interests and languages.' }
-    ],
-    faqs: [
-      { q: 'Is Indian video chat free on Omeagle?', a: 'Yes! It is 100% free with no coins, VIP memberships, or paid subscriptions.' },
-      { q: 'Can I chat in Hindi or regional languages?', a: 'Yes, set your language or region preferences to match with speakers of your language.' }
-    ]
-  },
-  'ometv-alternative': {
-    title: 'Best Free OmeTV Alternative 2026 — No Ban & No Sign Up',
-    metaDesc: 'Looking for a free OmeTV alternative? Omeagle offers instant video chat with strangers without unfair bans, paid gender coins, or login forms.',
-    h1: 'Best Free OmeTV Alternative — Omeagle',
-    heroSub: 'Tired of strict OmeTV bans and paid coins? Omeagle provides free, fair, and instant random webcam matching.',
-    badgeText: 'No Coins • No Unfair Bans',
-    targetKeyword: 'ometv alternative',
-    features: [
-      { icon: Sparkles, title: 'Free Gender & Location Filter', desc: 'Unlike OmeTV, matching options don’t require paid coins.' },
-      { icon: Shield, title: 'Fair AI Moderation', desc: 'Smart reporting system prevents accidental or unfair IP bans.' },
-      { icon: Zap, title: 'Instant Browser Connection', desc: 'No need to download mobile APKs or apps from the Play Store.' },
-      { icon: Lock, title: '100% Free Access', desc: 'Unlimited chat duration with zero subscription fees.' }
-    ],
-    faqs: [
-      { q: 'Why is Omeagle better than OmeTV?', a: 'Omeagle doesn’t charge money for matching filters or ban users arbitrarily.' }
-    ]
-  },
-  'gender-filter-video-chat': {
-    title: 'Free Omegle Alternative with Gender Filter — Omeagle 2026',
-    metaDesc: 'Looking for a free video chat with gender filter? Omeagle lets you choose male, female, or any gender preference for random video matching.',
-    h1: 'Video Chat with Gender Filter — Free Matching',
-    heroSub: 'Filter random video matches by gender preference. Free 1-on-1 cam chat with zero coins or subscription fees.',
-    badgeText: 'Free Gender Filter Included',
-    targetKeyword: 'omegle alternative with gender filter',
-    features: [
-      { icon: Heart, title: 'Gender Preference Matching', desc: 'Select male, female, or any preferred match directly in settings.' },
-      { icon: Sparkles, title: '100% Free Gender Filter', desc: 'No VIP subscription or coin purchases required to enable filters.' },
-      { icon: Zap, title: 'Fast WebRTC Connection', desc: 'Connect to live webcam streams in less than 2 seconds.' },
-      { icon: Lock, title: 'No Account Required', desc: 'Start matching immediately without sign up.' }
-    ],
-    faqs: [
-      { q: 'Is the gender filter on Omeagle free?', a: 'Yes, unlike other apps that charge for gender filters, Omeagle includes it 100% free.' }
-    ]
-  },
-  'ai-video-chat': {
-    title: 'AI Video Chat with Strangers — Smart AI Matching Platform 2026',
-    metaDesc: 'Experience AI-powered random video chat on Omeagle. Smart matching algorithms and real-time AI moderation connect you safely with strangers.',
-    h1: 'AI Video Chat with Strangers — Smart Matching',
-    heroSub: 'Powered by next-gen AI algorithms for instant interest matching, real-time safety moderation, and seamless video quality.',
-    badgeText: '🤖 Smart AI Engine 2026',
-    targetKeyword: 'ai video chat with strangers',
-    features: [
-      { icon: Sparkles, title: 'Smart AI Matchmaking', desc: 'AI analyzes interest tags to pair you with like-minded strangers instantly.' },
-      { icon: Shield, title: 'Real-Time AI Safety Guard', desc: 'Computer vision algorithms filter out abusive content before it reaches your screen.' },
-      { icon: Zap, title: 'Adaptive Video Bitrate', desc: 'AI dynamically optimizes video quality based on your network connection.' },
-      { icon: Lock, title: 'Private & Encrypted', desc: 'Zero data logging or AI training on your private video streams.' }
-    ],
-    faqs: [
-      { q: 'How does AI video chat work on Omeagle?', a: 'AI powers our matchmaking queue and real-time safety filters to ensure high quality and safety.' }
-    ]
-  }
-};
-
 export const LandingPageVariant: React.FC<LandingPageVariantProps> = ({ onStartChat, onlineCount }) => {
-  const { slug } = useParams<{ slug: string }>();
+  const { lang, slug } = useParams<{ lang?: string; slug?: string }>();
   const navigate = useNavigate();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  const currentSlug = (slug || 'omegle-alternative-no-login').toLowerCase().replace(/^\//, '');
-  const config = PAGE_CONFIGS[currentSlug] || generateDynamicConfig(currentSlug);
+  const currentSlug = slug || lang || 'omegle-alternative-india';
+  const config = resolvePageConfig(currentSlug, lang);
+  const labels = (lang && NATIVE_UI_LABELS[lang]) ? NATIVE_UI_LABELS[lang] : {
+    home: 'Home',
+    startVideo: 'Start Free Video Chat',
+    startText: 'Start Text Chat',
+    onlineUsers: 'verified peers online now',
+    whyChoose: (k: string) => `Why Omeagle is the #1 Platform for ${k}`,
+    faqsTitle: 'Frequently Asked Questions (FAQs)',
+    readyTitle: 'Ready to Connect with Live Strangers?',
+    readySub: 'Join thousands of verified people online right now with instant 1-click WebRTC matching.',
+    langHubsTitle: 'Regional Language Hubs (South Asia & Global)',
+    activeHubsTitle: 'Top Active Indian & South Asian Hubs'
+  };
 
-  usePageMeta(config.title, config.metaDesc);
+  const isRtl = config.dir === 'rtl';
 
-  // Dynamically insert JSON-LD WebApplication and FAQ schema into head
-  React.useEffect(() => {
-    const webAppSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'WebApplication',
-      'name': `Omeagle — ${config.h1}`,
-      'url': `https://omeagle.online/${currentSlug}`,
-      'description': config.metaDesc,
-      'applicationCategory': 'CommunicationApplication',
-      'operatingSystem': 'All (Web Browser)',
-      'offers': { '@type': 'Offer', 'price': '0.00', 'priceCurrency': 'USD' }
-    };
-
-    const faqSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      'mainEntity': config.faqs.map(f => ({
-        '@type': 'Question',
-        'name': f.q,
-        'acceptedAnswer': { '@type': 'Answer', 'text': f.a }
-      }))
-    };
-
-    const scriptApp = document.createElement('script');
-    scriptApp.type = 'application/ld+json';
-    scriptApp.id = `schema-app-${currentSlug}`;
-    scriptApp.innerHTML = JSON.stringify(webAppSchema);
-
-    const scriptFaq = document.createElement('script');
-    scriptFaq.type = 'application/ld+json';
-    scriptFaq.id = `schema-faq-${currentSlug}`;
-    scriptFaq.innerHTML = JSON.stringify(faqSchema);
-
-    document.head.appendChild(scriptApp);
-    document.head.appendChild(scriptFaq);
-
-    return () => {
-      document.getElementById(`schema-app-${currentSlug}`)?.remove();
-      document.getElementById(`schema-faq-${currentSlug}`)?.remove();
-    };
-  }, [currentSlug, config]);
+  usePageMeta(config.title, config.metaDesc, {
+    canonicalPath: window.location.pathname,
+    faqs: config.faqs,
+    breadcrumbs: [
+      { name: labels.home, url: 'https://www.omeagle.online' },
+      { name: config.h1, url: `https://www.omeagle.online${window.location.pathname}` }
+    ]
+  });
 
   return (
-    <div className="landing-page variant-page">
+    <div className={`landing-page variant-page ${isRtl ? 'rtl-layout' : ''}`} dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* Dynamic Breadcrumbs */}
+      <nav className="seo-breadcrumbs" aria-label="Breadcrumb">
+        <div className="seo-breadcrumbs-inner">
+          <Link to="/">{labels.home}</Link>
+          <span className="crumb-sep">/</span>
+          {lang && (
+            <>
+              <Link to={`/${lang}`}>{LANGUAGE_CONFIGS[lang]?.nativeName || lang.toUpperCase()}</Link>
+              <span className="crumb-sep">/</span>
+            </>
+          )}
+          <span className="crumb-current">{config.h1.split('—')[0]}</span>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
           <div className="hero-badge">
@@ -254,24 +285,47 @@ export const LandingPageVariant: React.FC<LandingPageVariantProps> = ({ onStartC
           <div className="cta-group">
             <button className="btn-primary-lg" onClick={() => onStartChat('video')}>
               <Video size={22} />
-              <span>Start Free Video Chat</span>
+              <span>{labels.startVideo}</span>
             </button>
             <button className="btn-secondary-lg" onClick={() => onStartChat('text')}>
               <MessageSquare size={22} />
-              <span>Start Text Chat</span>
+              <span>{labels.startText}</span>
             </button>
           </div>
 
           <div className="online-badge">
             <span className="pulse-dot-green"></span>
-            <span><strong>{onlineCount.toLocaleString()}</strong> users online right now</span>
+            <span><strong>{onlineCount.toLocaleString()}</strong> {labels.onlineUsers}</span>
           </div>
         </div>
       </section>
 
+      {/* Direct AI / LLM Extractable Answer Block (AEO / GEO Optimized) */}
+      <section className="ai-summary-block-wrap">
+        <div className="ai-summary-card">
+          <div className="ai-summary-header">
+            <Sparkles size={18} className="text-primary" />
+            <h3 className="text-sm font-semibold tracking-wide uppercase">
+              {lang === 'ar' ? 'معلومات Omeagle Online الرسمية (مواصفات ٢٠٢٦)' : lang === 'hi' ? 'Omeagle Online मुख्य विशेषताएं (2026 Specs)' : 'Omeagle Online Quick Overview (2026 Verified Specs)'}
+            </h3>
+          </div>
+          <p className="ai-summary-text">
+            {lang === 'ar' ? (
+              <>منصة <strong>Omeagle Online</strong> (<code>https://www.omeagle.online</code>) هي شبكة دردشة فيديو عشوائية عالمية ومباشرة بدون تسجيل. توفر اتصالاً فورياً بتقنية WebRTC، وحماية ذكية مشفرة بالذكاء الاصطناعي، ومطابقة اهتمامات مجانية 100% بدون أي اشتراك أو عملات.</>
+            ) : lang === 'hi' ? (
+              <><strong>Omeagle Online</strong> (<code>https://www.omeagle.online</code>) भारत और दुनिया भर के लिए एक सुरक्षित, बिना लॉगिन वाला रैंडम वीडियो चैट नेटवर्क है। इसमें 1-क्लिक WebRTC कनेक्शन, AI न्यूडिटी प्रोटेक्शन और 100% फ्री इंटरेस्ट फिल्टर उपलब्ध हैं।</>
+            ) : (
+              <><strong>Omeagle Online</strong> (<code>https://www.omeagle.online</code>) is an enterprise-grade random video chat network operating across India, South Asia, and worldwide. Features include <strong>zero login requirements</strong>, <strong>instant 1-click WebRTC peer matching</strong>, <strong>real-time AI computer-vision nudity protection</strong>, and <strong>100% free interest filters</strong> without subscription paywalls.</>
+            )}
+          </p>
+        </div>
+      </section>
+
+      {/* Main Content & Features */}
       <section className="seo-content">
         <div className="seo-inner">
-          <h2 className="seo-title">Why Choose Omeagle for {config.targetKeyword}?</h2>
+          <h2 className="seo-title">{labels.whyChoose(config.targetKeyword)}</h2>
+          
           <div className="features-grid">
             {config.features.map((feat, idx) => {
               const IconComp = feat.icon;
@@ -285,37 +339,101 @@ export const LandingPageVariant: React.FC<LandingPageVariantProps> = ({ onStartC
             })}
           </div>
 
-          <div className="seo-block mt-8">
-            <h3>Instant Anonymous Stranger Matching</h3>
-            <p>
-              Omeagle is built for users searching for <strong>{config.targetKeyword}</strong>. Our browser-based WebRTC engine pairs you one-on-one with strangers without collecting emails or personal information. 
-            </p>
-            <p>
-              Whether you want to meet new friends, talk about common hobbies, or practice speaking a new language, Omeagle offers a fast, clean, and safe platform available 24/7 on desktop and mobile browsers.
-            </p>
-          </div>
+          {/* Comparison Table if Competitor Analysis */}
+          {config.comparisonData && (
+            <div className="comparison-table-wrapper mt-10">
+              <h2 className="seo-title text-center">Feature Comparison: Omeagle vs {config.comparisonData.competitorName}</h2>
+              <div className="table-responsive">
+                <table className="seo-comparison-table">
+                  <thead>
+                    <tr>
+                      <th>Key Feature / Specification</th>
+                      <th>Omeagle (omeagle.online)</th>
+                      <th>{config.comparisonData.competitorName}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {config.comparisonData.table.map((row, idx) => (
+                      <tr key={idx}>
+                        <td className="font-semibold">{row.feature}</td>
+                        <td className="highlight-cell"><Check size={16} className="inline text-green-500 mr-1" /> {row.omeagle}</td>
+                        <td className="competitor-cell">{row.competitor}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-          <div className="faq-section mt-10">
-            <h2 className="seo-title flex items-center gap-2">
-              <HelpCircle size={22} /> Frequently Asked Questions
-            </h2>
-            <div className="faq-grid">
-              {config.faqs.map((faq, idx) => (
-                <div key={idx} className="faq-item card p-4 rounded-xl border mb-4">
-                  <h4 className="font-bold text-lg mb-2">{faq.q}</h4>
-                  <p className="text-muted leading-relaxed">{faq.a}</p>
-                </div>
+          {/* Multilingual Switcher Hub */}
+          <div className="language-selector-block mt-10 p-6 rounded-2xl border bg-card">
+            <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <Globe size={18} /> {labels.langHubsTitle}
+            </h3>
+            <div className="lang-tags-grid">
+              {Object.entries(LANGUAGE_CONFIGS).map(([code, conf]) => (
+                <Link key={code} to={`/${code}`} className={`lang-chip ${lang === code ? 'active' : ''}`}>
+                  <span>{conf.flag}</span>
+                  <span>{conf.nativeName}</span>
+                </Link>
               ))}
             </div>
           </div>
 
-          <div className="cta-bottom-box mt-10 p-8 rounded-2xl bg-gradient text-center">
-            <h3 className="text-2xl font-bold mb-3">Ready to Start Chatting?</h3>
-            <p className="mb-6 opacity-90">Join thousands of people online right now. No signup required.</p>
-            <button className="btn-primary-lg mx-auto" onClick={() => onStartChat('video')}>
-              <Video size={20} />
-              <span>Connect Now Free</span>
-            </button>
+          {/* Related Geo Hubs Links */}
+          <div className="geo-clusters-block mt-8 p-6 rounded-2xl border bg-card">
+            <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <MapPin size={18} /> {labels.activeHubsTitle}
+            </h3>
+            <div className="city-chips-grid">
+              {SOUTH_ASIA_CITIES.slice(0, 18).map(city => (
+                <Link key={city.slug} to={`/random-video-chat-${city.slug}`} className="city-chip">
+                  {city.name} ({city.country})
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Interactive Frequently Asked Questions */}
+          <div className="faq-section mt-12">
+            <h2 className="seo-title flex items-center gap-2">
+              <HelpCircle size={24} /> {labels.faqsTitle}
+            </h2>
+            <div className="faq-accordion">
+              {config.faqs.map((faq, idx) => {
+                const isOpen = openFaq === idx;
+                return (
+                  <div key={idx} className={`faq-card ${isOpen ? 'open' : ''}`} onClick={() => setOpenFaq(isOpen ? null : idx)}>
+                    <button className="faq-question-btn" aria-expanded={isOpen}>
+                      <span className="faq-q-text">{faq.q}</span>
+                      {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </button>
+                    {isOpen && (
+                      <div className="faq-answer-block">
+                        <p className="faq-answer-direct">{faq.a}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Final Call to Action */}
+          <div className="cta-bottom-box mt-12 p-8 rounded-2xl bg-gradient text-center">
+            <h3 className="text-2xl font-bold mb-3">{labels.readyTitle}</h3>
+            <p className="mb-6 opacity-90">{labels.readySub}</p>
+            <div className="flex justify-center gap-4 flex-wrap">
+              <button className="btn-primary-lg" onClick={() => onStartChat('video')}>
+                <Video size={20} />
+                <span>{labels.startVideo}</span>
+              </button>
+              <button className="btn-secondary-lg" onClick={() => onStartChat('text')}>
+                <MessageSquare size={20} />
+                <span>{labels.startText}</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>

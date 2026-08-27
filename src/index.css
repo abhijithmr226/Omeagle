@@ -447,6 +447,170 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   transform: scale(0.95);
 }
 
+/* ── Programmatic SEO & Multilingual Aesthetics ─────────────────── */
+.seo-breadcrumbs {
+  max-width: 1100px;
+  margin: 0 auto 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.seo-breadcrumbs-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.seo-breadcrumbs a {
+  color: var(--brand-blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+.seo-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+.crumb-sep {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+.crumb-current {
+  color: var(--text-primary);
+  font-weight: 600;
+}
 
+/* AI Summary Card (GEO / AEO Optimized) */
+.ai-summary-block-wrap {
+  max-width: 900px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+}
+.ai-summary-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--brand-blue);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+.ai-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.ai-summary-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
 
+/* SEO Comparison Table */
+.comparison-table-wrapper {
+  margin-top: 2.5rem;
+  width: 100%;
+}
+.table-responsive {
+  overflow-x: auto;
+  margin-top: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+.seo-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  background: var(--bg-surface);
+  font-size: 0.92rem;
+}
+.seo-comparison-table th, .seo-comparison-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.seo-comparison-table th {
+  background: var(--bg-surface-secondary);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.seo-comparison-table .highlight-cell {
+  background: rgba(16, 185, 129, 0.06);
+  font-weight: 600;
+  color: var(--status-green);
+}
+.seo-comparison-table .competitor-cell {
+  color: var(--text-secondary);
+}
 
+/* Multilingual & City Chips */
+.lang-tags-grid, .city-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.lang-chip, .city-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-color);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.lang-chip:hover, .city-chip:hover {
+  background: var(--brand-blue-light);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
+  transform: translateY(-1px);
+}
+.lang-chip.active {
+  background: var(--brand-blue);
+  color: #ffffff;
+  border-color: var(--brand-blue);
+}
+
+/* FAQ Accordions */
+.faq-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.faq-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.faq-card.open {
+  border-color: var(--brand-blue);
+  box-shadow: var(--shadow-sm);
+}
+.faq-question-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 1.25rem;
+  text-align: left;
+  background: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.faq-answer-block {
+  padding: 0 1.25rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+.faq-answer-direct {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}

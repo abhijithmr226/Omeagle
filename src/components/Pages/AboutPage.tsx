@@ -11,26 +11,20 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack }) => (
     </button>
 
     <header className="about-header">
-      <h1>About Omeagle</h1>
+      <h1>About Omeagle Online</h1>
       <p className="about-subtitle">
-        The free, anonymous random video chat platform built for genuine human connection —
-        no sign up, no registration, no barriers.
+        Free random video chat and stranger chat platform designed for spontaneous global interactions —
+        no registration, no fees, no barriers.
       </p>
     </header>
 
     <section className="about-section">
-      <h2>What Is Omeagle?</h2>
+      <h2>What Is Omeagle Online?</h2>
       <p>
-        <strong>Omeagle</strong> is a free random video chat and text chat platform that connects you
-        instantly with strangers from around the world. Built as the best modern{' '}
-        <Link to="/">Omegle alternative</Link>, Omeagle lets you <strong>talk to strangers</strong> anonymously
-        via live video chat or text — with no account, no email, and no personal data required.
+        <strong>Omeagle Online</strong> provides a fast, secure, and user-friendly random video chat experience designed for people looking to meet new individuals from different countries and cultures. The platform offers instant video and text chat, anonymous conversations, and global matching features that make discovering new friendships simple and engaging.
       </p>
       <p>
-        Simply open your browser, click <strong>Start Video Chat</strong> or <strong>Text Chat</strong>,
-        and within seconds you are connected to a random person somewhere on the planet. Whether you
-        want to make new friends, practice a language, or just have an interesting conversation,
-        Omeagle makes it effortless.
+        Whether you want casual conversations, language exchange, cultural interactions, or simply a fun way to connect online, Omeagle Online delivers a seamless experience across desktop and mobile devices.
       </p>
     </section>
 

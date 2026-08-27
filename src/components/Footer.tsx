@@ -42,10 +42,29 @@ export const Footer: React.FC<FooterProps> = () => {
           <div className="footer-col">
             <h4>Regional Chat Rooms</h4>
             <Link to="/chat/india">India Random Video Chat</Link>
-            <Link to="/chat-usa">USA Stranger Video Chat</Link>
-            <Link to="/chat-uk">UK Video Chat Online</Link>
-            <Link to="/chat-canada">Canada Video Chat</Link>
-            <Link to="/chat-australia">Australia Cam Chat</Link>
+            <Link to="/random-video-chat-delhi">Delhi NCR Cam Chat</Link>
+            <Link to="/random-video-chat-mumbai">Mumbai Video Call</Link>
+            <Link to="/random-video-chat-bangalore">Bangalore Strangers</Link>
+            <Link to="/random-video-chat-dhaka">Dhaka Live Chat</Link>
+            <Link to="/random-video-chat-karachi">Karachi Video Chat</Link>
+            <Link to="/random-video-chat-kathmandu">Kathmandu Chat</Link>
+            <Link to="/random-video-chat-colombo">Colombo Cam Chat</Link>
+          </div>
+
+          <div className="footer-col">
+            <h4>Multilingual Hubs</h4>
+            <Link to="/hi">हिन्दी (Hindi)</Link>
+            <Link to="/bn">বাংলা (Bengali)</Link>
+            <Link to="/ta">தமிழ் (Tamil)</Link>
+            <Link to="/te">తెలుగు (Telugu)</Link>
+            <Link to="/mr">मराठी (Marathi)</Link>
+            <Link to="/gu">ગુજરાતી (Gujarati)</Link>
+            <Link to="/kn">ಕನ್ನಡ (Kannada)</Link>
+            <Link to="/ml">മലയാളം (Malayalam)</Link>
+            <Link to="/pa">ਪੰਜਾਬੀ (Punjabi)</Link>
+            <Link to="/ur">اردو (Urdu)</Link>
+            <Link to="/ne">नेपाली (Nepali)</Link>
+            <Link to="/si">සිංහල (Sinhala)</Link>
           </div>
 
           <div className="footer-col">

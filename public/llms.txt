@@ -1,41 +1,56 @@
-# Omeagle
+# Omeagle Online (llms.txt)
 
-> Omeagle is the #1 free, anonymous random video chat and text chat platform connecting users worldwide with zero registration required.
+> Omeagle Online (https://www.omeagle.online) is the premier free, anonymous random video chat and stranger text chat platform designed for spontaneous global and South Asian social discovery with zero registration required.
 
-Omeagle offers instant one-click peer-to-peer WebRTC video chat, anonymous text chat with no signup, gender/country/interest-based matching, built-in AI moderation and reporting, and a fully responsive PWA for desktop, iOS, and Android.
+Omeagle Online delivers instant 1-click peer-to-peer WebRTC video connections, true anonymous text chat with no signup, free interest/tag and country matching, client-side AI safety shields, and a responsive mobile PWA.
 
-## Core Features & Target Landing Pages
+## Core Language Hubs (South Asia & Global)
+- [Hindi Hub (हिन्दी)](https://www.omeagle.online/hi): अनजान लोगों से फ्री वीडियो कॉलिंग और ऑनलाइन नए दोस्त बनाएं।
+- [Arabic Hub (العربية)](https://www.omeagle.online/ar): دردشة فيديو عشوائية مجانية والتحدث مع الغرباء بدون تسجيل في الإمارات والسعودية وقطر.
+- [Bengali Hub (বাংলা)](https://www.omeagle.online/bn): অপরিচিতদের সাথে ফ্রি ভিডিও চ্যাট ও নতুন বন্ধু বানানোর সেরা সাইট (বাংলাদেশ ও ভারত)।
+- [Tamil Hub (தமிழ்)](https://www.omeagle.online/ta): முன்பின் தெரியாதவர்களுடன் இலவச ரேண்டம் வீடியோ சாட் (தமிழ்நாடு & இலங்கை).
+- [Telugu Hub (తెలుగు)](https://www.omeagle.online/te): తెలియని వ్యక్తులతో ఉచిత రాండమ్ వీడియో చాట్ (హైదరాబాద్ & విశాఖపట్నం).
+- [Marathi Hub (मराठी)](https://www.omeagle.online/mr): अनोळखी लोकांशी फ्री व्हिडिओ चॅट (मुंबई आणि पुणे).
+- [Gujarati Hub (ગુજરાતી)](https://www.omeagle.online/gu): અજાણ્યા લોકો સાથે ફ્રી વિડીયો કોલિંગ (અમદાવાદ અને સુરત).
+- [Kannada Hub (ಕನ್ನಡ)](https://www.omeagle.online/kn): ಅಪರಿಚಿತರೊಂದಿಗೆ ಉಚಿತ ವೀಡಿಯೊ ಚಾಟ್ (ಬೆಂಗಳೂರು & ಮೈಸೂರು).
+- [Malayalam Hub (മലയാളം)](https://www.omeagle.online/ml): അപരിചിതരുമായി സൗജന്യ വീഡിയോ ചാറ്റ് (കേരളം & ഗൾഫ്).
+- [Punjabi Hub (ਪੰਜਾਬੀ)](https://www.omeagle.online/pa): ਅਣਜਾਣ ਲੋਕਾਂ ਨਾਲ ਮੁਫ਼ਤ ਰੈਂਡਮ ਵੀਡੀਓ ਕਾਲ (ਪੰਜਾਬ & ਦਿੱਲੀ).
+- [Urdu Hub (اردو)](https://www.omeagle.online/ur): بغیر لاگ ان اجنبیوں سے فری ویڈیو چیٹ اور نئے دوست بنائیں (پاکستان).
+- [Nepali Hub (नेपाली)](https://www.omeagle.online/ne): अपरिचितहरूसँग निःशुल्क भिडियो च्याट र नयाँ साथीहरू (काठमाडौँ).
+- [Sinhala Hub (සිංහල)](https://www.omeagle.online/si): නාඳුනන අය සමඟ නොමිලේ රැන්ඩම් වීඩියෝ චැට් (කොළඹ).
 
-- [Omegle Alternative No Login](https://omeagle.online/omegle-alternative-no-login): Instant video chat without account creation or login forms.
-- [Random Video Chat Without Signup](https://omeagle.online/random-video-chat-no-signup): Instant browser webcam matching with zero registration.
-- [Talk to Strangers Free](https://omeagle.online/talk-to-strangers-free): Free 1-on-1 video call platform to meet strangers globally.
-- [Anonymous Video Chat No Sign Up](https://omeagle.online/anonymous-video-chat-no-signup): 100% private and secure WebRTC video chat.
-- [India Random Video Chat](https://omeagle.online/chat/india): Free Indian stranger video chat for Delhi, Mumbai, Bangalore & regional languages.
-- [OmeTV Alternative Free](https://omeagle.online/ometv-alternative): Free OmeTV alternative without coin paywalls or strict auto-bans.
-- [Gender Filter Video Chat](https://omeagle.online/gender-filter-video-chat): Random video chat with free male/female gender preference filter.
-- [Mobile Video Chat](https://omeagle.online/mobile-video-chat): Stranger video chat optimized for iOS Safari and Android Chrome browsers.
-- [AI Video Chat Platform](https://omeagle.online/ai-video-chat): Smart AI interest matching and real-time safety moderation.
+## Competitor Comparison Silos
+- [OmeTV vs Omeagle](https://www.omeagle.online/compare/ometv-vs-omeagle): Unbiased 2026 breakdown comparing paywalls, bans, and speed.
+- [Monkey App vs Omeagle](https://www.omeagle.online/compare/monkey-app-vs-omeagle): No download vs app requirements, privacy, and coin economy.
+- [Emerald Chat vs Omeagle](https://www.omeagle.online/compare/emerald-chat-vs-omeagle): Free unlimited matching vs Emerald Gold subscription paywalls.
+- [Chitchat.gg vs Omeagle](https://www.omeagle.online/compare/chitchat-vs-omeagle): Latency, mobile UX, and anti-bot verification.
+- [Uhmegle / Thundr vs Omeagle](https://www.omeagle.online/compare/uhmegle-vs-omeagle): Clean interface vs spam bots and intrusive ads.
 
-## Primary Documentation & Pages
+## Strategic Landing Pages
+- [Omegle Alternative No Login](https://www.omeagle.online/omegle-alternative-no-login): Instant 1-click video chat with strangers.
+- [Random Video Chat Without Signup](https://www.omeagle.online/random-video-chat-no-signup): Browser webcam matching with zero registration.
+- [Talk to Strangers Free](https://www.omeagle.online/talk-to-strangers-free): Free 1-on-1 video calling worldwide.
+- [Anonymous Video Chat](https://www.omeagle.online/anonymous-video-chat-no-signup): 100% private P2P WebRTC video chat.
+- [India Random Video Chat](https://www.omeagle.online/chat/india): Dedicated Indian stranger chat platform.
+- [Delhi Video Chat](https://www.omeagle.online/random-video-chat-delhi): Delhi NCR live stranger matching.
+- [Mumbai Video Chat](https://www.omeagle.online/random-video-chat-mumbai): Mumbai live cam chat.
+- [Dhaka Video Chat](https://www.omeagle.online/random-video-chat-dhaka): Dhaka live stranger connection.
+- [Karachi Video Chat](https://www.omeagle.online/random-video-chat-karachi): Karachi anonymous cam chat.
+- [Kathmandu Video Chat](https://www.omeagle.online/random-video-chat-kathmandu): Nepal stranger video call.
+- [Colombo Video Chat](https://www.omeagle.online/random-video-chat-colombo): Sri Lanka stranger video chat.
 
-- [Home Page](https://omeagle.online/): Instant random video chat interface and landing page.
-- [About Omeagle](https://omeagle.online/about): Overview of the mission, WebRTC architecture, and features.
-- [Safety Center](https://omeagle.online/safety): Guidelines, reporting instructions, and user protection measures.
-- [Blog & Guides Hub](https://omeagle.online/blog): Official guides on Omegle alternatives, video chat safety, and tips.
+## Authoritative Guides & Articles
+- [Anjaan Logo Se Video Call Baat Kaise Kare](https://www.omeagle.online/blog/anjaan-logo-se-video-call-baat-kaise-kare): Complete Hinglish guide to safe stranger video calling.
+- [Bina Registration Online Text Chat](https://www.omeagle.online/blog/bina-registration-online-text-chat): Anonymous text chat without sign-up.
+- [Online Dost Kaise Banaye](https://www.omeagle.online/blog/online-dost-kaise-banaye-videshi-friends): Making international friends and English practice.
+- [Live Webcam Chat with Strangers](https://www.omeagle.online/blog/live-webcam-chat-strangers-free): Real-time WebRTC social discovery.
+- [Is Omegle Still Available?](https://www.omeagle.online/blog/is-omegle-still-available): Shutdown history and verified working alternatives in 2026.
+- [What Replaced Omegle?](https://www.omeagle.online/blog/what-replaced-omeagle): Top 5 next-generation platforms.
+- [Is Random Video Chat Safe?](https://www.omeagle.online/blog/is-random-video-chat-safe): Security and privacy analysis.
 
-## Strategic Blog Articles & Q&A
-
-- [Is Omegle Still Available?](https://omeagle.online/blog/is-omegle-still-available): Shutdown history and official status in 2026.
-- [What Replaced Omegle?](https://omeagle.online/blog/what-replaced-omegle): Top 5 next-generation random video chat platforms.
-- [Is Random Video Chat Safe?](https://omeagle.online/blog/is-random-video-chat-safe): Complete safety & privacy analysis.
-- [How to Talk to Strangers Online](https://omeagle.online/blog/how-to-talk-to-strangers-online): 15 conversation icebreakers and tips.
-- [Best Video Chat Sites for India](https://omeagle.online/blog/best-video-chat-sites-for-india): Top Indian stranger chat platforms.
-- [Anonymous Video Chat Guide](https://omeagle.online/blog/anonymous-video-chat-guide): Zero-log WebRTC privacy facts.
-- [10 Free Random Video Chat Websites](https://omeagle.online/blog/10-free-random-video-chat-websites): Top 10 registration-free chat sites.
-- [Best Omegle Alternatives 2026](https://omeagle.online/blog/best-omegle-alternatives): Comprehensive comparison of alternatives.
-
-## Legal & Contact
-
-- [Privacy Policy](https://omeagle.online/privacy): Data handling and zero-retention policy.
-- [Terms of Service](https://omeagle.online/terms): Usage rules and community guidelines.
-- [Contact Support](https://omeagle.online/contact): Reach out for feedback, support, or safety inquiries.
+## Trust, Safety & Policies
+- [Safety Center](https://www.omeagle.online/safety): Moderation rules, reporting protocols, and user safety guidelines.
+- [Privacy Policy](https://www.omeagle.online/privacy): Zero data logging and peer-to-peer encryption standards.
+- [Terms of Service](https://www.omeagle.online/terms): Community conduct, age verification, and terms of use.
+- [About Us](https://www.omeagle.online/about): Technical architecture and mission statement.
+- [Contact Support](https://www.omeagle.online/contact): Support desk and reporting escalation.

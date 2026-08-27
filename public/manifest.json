@@ -1,7 +1,7 @@
 {
-  "short_name": "Omeagle",
-  "name": "Omeagle — Talk to Strangers Online",
-  "description": "Free, safe & anonymous random video chat and text chat with strangers worldwide.",
+  "short_name": "Omeagle Online",
+  "name": "Omeagle Online – Free Random Video Chat",
+  "description": "Connect instantly with people worldwide using Omeagle Online. Enjoy free random video chat, anonymous conversations, and an easy way to meet new friends online.",
   "icons": [
     {
       "src": "favicon.png",
@@ -36,13 +36,13 @@
       "name": "Video Chat",
       "short_name": "Video",
       "url": "/?mode=video",
-      "description": "Start a random video chat"
+      "description": "Start a free random video chat"
     },
     {
       "name": "Text Chat",
       "short_name": "Text",
       "url": "/?mode=text",
-      "description": "Start a random text chat"
+      "description": "Start an anonymous text chat"
     }
   ]
 }
