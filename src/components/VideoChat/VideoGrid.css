@@ -22,13 +22,13 @@
 .otv-stage {
   position: relative;
   width: 100%;
-  height: min(74vh, 720px);
-  min-height: 360px;
-  border-radius: 20px;
+  height: 75vh;
+  min-height: 460px;
+  border-radius: 24px;
   overflow: hidden;
-  background: #090d16;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  background: radial-gradient(circle at center, #5B21B6 0%, #1E1B4B 40%, #020617 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 25px 60px -12px rgba(91, 33, 182, 0.3), 0 15px 35px rgba(0, 0, 0, 0.6);
   user-select: none;
   touch-action: pan-y;
   padding-top: env(safe-area-inset-top, 0px);
@@ -613,16 +613,17 @@
 .otv-mobile-menu-item:hover  { background: rgba(255,255,255,0.08); color: #f8fafc; }
 .otv-mobile-menu-item:active { background: rgba(255,255,255,0.12); }
 
-/* ── Picture-in-Picture (PiP Local User Preview) ───────────────────── */
+/* ── Picture-in-Picture (PiP Local User Preview 9:16) ────────────── */
 .otv-pip {
   position: absolute;
-  width: 280px;
-  height: 160px;
+  width: 220px;
+  aspect-ratio: 9 / 16;
+  height: auto;
   border-radius: 18px;
   overflow: hidden;
   background: #000000;
-  border: 3px solid #FFFFFF;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0,0,0,0.2);
+  border: 2.5px solid #3B82F6;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.55), 0 16px 36px rgba(0, 0, 0, 0.6);
   z-index: 20;
   cursor: grab;
   will-change: transform;
@@ -631,24 +632,24 @@
 }
 
 .otv-pip:hover {
-  transform: scale(1.02);
-  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.75);
+  transform: scale(1.03);
+  box-shadow: 0 0 32px rgba(59, 130, 246, 0.75), 0 20px 42px rgba(0, 0, 0, 0.75);
 }
 
 @media (max-width: 1024px) {
   .otv-pip {
     width: 120px;
-    height: 200px;
+    height: 180px;
     aspect-ratio: 9 / 16;
-    border-radius: 16px;
-    border-width: 2.5px;
+    border-radius: 14px;
+    border-width: 2px;
   }
 }
 
-.otv-pip-top-right    { top: clamp(48px, 6vw, 60px); right: clamp(8px, 1.5vw, 14px); }
-.otv-pip-top-left     { top: clamp(48px, 6vw, 60px); left: clamp(8px, 1.5vw, 14px); }
-.otv-pip-bottom-right { bottom: clamp(80px, 12vh, 96px); right: clamp(12px, 2vw, 20px); }
-.otv-pip-bottom-left  { bottom: clamp(80px, 12vh, 96px); left: clamp(12px, 2vw, 20px); }
+.otv-pip-top-right    { top: 20px; right: 20px; }
+.otv-pip-top-left     { top: 20px; left: 20px; }
+.otv-pip-bottom-right { bottom: 84px; right: 20px; }
+.otv-pip-bottom-left  { bottom: 84px; left: 20px; }
 
 .otv-pip.pip-live  { border-color: #22C55E; box-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
 .otv-pip.pip-muted { border-color: #EF4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }

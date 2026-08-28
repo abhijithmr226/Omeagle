@@ -1,25 +1,25 @@
 /* Omeagle Design System — Premium SaaS 2026 */
 
 :root {
-  --bg-primary: #FFF8F4;
+  --bg-primary: #F8FAFC;
   --bg-surface: #FFFFFF;
-  --bg-surface-secondary: #FFF1E8;
+  --bg-surface-secondary: #F1F5F9;
   --bg-video-frame: #0F172A;
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
-  --text-muted: #9CA3AF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
   
-  /* Brand Orange & Gradient */
+  /* Brand Blue (Authentic Omegle) */
+  --brand-blue: #0066FF;
+  --brand-blue-hover: #0052CC;
+  --brand-blue-light: #EBF3FF;
+  --brand-gradient: linear-gradient(135deg, #0066FF 0%, #0052CC 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #0052CC 0%, #0040A8 100%);
+  
+  /* Brand Orange Accent */
   --brand-orange: #F97316;
   --brand-orange-hover: #EA580C;
   --brand-orange-light: #FFEDD5;
-  --brand-gradient: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
-  --brand-gradient-hover: linear-gradient(135deg, #EA580C 0%, #F97316 100%);
-  
-  /* Fallback Brand Blue (Harmonized) */
-  --brand-blue: #F97316;
-  --brand-blue-hover: #EA580C;
-  --brand-blue-light: #FFEDD5;
   
   /* Premium Accent */
   --premium-accent: #8B5CF6;
@@ -32,18 +32,18 @@
   --status-red-light: #FEE2E2;
   
   /* Borders & Shadows */
-  --border-color: #E5E7EB;
-  --border-color-hover: #D1D5DB;
-  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(249, 115, 22, 0.08), 0 4px 6px -2px rgba(0,0,0,0.03);
+  --border-color: #E2E8F0;
+  --border-color-hover: #CBD5E1;
+  --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px 0 rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 102, 255, 0.08), 0 4px 6px -2px rgba(0,0,0,0.03);
   --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
   --shadow-video: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
   
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
   
   --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -63,13 +63,15 @@
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
   
+  --brand-blue: #3B82F6;
+  --brand-blue-hover: #60A5FA;
+  --brand-blue-light: rgba(59, 130, 246, 0.18);
+  --brand-gradient: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  
   --brand-orange: #F97316;
   --brand-orange-hover: #FB923C;
   --brand-orange-light: rgba(249, 115, 22, 0.18);
-  
-  --brand-blue: #F97316;
-  --brand-blue-hover: #FB923C;
-  --brand-blue-light: rgba(249, 115, 22, 0.18);
   
   --premium-accent: #A78BFA;
   
@@ -653,26 +655,32 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   width: 100%;
 }
 
-.chat-layout-grid {
+.chat-layout-grid-7030 {
   display: grid;
-  grid-template-columns: 280px 1fr 380px;
+  grid-template-columns: 7fr 3fr;
   gap: 1.5rem;
   align-items: start;
+  width: 100%;
 }
 
-@media (max-width: 1400px) {
-  .chat-layout-grid {
-    grid-template-columns: 260px 1fr 340px;
+.video-column-70 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.chat-column-30 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+@media (max-width: 1280px) {
+  .chat-layout-grid-7030 {
+    grid-template-columns: 65fr 35fr;
     gap: 1rem;
-  }
-}
-
-@media (max-width: 1180px) {
-  .chat-layout-grid {
-    grid-template-columns: 1fr 340px;
-  }
-  .desktop-only-sidebar {
-    display: none !important;
   }
 }
 
@@ -680,7 +688,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   .chat-layout-wrapper {
     padding: 0;
   }
-  .chat-layout-grid {
+  .chat-layout-grid-7030 {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 56px);
@@ -690,7 +698,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
   .desktop-only-chat {
     display: none !important;
   }
-  .video-column {
+  .video-column-70 {
     height: 100%;
     display: flex;
     flex-direction: column;

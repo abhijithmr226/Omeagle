@@ -534,8 +534,13 @@ export const App: React.FC = () => {
             <Route path="/:slug" element={<LandingPageVariant onStartChat={startChat} onlineCount={onlineCount} />} />
             <Route path="/*" element={
               mode === 'landing' ? (
-                <LandingPage onStartChat={startChat} onlineCount={onlineCount}
-                  settings={settings} onOpenPrefs={() => setIsPrefsOpen(true)} />
+                <LandingPage 
+                  onStartChat={startChat} 
+                  onlineCount={onlineCount}
+                  settings={settings} 
+                  onOpenPrefs={() => setIsPrefsOpen(true)} 
+                  onUpdateInterests={(interests) => updateSettings({ interests })}
+                />
               ) : mode === 'text' ? (
                 <div className="text-chat-layout">
                   <ChatBox messages={chat.messages} connectionStatus={connectionStatus}
@@ -543,29 +548,14 @@ export const App: React.FC = () => {
                     onStart={() => startChat('text')} mode="text"
                     isStrangerTyping={chat.isStrangerTyping}
                     onTyping={() => callChannelRef.current?.sendTyping()}
-                    partnerProfile={partnerProfile} />
+                    partnerProfile={partnerProfile} 
+                    onOpenPreferences={() => setIsPrefsOpen(true)} />
                 </div>
               ) : (
                 <div className="chat-layout-wrapper">
-                  <div className="chat-layout-grid">
-                    {/* Desktop Left Sidebar: Matching Panel & Filters */}
-                    <div className="sidebar-column desktop-only-sidebar">
-                      <MatchingPanel
-                        settings={settings}
-                        onUpdateSettings={updateSettings}
-                        onlineCount={onlineCount}
-                        onOpenPreferences={() => setIsPrefsOpen(true)}
-                        onSelectInterest={(tag) => {
-                          const current = settings.interests || [];
-                          if (!current.includes(tag)) {
-                            updateSettings({ interests: [...current, tag] });
-                          }
-                        }}
-                      />
-                    </div>
-
-                    {/* Center: Video Stage & Controls */}
-                    <div className="video-column">
+                  <div className="chat-layout-grid-7030">
+                    {/* Left 70%: Immersive Video Experience & Floating Controls Dock */}
+                    <div className="video-column-70">
                       <VideoGrid
                         localStream={media.localStream}
                         remoteStream={remoteStream}
@@ -596,8 +586,8 @@ export const App: React.FC = () => {
                       />
                     </div>
 
-                    {/* PC Desktop Dedicated Chat Panel (No overlap) */}
-                    <div className="chat-column desktop-only-chat">
+                    {/* Right 30%: Unified Chat + Matching + User Information Panel */}
+                    <div className="chat-column-30 desktop-only-chat">
                       <ChatBox
                         messages={chat.messages}
                         connectionStatus={connectionStatus}
@@ -608,6 +598,7 @@ export const App: React.FC = () => {
                         isStrangerTyping={chat.isStrangerTyping}
                         onTyping={() => callChannelRef.current?.sendTyping()}
                         partnerProfile={partnerProfile}
+                        onOpenPreferences={() => setIsPrefsOpen(true)}
                       />
                     </div>
 
@@ -638,6 +629,7 @@ export const App: React.FC = () => {
                         isStrangerTyping={chat.isStrangerTyping}
                         onTyping={() => callChannelRef.current?.sendTyping()}
                         partnerProfile={partnerProfile}
+                        onOpenPreferences={() => setIsPrefsOpen(true)}
                       />
                     </div>
                   </div>
@@ -750,28 +742,33 @@ export const App: React.FC = () => {
         /* ── Text chat (centered column) ───────────────────── */
         .text-chat-layout {
           display: flex; justify-content: center;
-          width: 100%; max-width: 640px; margin: 0 auto;
+          width: 100%; max-width: 720px; margin: 1.5rem auto;
+          height: min(78vh, 760px);
+          min-height: 480px;
+          padding: 0 1rem;
         }
 
-        /* ── Desktop Layout — wider, more balanced ────────── */
+        /* ── Desktop Layout — 2-Column Split View ────────── */
         .chat-layout-wrapper {
           display: flex;
           flex-direction: column;
           width: 100%;
-          max-width: 1280px;
+          max-width: 1360px;
           margin: 0 auto;
-          padding: 0.75rem 1rem;
+          padding: 0.75rem 1.25rem 2rem;
           gap: 0;
         }
 
+        .chat-layout-grid-7030,
         .chat-layout-grid {
           display: grid;
-          grid-template-columns: minmax(480px, 1.4fr) minmax(300px, 1fr);
+          grid-template-columns: minmax(500px, 1.45fr) minmax(320px, 1fr);
           gap: 1.25rem;
           width: 100%;
           align-items: start;
         }
 
+        .video-column-70,
         .video-column {
           display: flex;
           flex-direction: column;
@@ -780,22 +777,32 @@ export const App: React.FC = () => {
           min-width: 0;
         }
 
+        .chat-column-30,
         .chat-column {
           display: flex;
           flex-direction: column;
           width: 100%;
-          height: min(74vh, 720px);
-          min-height: 400px;
+          height: min(76vh, 740px);
+          min-height: 480px;
         }
 
-        /* ── Mobile UI Extras ───────────────────────────────── */
-        .mobile-status-banner { display: none; }
-        .mobile-footer-cards  { display: none; }
-        .mobile-chat-overlay  { display: none; }
+        /* ── Mobile Backdrop & Slide-Up Drawer ──────────────── */
+        .mobile-chat-backdrop {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 180;
+          backdrop-filter: blur(4px);
+        }
+
+        .mobile-chat-drawer {
+          display: none;
+        }
 
         /* ── TABLET / MOBILE  ≤ 1024px ──────────────────────
-           Full-screen video layout: video + controls fill the
-           viewport below the header; chat is a slide-up drawer.
+           Full-screen video layout: video + controls fill viewport;
+           chat is a slide-up drawer.
         ──────────────────────────────────────────────────── */
         @media (max-width: 1024px) {
           .chat-layout-wrapper {
@@ -805,6 +812,7 @@ export const App: React.FC = () => {
             overflow: hidden;
           }
 
+          .chat-layout-grid-7030,
           .chat-layout-grid {
             grid-template-columns: 1fr;
             grid-template-rows: 1fr;
@@ -815,6 +823,7 @@ export const App: React.FC = () => {
             min-height: 0;
           }
 
+          .video-column-70,
           .video-column {
             height: 100%;
             flex: 1;
@@ -822,15 +831,19 @@ export const App: React.FC = () => {
             overflow: hidden;
           }
 
-          .chat-column { display: none; }
+          .desktop-only-chat { display: none !important; }
+
+          .mobile-chat-backdrop.open {
+            display: block;
+          }
 
           /* Slide-up chat drawer */
-          .mobile-chat-overlay {
+          .mobile-chat-drawer {
             display: flex;
             flex-direction: column;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: 58vh;
+            height: 62vh;
             background: var(--bg-surface);
             border-top: 1px solid var(--border-color);
             border-radius: var(--radius-xl) var(--radius-xl) 0 0;
@@ -841,26 +854,34 @@ export const App: React.FC = () => {
             overflow: hidden;
             padding-bottom: env(safe-area-inset-bottom, 0px);
           }
-          .mobile-chat-overlay.open { transform: translateY(0); }
+          .mobile-chat-drawer.open { transform: translateY(0); }
 
           .mobile-chat-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0.7rem 1rem; border-bottom: 1px solid var(--border-color);
-            font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+            padding: 0.75rem 1.15rem; border-bottom: 1px solid var(--border-color);
+            font-weight: 700; font-size: 0.92rem; flex-shrink: 0;
             background: var(--bg-surface-secondary);
           }
+
+          .mobile-chat-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
+
           .mobile-chat-close {
-            width: 44px; height: 44px; border-radius: var(--radius-full);
+            width: 36px; height: 36px; border-radius: var(--radius-full);
             background: var(--bg-surface); display: flex; align-items: center;
             justify-content: center; font-size: 1.1rem; color: var(--text-primary);
             -webkit-tap-highlight-color: transparent;
             border: 1px solid var(--border-color);
+            cursor: pointer;
           }
           .mobile-chat-close:active { background: var(--border-color); }
         }
 
         @media (max-width: 480px) {
-          .mobile-chat-overlay { height: 64vh; }
+          .mobile-chat-drawer { height: 68vh; }
         }
 
         /* Landscape phone */

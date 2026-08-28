@@ -43,13 +43,13 @@ interface FloatingEmoji {
 }
 
 const COUNTRY_QUEUE = [
-  { name: 'Tokyo, Japan', flag: '🇯🇵' },
-  { name: 'Kerala, India', flag: '🇮🇳' },
-  { name: 'New York, USA', flag: '🇺🇸' },
-  { name: 'London, UK', flag: '🇬🇧' },
-  { name: 'Paris, France', flag: '🇫🇷' },
-  { name: 'Seoul, S. Korea', flag: '🇰🇷' },
-  { name: 'São Paulo, Brazil', flag: '🇧🇷' }
+  { name: 'Delhi', flag: '🇮🇳' },
+  { name: 'Kathmandu', flag: '🇳🇵' },
+  { name: 'Colombo', flag: '🇱🇰' },
+  { name: 'Seoul', flag: '🇰🇷' },
+  { name: 'Dubai', flag: '🇦🇪' },
+  { name: 'Tokyo', flag: '🇯🇵' },
+  { name: 'Dhaka', flag: '🇧🇩' }
 ];
 
 export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
@@ -529,26 +529,24 @@ export const VideoGrid: React.FC<VideoGridProps> = React.memo(({
 
             {isSearching && (
               <div className="otv-country-pill">
-                <span>{currentCountry.flag}</span>
-                <span>Connecting to {currentCountry.name}</span>
+                <span className="text-lg">{currentCountry.flag}</span>
+                <span>{currentCountry.name}</span>
               </div>
             )}
 
             <div className="otv-placeholder-meta">
               <h3 className="otv-ph-title">
-                {isSearching ? 'Matching with live stranger…' : 'Ready to Meet New People'}
+                {isSearching ? '🔍 Finding your next conversation...' : 'Meet new people instantly'}
               </h3>
               <p className="otv-ph-sub">
                 {isSearching
-                  ? 'Searching global live matching queue'
-                  : 'Press Start (or N) or Swipe Left to connect'}
+                  ? 'Searching verified global matching queue'
+                  : 'Start a conversation in seconds. 100% free with zero registration.'}
               </p>
-              {isSearching && (
-                <div className="otv-online-badge">
-                  <Globe2 size={13} />
-                  <span>14,892 users online live</span>
-                </div>
-              )}
+              <div className="otv-online-badge">
+                <span className="live-dot-pulse mr-1" />
+                <span>14,892 users online</span>
+              </div>
             </div>
           </div>
         )}

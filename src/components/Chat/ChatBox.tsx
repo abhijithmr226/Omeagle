@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Smile, ArrowRight, Users, Search, Globe, Tag, Heart, Flag, MessageSquare } from 'lucide-react';
+import { 
+  Send, Smile, Search, Globe, Tag, Heart, 
+  Flag, Sparkles, Zap, Star, ShieldCheck, ArrowUpRight, SkipForward, Power
+} from 'lucide-react';
 import { ChatMessage, ConnectionStatus, PartnerProfile } from '../../types/chat';
 import { trackSendMessage } from '../../services/gtm';
+import './ChatBox.css';
 
 function getFlag(code: string): string {
   if (!code) return '';
@@ -21,43 +25,108 @@ interface ChatBoxProps {
   isStrangerTyping?: boolean;
   onTyping?: () => void;
   partnerProfile?: PartnerProfile | null;
+  onOpenPreferences?: () => void;
 }
 
 const MAX_MSG = 2000;
 
+const AI_ICEBREAKERS = [
+  "What is your dream travel destination?",
+  "What hobby do you enjoy most?",
+  "Chai or Coffee?",
+  "What's your favorite movie or series?",
+  "Where are you from?"
+];
+
 export const ChatBox: React.FC<ChatBoxProps> = ({
-  messages, connectionStatus, onSendMessage, onNext, onStart, mode, isOverlay = false,
-  isStrangerTyping = false, onTyping, partnerProfile,
+  messages,
+  connectionStatus,
+  onSendMessage,
+  onNext,
+  onStart,
+  mode,
+  isOverlay = false,
+  isStrangerTyping = false,
+  onTyping,
+  partnerProfile,
+  onOpenPreferences
 }) => {
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [stopConfirmState, setStopConfirmState] = useState(false); // true when clicked "Stop" once -> "Really?"
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportSubmitted, setReportSubmitted] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingSentRef = useRef(false);
 
   const isConnected = connectionStatus === 'connected';
   const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
-  const canStart = connectionStatus === 'idle' || connectionStatus === 'disconnected' || connectionStatus === 'timed-out';
+  const isDisconnected = connectionStatus === 'disconnected' || connectionStatus === 'timed-out' || connectionStatus === 'idle';
 
+  // Reset confirmation state when connection changes
+  useEffect(() => {
+    setStopConfirmState(false);
+  }, [connectionStatus]);
+
+  // Auto-scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStrangerTyping]);
 
+  // Escape Key Handler for the iconic Omegle "Stop -> Really? -> New" cycle
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowEmojiPicker(false);
-    };
-    if (showEmojiPicker) {
-      document.addEventListener('keydown', handler);
-      return () => document.removeEventListener('keydown', handler);
-    }
-  }, [showEmojiPicker]);
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showEmojiPicker) {
+          setShowEmojiPicker(false);
+          return;
+        }
+        if (showReportModal) {
+          setShowReportModal(false);
+          return;
+        }
 
+        if (isConnected) {
+          if (!stopConfirmState) {
+            setStopConfirmState(true);
+          } else {
+            setStopConfirmState(false);
+            onNext();
+          }
+        } else if (isDisconnected) {
+          onStart();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isConnected, isDisconnected, stopConfirmState, showEmojiPicker, showReportModal, onNext, onStart]);
+
+  // Auto-focus input when connected
   useEffect(() => {
-    if (isConnected) inputRef.current?.focus();
+    if (isConnected) {
+      inputRef.current?.focus();
+    }
   }, [isConnected]);
+
+  // Multi-state button click handler
+  const handleStopBtnClick = () => {
+    if (isConnected) {
+      if (!stopConfirmState) {
+        setStopConfirmState(true);
+      } else {
+        setStopConfirmState(false);
+        onNext();
+      }
+    } else if (isDisconnected) {
+      onStart();
+    } else if (isSearching) {
+      onNext();
+    }
+  };
 
   const handleSend = useCallback((e?: React.FormEvent) => {
     e?.preventDefault();
@@ -95,272 +164,255 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
     setTimeout(() => {
       setShowReportModal(false);
       setReportSubmitted(false);
-    }, 2000);
+    }, 1800);
   }, []);
 
-  const msgCount = inputText.length;
-
   return (
-    <div className={`chat-column-container ${isOverlay ? 'chat-overlay-mode' : ''}`}>
-      <div className={`chat-feed-card ${isOverlay ? 'glass-overlay-feed' : ''}`}>
-        {!isOverlay && (
-          <div className="system-banner">
-            <p className="sys-headline">You're now chatting with a random stranger.</p>
+    <div className={`ow-chat-container ${isOverlay ? 'ow-overlay-mode' : ''}`}>
+      {/* 1. Header Bar: Status & Interests */}
+      <div className="ow-chat-header">
+        <div className="ow-chat-partner-meta">
+          <span className={`ow-status-dot ${isConnected ? 'live' : isSearching ? 'searching' : 'idle'}`} />
+          <div className="ow-chat-title-wrap">
+            <span className="ow-chat-title">
+              {partnerProfile?.country ? `${getFlag(partnerProfile.country)} Stranger from ${partnerProfile.country}` : 'Stranger'}
+            </span>
+            <span className="ow-chat-subtitle">
+              {isConnected ? 'Connected • P2P WebRTC' : isSearching ? 'Looking for someone...' : 'Ready to start'}
+            </span>
           </div>
-        )}
+        </div>
 
-        {partnerProfile && isConnected && (
-          <div className="partner-info-bar">
-            {partnerProfile.country && (
-              <span className="partner-chip"><Globe size={13} /> {getFlag(partnerProfile.country)} {partnerProfile.country}</span>
-            )}
-            {partnerProfile.gender && (
-              <span className="partner-chip"><Heart size={13} /> {partnerProfile.gender}</span>
-            )}
-            {partnerProfile.interests && partnerProfile.interests.length > 0 && (
-              <span className="partner-chip interests-chip"><Tag size={13} /> {partnerProfile.interests.slice(0, 4).join(', ')}</span>
-            )}
-          </div>
+        {isConnected && onOpenPreferences && (
+          <button 
+            type="button" 
+            className="ow-chat-report-btn" 
+            onClick={handleReport}
+            title="Report inappropriate behavior"
+          >
+            <Flag size={13} />
+            <span>Report</span>
+          </button>
         )}
+      </div>
 
-        <div className="messages-list" role="log" aria-live="polite">
+      {/* Shared Interests Banner (if matched) */}
+      {partnerProfile?.interests && partnerProfile.interests.length > 0 && (
+        <div className="ow-shared-interests-banner">
+          <Tag size={13} className="ow-tag-icon" />
+          <span>You both like: <strong>{partnerProfile.interests.join(', ')}</strong></span>
+        </div>
+      )}
+
+      {/* 2. Messages Log (Omegle Transcript Format) */}
+      <div className="ow-chat-log-wrapper">
+        <div className="ow-chat-log" role="log" aria-live="polite">
+          {/* Searching Notice */}
           {isSearching && (
-            <div className="message-row system">
-              <div className="bubble-system">
-                <Search size={16} className="spin-icon" /> Looking for someone to chat with...
-              </div>
+            <div className="ow-system-notice searching">
+              <Search size={14} className="spin-icon" />
+              <span>Looking for someone you can chat with...</span>
             </div>
           )}
-          {messages.map(msg => (
-            <MessageBubble key={msg.id} message={msg} isOverlay={isOverlay} />
+
+          {/* Connection Established Welcome Notice */}
+          {isConnected && messages.length === 0 && (
+            <div className="ow-system-notice welcome">
+              <span>You're now chatting with a random stranger. Say hi!</span>
+            </div>
+          )}
+
+          {/* Disconnected Notice */}
+          {connectionStatus === 'disconnected' && (
+            <div className="ow-system-notice disconnected">
+              <span>Stranger has disconnected.</span>
+              <button className="ow-quick-next-btn" onClick={onStart}>
+                Start a new chat (Esc)
+              </button>
+            </div>
+          )}
+
+          {/* Message List in Classic Omegle Style */}
+          {messages.map((msg) => (
+            <div 
+              key={msg.id} 
+              className={`ow-message-line ${msg.sender === 'you' ? 'ow-msg-you-line' : 'ow-msg-stranger-line'}`}
+            >
+              <span className={`ow-msg-sender ${msg.sender === 'you' ? 'ow-sender-you' : 'ow-sender-stranger'}`}>
+                {msg.sender === 'you' ? 'You:' : 'Stranger:'}
+              </span>
+              <span className="ow-msg-content">{msg.text}</span>
+            </div>
           ))}
+
+          {/* Typing Indicator */}
           {isStrangerTyping && (
-            <div className="message-row stranger">
-              <div className="message-bubble bubble-stranger typing-indicator">
-                <span className="sender-label">Stranger</span>
-                <div className="typing-dots">
-                  <span /><span /><span />
-                </div>
+            <div className="ow-typing-line">
+              <span className="ow-typing-text">Stranger is typing</span>
+              <div className="ow-typing-dots">
+                <span /><span /><span />
               </div>
             </div>
           )}
+
           <div ref={messagesEndRef} />
         </div>
 
-        {isConnected && messages.length <= 3 && (
-          <div className="icebreaker-chips-bar">
-            {[
-              { label: '👋 Hi!', text: 'Hi! 👋' },
-              { label: '🌍 Where from?', text: 'Where are you from? 🌍' },
-              { label: '👫 M / F?', text: 'M / F? 👫' },
-              { label: '🎧 Hobbies?', text: 'What are your hobbies? 🎧' },
-            ].map(item => (
-              <button
-                key={item.label}
-                type="button"
-                className="icebreaker-chip"
-                onClick={() => {
-                  onSendMessage(item.text);
-                  trackSendMessage(mode);
-                }}
+        {/* AI Icebreaker Quick Chips Shelf */}
+        {isConnected && (
+          <div className="ow-icebreakers-shelf">
+            <span className="ow-shelf-tag">💡 Icebreaker:</span>
+            <div className="ow-shelf-pills">
+              {AI_ICEBREAKERS.map((prompt, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="ow-icebreaker-chip"
+                  onClick={() => {
+                    onSendMessage(prompt);
+                    trackSendMessage(mode);
+                  }}
+                >
+                  "{prompt}"
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Emoji Picker Popover */}
+        {showEmojiPicker && (
+          <div className="ow-emoji-popover" role="listbox">
+            {['👋', '😊', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😍', '💯', '🙈', '😎', '🙌', '✨', '💬', '🎶'].map(emoji => (
+              <button 
+                key={emoji} 
+                className="ow-emoji-item" 
+                role="option" 
+                aria-label={emoji}
+                onClick={() => setInputText(prev => prev + emoji)}
               >
-                {item.label}
+                {emoji}
               </button>
             ))}
           </div>
         )}
-
-        {showEmojiPicker && (
-          <div className="emoji-picker-popover" role="listbox">
-            {['👋', '😊', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😍', '💯', '🙈', '😎', '🙌', '✨', '💬', '🎶'].map(emoji => (
-              <button key={emoji} className="emoji-btn" role="option" aria-label={emoji}
-                onClick={() => setInputText(prev => prev + emoji)}>{emoji}</button>
-            ))}
-          </div>
-        )}
-
-        {canStart ? (
-          <div className="chat-start-area">
-            <button className="chat-start-btn" onClick={onStart} aria-label="Start chat">
-              <Users size={20} />
-              <span>Start Chat</span>
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleSend} className="chat-input-bar">
-            <input
-              ref={inputRef}
-              type="text"
-              className="chat-input-field"
-              placeholder={isConnected ? "Type a message..." : isSearching ? "Searching..." : "Waiting..."}
-              value={inputText}
-              onChange={e => handleInputChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={!isConnected}
-              maxLength={MAX_MSG}
-              aria-label="Message input"
-            />
-            <button type="button" className="emoji-toggle-btn" aria-label="Emoji picker"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={!isConnected}>
-              <Smile size={20} />
-            </button>
-            <button type="submit" className="send-message-btn"
-              disabled={!isConnected || !inputText.trim()} aria-label="Send message">
-              <Send size={18} />
-            </button>
-          </form>
-        )}
       </div>
 
-      {!isOverlay && (
-        <div className="action-cards-grid">
-          <div className="action-card" onClick={onNext} role="button" tabIndex={0}
-            onKeyDown={e => e.key === 'Enter' && onNext()}>
-            <div className="action-card-icon blue-bg"><Users size={20} /></div>
-            <div className="action-card-text"><h5>Next</h5><p>Find next stranger</p></div>
-            <ArrowRight size={18} className="card-arrow" />
-          </div>
-          {isConnected && (
-            <div className="action-card report-card" onClick={handleReport} role="button" tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && handleReport()}>
-              <div className="action-card-icon red-bg"><Flag size={20} /></div>
-              <div className="action-card-text"><h5>Report</h5><p>Flag inappropriate behavior</p></div>
-            </div>
+      {/* 3. Bottom Action Bar: Iconic Stop/Really/New Button + Input + Send */}
+      <div className="ow-chat-bottom-bar">
+        {/* The Famous Multi-State Esc Button */}
+        <button
+          type="button"
+          className={`ow-stop-cycle-btn ${
+            isConnected
+              ? stopConfirmState
+                ? 'state-really'
+                : 'state-stop'
+              : 'state-new'
+          }`}
+          onClick={handleStopBtnClick}
+          title="Press Esc to Stop / Skip / Start New Chat"
+          aria-label={isConnected ? (stopConfirmState ? 'Really Disconnect?' : 'Stop Chat') : 'Start New Chat'}
+        >
+          {isConnected ? (
+            stopConfirmState ? (
+              <>
+                <span className="ow-btn-primary-text">Really?</span>
+                <span className="ow-btn-esc-hint">Esc</span>
+              </>
+            ) : (
+              <>
+                <span className="ow-btn-primary-text">Stop</span>
+                <span className="ow-btn-esc-hint">Esc</span>
+              </>
+            )
+          ) : (
+            <>
+              <span className="ow-btn-primary-text">New</span>
+              <span className="ow-btn-esc-hint">Esc</span>
+            </>
           )}
-        </div>
-      )}
+        </button>
 
+        {/* Input Form */}
+        <form onSubmit={handleSend} className="ow-chat-form">
+          <input
+            ref={inputRef}
+            type="text"
+            className="ow-chat-input"
+            placeholder={
+              isConnected 
+                ? "Type your message and press Enter..." 
+                : isSearching 
+                ? "Searching for a stranger..." 
+                : "Press 'New' to start chatting..."
+            }
+            value={inputText}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={!isConnected}
+            maxLength={MAX_MSG}
+            aria-label="Chat message input"
+          />
+
+          <button 
+            type="button" 
+            className="ow-emoji-btn" 
+            aria-label="Emoji picker"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)} 
+            disabled={!isConnected}
+          >
+            <Smile size={19} />
+          </button>
+
+          <button 
+            type="submit" 
+            className="ow-send-btn"
+            disabled={!isConnected || !inputText.trim()} 
+            aria-label="Send message"
+          >
+            <Send size={16} />
+            <span className="ow-send-label">Send</span>
+          </button>
+        </form>
+      </div>
+
+      {/* Safety Report Modal */}
       {showReportModal && (
-        <div className="report-modal-overlay" onClick={() => !reportSubmitted && setShowReportModal(false)}>
-          <div className="report-modal" onClick={e => e.stopPropagation()}>
+        <div className="ow-modal-backdrop" onClick={() => !reportSubmitted && setShowReportModal(false)}>
+          <div className="ow-report-card" onClick={e => e.stopPropagation()}>
             {reportSubmitted ? (
-              <div className="report-success">
-                <Flag size={32} />
-                <h3>Report Submitted</h3>
-                <p>Thank you for keeping Omeagle safe.</p>
+              <div className="ow-report-success">
+                <Flag size={36} className="text-red" />
+                <h3>User Reported</h3>
+                <p>Thank you for keeping our community safe. Skipping to the next user...</p>
               </div>
             ) : (
               <>
                 <h3>Report User</h3>
-                <p>Why are you reporting this user?</p>
-                <div className="report-options">
-                  {['Inappropriate content', 'Harassment or bullying', 'Spam or bots', 'Underage user', 'Other'].map(reason => (
-                    <button key={reason} className="report-option" onClick={submitReport}>{reason}</button>
+                <p>Select the reason for reporting this user:</p>
+                <div className="ow-report-reasons">
+                  {['Inappropriate or explicit content', 'Harassment or hate speech', 'Spam / Automated bot', 'Underage user', 'Other violation'].map(reason => (
+                    <button 
+                      key={reason} 
+                      className="ow-report-reason-btn" 
+                      onClick={() => {
+                        submitReport();
+                        onNext();
+                      }}
+                    >
+                      {reason}
+                    </button>
                   ))}
                 </div>
-                <button className="report-cancel" onClick={() => setShowReportModal(false)}>Cancel</button>
+                <button className="ow-report-cancel-btn" onClick={() => setShowReportModal(false)}>
+                  Cancel
+                </button>
               </>
             )}
           </div>
         </div>
       )}
-
-      <style>{`
-        .chat-column-container { display: flex; flex-direction: column; gap: 1rem; height: 100%; }
-        .chat-overlay-mode {
-          position: absolute;
-          bottom: 80px;
-          left: 14px;
-          z-index: 25;
-          width: 320px;
-          max-width: calc(100% - 28px);
-          height: 280px;
-          pointer-events: auto;
-        }
-
-        .chat-feed-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; animation: scaleIn 0.25s ease; }
-        .glass-overlay-feed {
-          background: rgba(15, 23, 42, 0.65) !important;
-          backdrop-filter: blur(16px) !important;
-          -webkit-backdrop-filter: blur(16px) !important;
-          border: 1px solid rgba(255, 255, 255, 0.15) !important;
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-        }
-
-        .system-banner { background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); padding: 1rem 1.25rem; }
-        .sys-headline { font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
-        .partner-info-bar { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.5rem 1.25rem; background: var(--brand-blue-light); border-bottom: 1px solid var(--border-color); animation: slideDown 0.2s ease; }
-        .glass-overlay-feed .partner-info-bar { background: rgba(37, 99, 235, 0.2); border-color: rgba(255, 255, 255, 0.1); }
-        .partner-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; color: var(--brand-blue); white-space: nowrap; }
-        .interests-chip { color: var(--text-primary); background: var(--bg-surface-secondary); }
-        .messages-list { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
-        .message-row { display: flex; width: 100%; animation: slideUp 0.2s ease; }
-        .message-row.you { justify-content: flex-end; }
-        .message-row.stranger { justify-content: flex-start; }
-        .message-row.system { justify-content: center; }
-        .message-bubble { max-width: 80%; padding: 0.65rem 0.9rem; border-radius: 14px; }
-        .bubble-you { background-color: var(--brand-blue); color: #ffffff; border-bottom-right-radius: 4px; }
-        .bubble-stranger { background-color: var(--bg-surface-secondary); color: var(--text-primary); border-bottom-left-radius: 4px; }
-        .glass-overlay-feed .bubble-stranger { background-color: rgba(255, 255, 255, 0.15); color: #f8fafc; }
-        .bubble-system { background: none; color: var(--text-muted); font-size: 0.82rem; font-style: italic; text-align: center; max-width: 100%; display: flex; align-items: center; gap: 0.4rem; justify-content: center; }
-        .glass-overlay-feed .bubble-system { color: #cbd5e1; }
-        .bubble-header { display: flex; justify-content: space-between; gap: 1.5rem; font-size: 0.72rem; margin-bottom: 0.2rem; opacity: 0.85; }
-        .sender-label { font-weight: 700; }
-        .bubble-text { font-size: 0.9rem; line-height: 1.35; word-break: break-word; }
-        .typing-indicator { padding: 0.5rem 1rem; }
-        .typing-dots { display: flex; gap: 4px; padding: 4px 0; }
-        .typing-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); animation: typingBounce 1.4s infinite; }
-        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
-        .spin-icon { animation: spin 1.5s linear infinite; }
-        .emoji-picker-popover { position: absolute; bottom: 65px; right: 20px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.3rem; box-shadow: var(--shadow-lg); z-index: 50; animation: scaleIn 0.15s ease; }
-        .emoji-btn { font-size: 1.3rem; padding: 0.3rem; border-radius: var(--radius-sm); transition: transform 0.1s; }
-        .emoji-btn:active { transform: scale(1.3); background-color: var(--bg-surface-secondary); }
-        .chat-start-area { display: flex; align-items: center; justify-content: center; padding: 1.5rem; border-top: 1px solid var(--border-color); background-color: var(--bg-surface); }
-        .glass-overlay-feed .chat-start-area { background: transparent; border-color: rgba(255, 255, 255, 0.1); }
-        .chat-start-btn { display: flex; align-items: center; gap: 0.6rem; background-color: var(--status-green); color: #fff; font-weight: 700; font-size: 0.95rem; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); box-shadow: 0 4px 16px rgba(16,185,129,0.3); }
-        .chat-start-btn:active { transform: scale(0.97); background-color: #059669; }
-        .chat-input-bar { display: flex; align-items: center; gap: 0.4rem; padding: 0.6rem 0.75rem; border-top: 1px solid var(--border-color); background-color: var(--bg-surface); }
-        .glass-overlay-feed .chat-input-bar { background: transparent; border-color: rgba(255, 255, 255, 0.15); }
-        .chat-input-field { flex: 1; border: 1px solid var(--border-color); border-radius: 100px; padding: 0.55rem 0.9rem; font-size: 0.88rem; outline: none; background-color: var(--bg-surface); color: var(--text-primary); transition: border-color 0.15s; }
-        .glass-overlay-feed .chat-input-field { background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.2); color: #fff; }
-        .chat-input-field:focus { border-color: var(--brand-blue); }
-        .emoji-toggle-btn { color: var(--text-secondary); padding: 0.4rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .glass-overlay-feed .emoji-toggle-btn { color: #cbd5e1; }
-        .emoji-toggle-btn:active { color: var(--brand-blue); background-color: var(--bg-surface-secondary); }
-        .send-message-btn { display: flex; align-items: center; justify-content: center; background-color: var(--brand-blue); color: #ffffff; padding: 0.55rem; border-radius: 50%; min-width: 38px; min-height: 38px; transition: all 0.15s; }
-        .send-message-btn:active:not(:disabled) { transform: scale(0.92); background-color: var(--brand-blue-hover); }
-        .send-message-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .action-cards-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
-        .action-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.15s ease; }
-        .action-card:active { transform: scale(0.98); background: var(--bg-surface-secondary); }
-        .action-card-icon { width: 40px; height: 40px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; }
-        .blue-bg { background: var(--brand-blue-light); color: var(--brand-blue); }
-        .red-bg { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .report-card:hover { border-color: #ef4444; }
-        .action-card-text { flex: 1; }
-        .action-card-text h5 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.1rem; }
-        .action-card-text p { font-size: 0.78rem; color: var(--text-secondary); }
-        .card-arrow { color: var(--text-muted); }
-        .report-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease; }
-        .report-modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 2rem 1.5rem; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; animation: scaleIn 0.2s ease; }
-        .report-modal h3 { font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-primary); }
-        .report-modal p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
-        .report-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
-        .report-option { padding: 0.85rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text-primary); font-size: 0.95rem; font-weight: 500; text-align: left; cursor: pointer; transition: all 0.15s; min-height: 48px; }
-        .report-option:active { border-color: #ef4444; background: rgba(239,68,68,0.05); transform: scale(0.98); }
-        .report-option:hover { border-color: #ef4444; background: rgba(239,68,68,0.05); color: #ef4444; }
-        .report-cancel { padding: 0.7rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-secondary); font-size: 0.9rem; cursor: pointer; min-height: 44px; width: 100%; }
-        .report-cancel:active { border-color: var(--text-secondary); transform: scale(0.98); }
-        .report-success { padding: 1rem 0; }
-        .report-success svg { color: #22c55e; margin-bottom: 0.75rem; }
-        .report-success h3 { color: #22c55e; margin-bottom: 0.5rem; }
-      `}</style>
     </div>
   );
 };
-
-const MessageBubble = React.memo<{ message: ChatMessage; isOverlay?: boolean }>(({ message, isOverlay }) => (
-  <div className={`message-row ${message.sender}`}>
-    <div className={`message-bubble bubble-${message.sender}`}>
-      {message.sender !== 'system' && !isOverlay && (
-        <div className="bubble-header">
-          <span className="sender-label">{message.sender === 'you' ? 'You' : 'Stranger'}</span>
-          <span className="msg-timestamp">{message.timestamp}</span>
-        </div>
-      )}
-      <div className="bubble-text">{message.text}</div>
-    </div>
-  </div>
-));
