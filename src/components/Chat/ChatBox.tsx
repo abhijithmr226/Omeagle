@@ -163,10 +163,19 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
       <div className="ow-chat-transcript-body" role="log" aria-live="polite">
         <div className="ow-site-subtext">omegleweb.io: Talk to strangers!</div>
 
+        {/* Country Prioritization Banner */}
+        <div className="ow-country-priority-banner">
+          <span className="ow-priority-icon">🌏</span>
+          <span>We're prioritizing people from your country right now. </span>
+          <a href="#worldwide" onClick={(e) => { e.preventDefault(); if (onOpenPreferences) onOpenPreferences(); }}>
+            search worldwide instead
+          </a>.
+        </div>
+
         {/* Searching Status */}
         {isSearching && (
           <div className="ow-status-line searching">
-            Looking for someone you can chat with...
+            Connecting to server...
           </div>
         )}
 

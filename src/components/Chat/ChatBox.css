@@ -42,6 +42,31 @@
   margin-bottom: 0.25rem;
 }
 
+/* Country Priority Banner */
+.ow-country-priority-banner {
+  background: #e6f4fb;
+  border-radius: 4px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.88rem;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+
+[data-theme='dark'] .ow-country-priority-banner {
+  background: rgba(3, 105, 161, 0.2);
+  color: #38bdf8;
+}
+
+.ow-country-priority-banner a {
+  color: #0284c7;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 .ow-status-line {
   font-size: 0.95rem;
   color: #334155;

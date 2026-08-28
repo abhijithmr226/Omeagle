@@ -553,9 +553,9 @@ export const App: React.FC = () => {
                 </div>
               ) : (
                 <div className="chat-layout-wrapper">
-                  <div className="chat-layout-grid-7030">
-                    {/* Left 70%: Immersive Video Experience & Floating Controls Dock */}
-                    <div className="video-column-70">
+                  <div className="ow-video-chat-grid">
+                    {/* Left: 2 Stacked Video Frames (Stranger Top, You Bottom) */}
+                    <div className="ow-video-column">
                       <VideoGrid
                         localStream={media.localStream}
                         remoteStream={remoteStream}
@@ -567,27 +567,10 @@ export const App: React.FC = () => {
                         onOpenSafety={() => navigate('/safety')}
                         onNext={handleNext}
                       />
-
-                      <ControlsBar
-                        connectionStatus={connectionStatus}
-                        isMuted={media.isMuted}
-                        isVideoOff={media.isVideoOff}
-                        onStart={() => startChat('video')}
-                        onStop={handleStop}
-                        onNext={handleNext}
-                        onToggleMute={media.toggleMute}
-                        onToggleVideo={media.toggleVideo}
-                        onOpenSettings={() => setIsSettingsOpen(true)}
-                        onOpenPrefs={() => setIsPrefsOpen(true)}
-                        onFlipCamera={handleFlipCamera}
-                        mobileChatOpen={mobileChatOpen}
-                        onToggleChat={() => setMobileChatOpen(!mobileChatOpen)}
-                        onOpenAI={() => setIsAIOpen(true)}
-                      />
                     </div>
 
-                    {/* Right 30%: Unified Chat + Matching + User Information Panel */}
-                    <div className="chat-column-30 desktop-only-chat">
+                    {/* Right: Full-Height Omegle Chat Console */}
+                    <div className="ow-chat-column">
                       <ChatBox
                         messages={chat.messages}
                         connectionStatus={connectionStatus}
@@ -595,37 +578,6 @@ export const App: React.FC = () => {
                         onNext={handleNext}
                         onStart={() => startChat('video')}
                         mode="video"
-                        isStrangerTyping={chat.isStrangerTyping}
-                        onTyping={() => callChannelRef.current?.sendTyping()}
-                        partnerProfile={partnerProfile}
-                        onOpenPreferences={() => setIsPrefsOpen(true)}
-                      />
-                    </div>
-
-                    {/* Mobile Backdrop & Slide-Up Chat Drawer */}
-                    <div
-                      className={`mobile-chat-backdrop ${mobileChatOpen ? 'open' : ''}`}
-                      onClick={() => setMobileChatOpen(false)}
-                    />
-
-                    <div className={`mobile-chat-drawer ${mobileChatOpen ? 'open' : ''}`}>
-                      <div className="mobile-chat-header">
-                        <div className="mobile-chat-title-group">
-                          <MessageCircle size={18} className="chat-header-icon" />
-                          <span>Stranger Text Chat</span>
-                        </div>
-                        <button className="mobile-chat-close" onClick={() => setMobileChatOpen(false)} aria-label="Close Chat">
-                          ✕
-                        </button>
-                      </div>
-                      <ChatBox
-                        messages={chat.messages}
-                        connectionStatus={connectionStatus}
-                        onSendMessage={handleSendMessage}
-                        onNext={handleNext}
-                        onStart={() => startChat('video')}
-                        mode="video"
-                        isOverlay={true}
                         isStrangerTyping={chat.isStrangerTyping}
                         onTyping={() => callChannelRef.current?.sendTyping()}
                         partnerProfile={partnerProfile}
@@ -748,42 +700,52 @@ export const App: React.FC = () => {
           padding: 0 1rem;
         }
 
-        /* ── Desktop Layout — 2-Column Split View ────────── */
+        /* ── Exact OmegleWeb 2-Column Video Chat Grid ────────── */
         .chat-layout-wrapper {
           display: flex;
           flex-direction: column;
           width: 100%;
-          max-width: 1360px;
+          max-width: 1240px;
           margin: 0 auto;
-          padding: 0.75rem 1.25rem 2rem;
-          gap: 0;
+          padding: 0.75rem 1rem 2rem;
         }
 
-        .chat-layout-grid-7030,
-        .chat-layout-grid {
-          display: grid;
-          grid-template-columns: minmax(500px, 1.45fr) minmax(320px, 1fr);
-          gap: 1.25rem;
+        .ow-video-chat-grid {
+          display: flex;
+          gap: 16px;
           width: 100%;
-          align-items: start;
+          align-items: stretch;
         }
 
-        .video-column-70,
-        .video-column {
+        .ow-video-column {
+          width: 420px;
+          flex-shrink: 0;
           display: flex;
           flex-direction: column;
-          gap: 0;
-          width: 100%;
+        }
+
+        .ow-chat-column {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-height: 540px;
           min-width: 0;
         }
 
-        .chat-column-30,
-        .chat-column {
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-          height: min(76vh, 740px);
-          min-height: 480px;
+        @media (max-width: 900px) {
+          .ow-video-chat-grid {
+            flex-direction: column;
+            gap: 12px;
+          }
+
+          .ow-video-column {
+            width: 100%;
+          }
+
+          .ow-chat-column {
+            width: 100%;
+            min-height: 420px;
+          }
         }
 
         /* ── Mobile Backdrop & Slide-Up Drawer ──────────────── */
