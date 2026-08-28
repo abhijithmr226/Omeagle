@@ -1,600 +1,347 @@
-/* ── OmegleWeb.io Exact Chat Console Stylesheet ─────────────────── */
+/* ── OmegleWeb.io Exact Chat Card & Console CSS ───────────────── */
 
-.ow-chat-container {
+.ow-exact-chat-card {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: var(--bg-surface);
+  background: #ffffff;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   position: relative;
 }
 
-/* 1. Header Bar */
-.ow-chat-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1.15rem;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-surface-secondary);
-  flex-shrink: 0;
+[data-theme='dark'] .ow-exact-chat-card {
+  background: #1e293b;
 }
 
-.ow-chat-partner-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.ow-status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.ow-status-dot.live {
-  background-color: var(--status-green);
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
-}
-
-.ow-status-dot.searching {
-  background-color: var(--brand-blue);
-  animation: pulse-dot 1.4s infinite;
-}
-
-.ow-status-dot.idle {
-  background-color: var(--text-muted);
-}
-
-.ow-chat-title-wrap {
-  display: flex;
-  flex-direction: column;
-}
-
-.ow-chat-title {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.ow-chat-subtitle {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.ow-chat-report-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: var(--status-red);
-  background: var(--bg-surface);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  padding: 0.3rem 0.65rem;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.ow-chat-report-btn:hover {
-  background: var(--status-red);
-  color: #ffffff;
-}
-
-/* Shared Interests Banner */
-.ow-shared-interests-banner {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  background: var(--brand-blue-light);
-  color: var(--brand-blue);
-  padding: 0.5rem 1rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.ow-shared-interests-banner strong {
-  font-weight: 800;
-}
-
-/* 2. Messages Log Transcript */
-.ow-chat-log-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.ow-chat-log {
+/* 1. Messages Transcript Body */
+.ow-chat-transcript-body {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem 1.15rem;
+  padding: 1.25rem 1.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  font-size: 0.96rem;
-  line-height: 1.45;
+  gap: 0.55rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
   user-select: text;
   -webkit-user-select: text;
+  background: #ffffff;
 }
 
-/* System Notices */
-.ow-system-notice {
-  background: var(--bg-surface-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 0.65rem 0.95rem;
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  animation: fadeIn 0.2s ease;
+[data-theme='dark'] .ow-chat-transcript-body {
+  background: #1e293b;
 }
 
-.ow-system-notice.welcome {
-  border-left: 3px solid var(--status-green);
-  color: var(--text-primary);
-  font-weight: 700;
+.ow-site-subtext {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
 }
 
-.ow-system-notice.searching {
-  border-left: 3px solid var(--brand-blue);
+.ow-status-line {
+  font-size: 0.95rem;
+  color: #334155;
+  margin-bottom: 0.35rem;
 }
 
-.ow-system-notice.disconnected {
-  border-left: 3px solid var(--status-red);
-  color: var(--status-red);
-  font-weight: 700;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+[data-theme='dark'] .ow-status-line {
+  color: #cbd5e1;
 }
 
-.ow-quick-next-btn {
-  background: var(--brand-blue);
-  color: #ffffff;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  transition: opacity 0.2s;
+.ow-status-line.welcome {
+  font-weight: 500;
 }
 
-.ow-quick-next-btn:hover {
-  opacity: 0.9;
+.ow-shared-interests-line {
+  font-size: 0.92rem;
+  color: #1e7be3;
+  margin-bottom: 0.4rem;
 }
 
-/* Classic Message Lines */
-.ow-message-line {
+/* Transcript Message Rows */
+.ow-transcript-row {
   display: flex;
   align-items: baseline;
-  gap: 0.45rem;
   word-break: break-word;
-  animation: fadeIn 0.15s ease;
+  font-size: 1.05rem;
+  line-height: 1.5;
 }
 
-.ow-msg-sender {
+/* Exact Pure Red Stranger & Pure Blue You */
+.ow-tag-stranger {
+  color: var(--stranger-red);
   font-weight: 800;
-  font-size: 0.94rem;
+  margin-right: 0.35rem;
   flex-shrink: 0;
 }
 
-.ow-sender-you {
-  color: var(--brand-blue);
+.ow-tag-you {
+  color: var(--you-blue);
+  font-weight: 800;
+  margin-right: 0.35rem;
+  flex-shrink: 0;
 }
 
-.ow-sender-stranger {
-  color: #DC2626; /* Classic Omegle Crimson Red */
+.ow-transcript-text {
+  color: #111827;
+  font-weight: 400;
 }
 
-[data-theme='dark'] .ow-sender-stranger {
-  color: #F87171;
+[data-theme='dark'] .ow-transcript-text {
+  color: #f8fafc;
 }
 
-.ow-msg-content {
-  color: var(--text-primary);
-  font-size: 0.96rem;
-}
-
-/* Typing Indicator */
-.ow-typing-line {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.82rem;
-  color: #DC2626;
-  font-weight: 700;
+/* Typing Status */
+.ow-typing-status-line {
+  font-size: 0.9rem;
   font-style: italic;
+  color: var(--stranger-red);
+  font-weight: 600;
   padding: 0.2rem 0;
 }
 
-[data-theme='dark'] .ow-typing-line {
-  color: #F87171;
-}
-
-.ow-typing-dots {
+/* Disconnected Box */
+.ow-disconnected-area {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
   display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.ow-typing-dots span {
-  width: 4px;
-  height: 4px;
-  background-color: currentColor;
-  border-radius: 50%;
-  animation: typing-jump 1.2s infinite ease-in-out;
-}
-
-.ow-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-.ow-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typing-jump {
-  0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-4px); }
-}
-
-/* Icebreakers Shelf */
-.ow-icebreakers-shelf {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
-  padding: 0.4rem 0.85rem;
-  background: var(--bg-surface-secondary);
-  border-top: 1px solid var(--border-color);
-  flex-shrink: 0;
-  overflow-x: auto;
 }
 
-.ow-shelf-tag {
-  font-size: 0.74rem;
-  font-weight: 800;
-  color: var(--text-muted);
-  white-space: nowrap;
+.ow-disconnected-title {
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: #111827;
 }
 
-.ow-shelf-pills {
+[data-theme='dark'] .ow-disconnected-title {
+  color: #f8fafc;
+}
+
+.ow-post-chat-actions {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
-.ow-icebreaker-chip {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
-  padding: 0.25rem 0.65rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  white-space: nowrap;
+.ow-post-btn {
+  background: var(--omegle-blue-gradient);
+  border: 1px solid #1a6ecf;
+  color: #ffffff;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s;
 }
 
-.ow-icebreaker-chip:hover {
-  border-color: var(--brand-blue);
+.ow-post-btn:hover {
+  background: var(--omegle-blue-gradient-hover);
+}
+
+.ow-post-text {
+  font-size: 0.88rem;
+  color: #4b5563;
+}
+
+[data-theme='dark'] .ow-post-text {
+  color: #94a3b8;
+}
+
+.ow-post-text a {
   color: var(--brand-blue);
-  background: var(--brand-blue-light);
+  text-decoration: underline;
 }
 
-/* Emoji Popover */
-.ow-emoji-popover {
-  position: absolute;
-  bottom: 60px;
-  right: 12px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 0.5rem;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 0.35rem;
-  box-shadow: var(--shadow-lg);
-  z-index: 10;
-  animation: slideUp 0.15s ease;
-}
-
-.ow-emoji-item {
-  font-size: 1.25rem;
-  padding: 0.3rem;
-  border-radius: var(--radius-sm);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-
-.ow-emoji-item:hover {
-  transform: scale(1.25);
-  background: var(--bg-surface-secondary);
-}
-
-/* 3. Bottom Action Bar */
-.ow-chat-bottom-bar {
+/* 2. Bottom Controls Bar */
+.ow-exact-bottom-bar {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.5rem;
-  padding: 0.65rem 0.85rem;
+  padding: 0.55rem 0.75rem;
   border-top: 1px solid var(--border-color);
   background: var(--bg-surface-secondary);
   flex-shrink: 0;
 }
 
-/* The Famous Multi-State Esc Button */
-.ow-stop-cycle-btn {
+/* The Blue Skip / Really? / New / Send Buttons */
+.ow-bottom-action-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 80px;
+  width: 88px;
   height: 48px;
-  padding: 0.2rem 0.75rem;
-  border-radius: var(--radius-md);
-  border: none;
+  border-radius: 6px;
+  border: 1px solid #1a6ecf;
+  background: var(--omegle-blue-gradient);
+  color: #ffffff;
   cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s, filter 0.15s;
   user-select: none;
   flex-shrink: 0;
 }
 
-.ow-btn-primary-text {
-  font-size: 0.96rem;
+.ow-bottom-action-btn:hover {
+  background: var(--omegle-blue-gradient-hover);
+}
+
+.ow-bottom-action-btn:active {
+  transform: scale(0.97);
+}
+
+.ow-btn-main-label {
+  font-size: 1.05rem;
   font-weight: 800;
   line-height: 1.1;
-  letter-spacing: -0.01em;
 }
 
-.ow-btn-esc-hint {
-  font-size: 0.68rem;
-  font-weight: 700;
-  opacity: 0.8;
-  text-transform: uppercase;
+.ow-btn-key-hint {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  font-weight: 600;
 }
 
-/* State 1: Normal Stop */
-.ow-stop-cycle-btn.state-stop {
-  background: #E2E8F0;
-  color: #334155;
+/* State: Really? */
+.ow-bottom-action-btn.is-really {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  border-color: #b91c1c;
 }
 
-[data-theme='dark'] .ow-stop-cycle-btn.state-stop {
-  background: #334155;
-  color: #F8FAFC;
+/* State: Send Disabled */
+.ow-send-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
 }
 
-.ow-stop-cycle-btn.state-stop:hover {
-  background: #CBD5E1;
-}
-
-/* State 2: Really? Confirmation (Orange/Red) */
-.ow-stop-cycle-btn.state-really {
-  background: #DC2626;
-  color: #ffffff;
-  animation: pulse-really 0.8s infinite alternate;
-}
-
-@keyframes pulse-really {
-  0% { transform: scale(0.98); }
-  100% { transform: scale(1.02); }
-}
-
-/* State 3: New / Next (Brand Blue) */
-.ow-stop-cycle-btn.state-new {
-  background: var(--brand-blue);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
-}
-
-.ow-stop-cycle-btn.state-new:hover {
-  filter: brightness(1.1);
-}
-
-.ow-stop-cycle-btn:active {
-  transform: scale(0.95);
-}
-
-/* Input Form */
-.ow-chat-form {
+/* Form & Input */
+.ow-bottom-input-form {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
   flex: 1;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 0.25rem 0.4rem 0.25rem 0.75rem;
-  height: 48px;
-  transition: border-color 0.2s;
 }
 
-.ow-chat-form:focus-within {
+.ow-bottom-input-field {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--border-color-input);
+  border-radius: 4px;
+  padding: 0 0.85rem;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+[data-theme='dark'] .ow-bottom-input-field {
+  background: #0f172a;
+}
+
+.ow-bottom-input-field:focus {
   border-color: var(--brand-blue);
   box-shadow: 0 0 0 2px var(--brand-blue-light);
 }
 
-.ow-chat-input {
-  border: none;
-  background: none;
-  outline: none;
-  font-size: 0.95rem;
-  color: var(--text-primary);
-  width: 100%;
-}
-
-.ow-chat-input:disabled {
-  background: none;
-  color: var(--text-muted);
+.ow-bottom-input-field:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
   cursor: not-allowed;
 }
 
-.ow-emoji-btn {
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  padding: 0.4rem;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+[data-theme='dark'] .ow-bottom-input-field:disabled {
+  background: #1e293b;
 }
 
-.ow-emoji-btn:hover {
-  color: var(--brand-blue);
-}
-
-.ow-emoji-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.ow-send-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: var(--brand-blue);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.45rem 0.85rem;
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  height: 38px;
-}
-
-.ow-send-btn:hover {
-  filter: brightness(1.08);
-}
-
-.ow-send-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Report Modal Backdrop */
-.ow-modal-backdrop {
+/* Report Modal */
+.ow-report-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
   padding: 1rem;
-  animation: fadeIn 0.2s ease;
 }
 
-.ow-report-card {
+.ow-report-modal-box {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: 1.75rem;
-  max-width: 440px;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 420px;
   width: 100%;
-  box-shadow: var(--shadow-xl);
-  animation: slideUp 0.2s ease;
+  box-shadow: var(--shadow-lg);
 }
 
-.ow-report-card h3 {
+.ow-report-modal-box h3 {
   font-size: 1.25rem;
-  margin-bottom: 0.4rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
   color: var(--text-primary);
 }
 
-.ow-report-card p {
-  font-size: 0.9rem;
+.ow-report-modal-box p {
+  font-size: 0.88rem;
   color: var(--text-secondary);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
-.ow-report-reasons {
+.ow-report-choices {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
-.ow-report-reason-btn {
+.ow-report-choice-btn {
   text-align: left;
-  padding: 0.75rem 1rem;
-  background: var(--bg-surface-secondary);
+  padding: 0.65rem 0.85rem;
+  border-radius: 4px;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  background: var(--bg-surface-secondary);
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.15s;
 }
 
-.ow-report-reason-btn:hover {
-  border-color: var(--status-red);
-  background: rgba(239, 68, 68, 0.08);
-  color: var(--status-red);
+.ow-report-choice-btn:hover {
+  border-color: #dc2626;
+  color: #dc2626;
 }
 
-.ow-report-cancel-btn {
+.ow-report-close-btn {
   width: 100%;
-  margin-top: 1rem;
-  padding: 0.65rem;
-  border-radius: var(--radius-md);
+  margin-top: 0.85rem;
+  padding: 0.55rem;
+  border-radius: 4px;
   border: 1px solid var(--border-color);
   background: none;
-  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
 }
 
-.ow-report-cancel-btn:hover {
-  background: var(--bg-surface-secondary);
-}
-
-.ow-report-success {
+.ow-report-success-view {
   text-align: center;
   padding: 1rem 0;
 }
 
-.ow-report-success h3 {
-  margin-top: 0.75rem;
-  color: var(--status-red);
+.ow-report-success-view h3 {
+  margin-top: 0.5rem;
+  color: #dc2626;
 }
 
-/* ── Mobile Viewports ───────────────────────────────────────── */
 @media (max-width: 600px) {
-  .ow-send-label {
-    display: none;
-  }
-
-  .ow-stop-cycle-btn {
-    min-width: 68px;
-    height: 44px;
-  }
-
-  .ow-chat-form {
-    height: 44px;
-  }
-
-  .ow-emoji-popover {
-    grid-template-columns: repeat(4, 1fr);
+  .ow-bottom-action-btn {
+    width: 68px;
   }
 }

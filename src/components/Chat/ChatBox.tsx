@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
-  Send, Smile, Search, Globe, Tag, Heart, 
-  Flag, Sparkles, Zap, Star, ShieldCheck, ArrowUpRight, SkipForward, Power
+  Send, Smile, Tag, Heart, 
+  Flag, Zap
 } from 'lucide-react';
 import { ChatMessage, ConnectionStatus, PartnerProfile } from '../../types/chat';
 import { trackSendMessage } from '../../services/gtm';
@@ -30,14 +30,6 @@ interface ChatBoxProps {
 
 const MAX_MSG = 2000;
 
-const AI_ICEBREAKERS = [
-  "What is your dream travel destination?",
-  "What hobby do you enjoy most?",
-  "Chai or Coffee?",
-  "What's your favorite movie or series?",
-  "Where are you from?"
-];
-
 export const ChatBox: React.FC<ChatBoxProps> = ({
   messages,
   connectionStatus,
@@ -52,8 +44,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   onOpenPreferences
 }) => {
   const [inputText, setInputText] = useState('');
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [stopConfirmState, setStopConfirmState] = useState(false); // true when clicked "Stop" once -> "Really?"
+  const [stopState, setStopState] = useState<'stop' | 'really' | 'new'>('stop');
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportSubmitted, setReportSubmitted] = useState(false);
   
@@ -65,34 +56,34 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   const isSearching = connectionStatus === 'searching' || connectionStatus === 'connecting';
   const isDisconnected = connectionStatus === 'disconnected' || connectionStatus === 'timed-out' || connectionStatus === 'idle';
 
-  // Reset confirmation state when connection changes
+  // Synchronize stop button state with connection status
   useEffect(() => {
-    setStopConfirmState(false);
-  }, [connectionStatus]);
+    if (isConnected) {
+      setStopState('stop');
+    } else {
+      setStopState('new');
+    }
+  }, [isConnected, connectionStatus]);
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStrangerTyping]);
 
-  // Escape Key Handler for the iconic Omegle "Stop -> Really? -> New" cycle
+  // Escape key shortcut
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (showEmojiPicker) {
-          setShowEmojiPicker(false);
-          return;
-        }
         if (showReportModal) {
           setShowReportModal(false);
           return;
         }
 
         if (isConnected) {
-          if (!stopConfirmState) {
-            setStopConfirmState(true);
+          if (stopState === 'stop') {
+            setStopState('really');
           } else {
-            setStopConfirmState(false);
+            setStopState('new');
             onNext();
           }
         } else if (isDisconnected) {
@@ -103,7 +94,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isConnected, isDisconnected, stopConfirmState, showEmojiPicker, showReportModal, onNext, onStart]);
+  }, [isConnected, isDisconnected, stopState, showReportModal, onNext, onStart]);
 
   // Auto-focus input when connected
   useEffect(() => {
@@ -113,12 +104,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   }, [isConnected]);
 
   // Multi-state button click handler
-  const handleStopBtnClick = () => {
+  const handleSkipBtnClick = () => {
     if (isConnected) {
-      if (!stopConfirmState) {
-        setStopConfirmState(true);
+      if (stopState === 'stop') {
+        setStopState('really');
       } else {
-        setStopConfirmState(false);
+        setStopState('new');
         onNext();
       }
     } else if (isDisconnected) {
@@ -134,7 +125,6 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
     onSendMessage(inputText);
     trackSendMessage(mode);
     setInputText('');
-    setShowEmojiPicker(false);
     typingSentRef.current = false;
   }, [inputText, isConnected, onSendMessage, mode]);
 
@@ -154,258 +144,173 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
     }
   }, [handleSend]);
 
-  const handleReport = useCallback(() => {
-    setShowReportModal(true);
-    setReportSubmitted(false);
-  }, []);
-
-  const submitReport = useCallback(() => {
-    setReportSubmitted(true);
-    setTimeout(() => {
-      setShowReportModal(false);
-      setReportSubmitted(false);
-    }, 1800);
-  }, []);
+  const handleSaveLog = () => {
+    const transcript = messages
+      .map(m => `${m.sender === 'you' ? 'You' : 'Stranger'}: ${m.text}`)
+      .join('\n');
+    const blob = new Blob([transcript], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `omegle-chat-log-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className={`ow-chat-container ${isOverlay ? 'ow-overlay-mode' : ''}`}>
-      {/* 1. Header Bar: Status & Interests */}
-      <div className="ow-chat-header">
-        <div className="ow-chat-partner-meta">
-          <span className={`ow-status-dot ${isConnected ? 'live' : isSearching ? 'searching' : 'idle'}`} />
-          <div className="ow-chat-title-wrap">
-            <span className="ow-chat-title">
-              {partnerProfile?.country ? `${getFlag(partnerProfile.country)} Stranger from ${partnerProfile.country}` : 'Stranger'}
-            </span>
-            <span className="ow-chat-subtitle">
-              {isConnected ? 'Connected • P2P WebRTC' : isSearching ? 'Looking for someone...' : 'Ready to start'}
-            </span>
+    <div className={`ow-exact-chat-card ${isOverlay ? 'is-overlay' : ''}`}>
+      {/* Messages Scroll Area */}
+      <div className="ow-chat-transcript-body" role="log" aria-live="polite">
+        <div className="ow-site-subtext">omegleweb.io: Talk to strangers!</div>
+
+        {/* Searching Status */}
+        {isSearching && (
+          <div className="ow-status-line searching">
+            Looking for someone you can chat with...
           </div>
-        </div>
-
-        {isConnected && onOpenPreferences && (
-          <button 
-            type="button" 
-            className="ow-chat-report-btn" 
-            onClick={handleReport}
-            title="Report inappropriate behavior"
-          >
-            <Flag size={13} />
-            <span>Report</span>
-          </button>
         )}
-      </div>
 
-      {/* Shared Interests Banner (if matched) */}
-      {partnerProfile?.interests && partnerProfile.interests.length > 0 && (
-        <div className="ow-shared-interests-banner">
-          <Tag size={13} className="ow-tag-icon" />
-          <span>You both like: <strong>{partnerProfile.interests.join(', ')}</strong></span>
-        </div>
-      )}
-
-      {/* 2. Messages Log (Omegle Transcript Format) */}
-      <div className="ow-chat-log-wrapper">
-        <div className="ow-chat-log" role="log" aria-live="polite">
-          {/* Searching Notice */}
-          {isSearching && (
-            <div className="ow-system-notice searching">
-              <Search size={14} className="spin-icon" />
-              <span>Looking for someone you can chat with...</span>
-            </div>
-          )}
-
-          {/* Connection Established Welcome Notice */}
-          {isConnected && messages.length === 0 && (
-            <div className="ow-system-notice welcome">
-              <span>You're now chatting with a random stranger. Say hi!</span>
-            </div>
-          )}
-
-          {/* Disconnected Notice */}
-          {connectionStatus === 'disconnected' && (
-            <div className="ow-system-notice disconnected">
-              <span>Stranger has disconnected.</span>
-              <button className="ow-quick-next-btn" onClick={onStart}>
-                Start a new chat (Esc)
-              </button>
-            </div>
-          )}
-
-          {/* Message List in Classic Omegle Style */}
-          {messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              className={`ow-message-line ${msg.sender === 'you' ? 'ow-msg-you-line' : 'ow-msg-stranger-line'}`}
-            >
-              <span className={`ow-msg-sender ${msg.sender === 'you' ? 'ow-sender-you' : 'ow-sender-stranger'}`}>
-                {msg.sender === 'you' ? 'You:' : 'Stranger:'}
-              </span>
-              <span className="ow-msg-content">{msg.text}</span>
-            </div>
-          ))}
-
-          {/* Typing Indicator */}
-          {isStrangerTyping && (
-            <div className="ow-typing-line">
-              <span className="ow-typing-text">Stranger is typing</span>
-              <div className="ow-typing-dots">
-                <span /><span /><span />
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* AI Icebreaker Quick Chips Shelf */}
+        {/* Welcome Notice */}
         {isConnected && (
-          <div className="ow-icebreakers-shelf">
-            <span className="ow-shelf-tag">💡 Icebreaker:</span>
-            <div className="ow-shelf-pills">
-              {AI_ICEBREAKERS.map((prompt, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className="ow-icebreaker-chip"
-                  onClick={() => {
-                    onSendMessage(prompt);
-                    trackSendMessage(mode);
-                  }}
-                >
-                  "{prompt}"
-                </button>
-              ))}
+          <div className="ow-status-line welcome">
+            You're now talking to a random stranger
+            {partnerProfile?.country ? ` from ${getFlag(partnerProfile.country)} ${partnerProfile.country}` : ''}.
+          </div>
+        )}
+
+        {/* Shared Interests Highlight */}
+        {partnerProfile?.interests && partnerProfile.interests.length > 0 && (
+          <div className="ow-shared-interests-line">
+            You both like <strong>{partnerProfile.interests.join(', ')}</strong>.
+          </div>
+        )}
+
+        {/* Transcript Messages List */}
+        {messages.map((msg) => (
+          <div key={msg.id} className="ow-transcript-row">
+            <strong className={msg.sender === 'you' ? 'ow-tag-you' : 'ow-tag-stranger'}>
+              {msg.sender === 'you' ? 'You:' : 'Stranger:'}
+            </strong>
+            <span className="ow-transcript-text"> {msg.text}</span>
+          </div>
+        ))}
+
+        {/* Typing indicator */}
+        {isStrangerTyping && (
+          <div className="ow-typing-status-line">
+            Stranger is typing...
+          </div>
+        )}
+
+        {/* Disconnected Notice & Post-Chat Actions */}
+        {connectionStatus === 'disconnected' && (
+          <div className="ow-disconnected-area">
+            <div className="ow-disconnected-title">Stranger has disconnected.</div>
+            
+            <div className="ow-post-chat-actions">
+              <button type="button" className="ow-post-btn" onClick={onStart}>
+                New Stranger
+              </button>
+              
+              <button type="button" className="ow-post-btn" onClick={handleSaveLog}>
+                Save Chat Log
+              </button>
+
+              <span className="ow-post-text">or <a href="#video" onClick={(e) => { e.preventDefault(); onStart(); }}>turn on video</a> or <a href="#safety">unmoderated section</a></span>
             </div>
           </div>
         )}
 
-        {/* Emoji Picker Popover */}
-        {showEmojiPicker && (
-          <div className="ow-emoji-popover" role="listbox">
-            {['👋', '😊', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😍', '💯', '🙈', '😎', '🙌', '✨', '💬', '🎶'].map(emoji => (
-              <button 
-                key={emoji} 
-                className="ow-emoji-item" 
-                role="option" 
-                aria-label={emoji}
-                onClick={() => setInputText(prev => prev + emoji)}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* 3. Bottom Action Bar: Iconic Stop/Really/New Button + Input + Send */}
-      <div className="ow-chat-bottom-bar">
-        {/* The Famous Multi-State Esc Button */}
+      {/* Bottom Controls Dock */}
+      <div className="ow-exact-bottom-bar">
+        {/* The Exact Blue Skip / Really? / New Button */}
         <button
           type="button"
-          className={`ow-stop-cycle-btn ${
-            isConnected
-              ? stopConfirmState
-                ? 'state-really'
-                : 'state-stop'
-              : 'state-new'
+          className={`ow-bottom-action-btn ${
+            stopState === 'really' ? 'is-really' : stopState === 'new' ? 'is-new' : 'is-skip'
           }`}
-          onClick={handleStopBtnClick}
-          title="Press Esc to Stop / Skip / Start New Chat"
-          aria-label={isConnected ? (stopConfirmState ? 'Really Disconnect?' : 'Stop Chat') : 'Start New Chat'}
+          onClick={handleSkipBtnClick}
+          title="Press Esc to Skip / Find New Stranger"
+          aria-label={stopState === 'really' ? 'Really Disconnect?' : isConnected ? 'Skip Stranger' : 'New Stranger'}
         >
-          {isConnected ? (
-            stopConfirmState ? (
-              <>
-                <span className="ow-btn-primary-text">Really?</span>
-                <span className="ow-btn-esc-hint">Esc</span>
-              </>
-            ) : (
-              <>
-                <span className="ow-btn-primary-text">Stop</span>
-                <span className="ow-btn-esc-hint">Esc</span>
-              </>
-            )
-          ) : (
-            <>
-              <span className="ow-btn-primary-text">New</span>
-              <span className="ow-btn-esc-hint">Esc</span>
-            </>
-          )}
+          <span className="ow-btn-main-label">
+            {stopState === 'really' ? 'Really?' : isConnected ? 'Skip' : 'New'}
+          </span>
+          <span className="ow-btn-key-hint">Esc</span>
         </button>
 
-        {/* Input Form */}
-        <form onSubmit={handleSend} className="ow-chat-form">
+        {/* Real Text Input */}
+        <form onSubmit={handleSend} className="ow-bottom-input-form">
           <input
             ref={inputRef}
             type="text"
-            className="ow-chat-input"
+            className="ow-bottom-input-field"
             placeholder={
               isConnected 
-                ? "Type your message and press Enter..." 
+                ? "Type a message..." 
                 : isSearching 
-                ? "Searching for a stranger..." 
-                : "Press 'New' to start chatting..."
+                ? "Searching..." 
+                : "Type a message..."
             }
             value={inputText}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={!isConnected}
             maxLength={MAX_MSG}
-            aria-label="Chat message input"
+            aria-label="Type message input"
           />
-
-          <button 
-            type="button" 
-            className="ow-emoji-btn" 
-            aria-label="Emoji picker"
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)} 
-            disabled={!isConnected}
-          >
-            <Smile size={19} />
-          </button>
-
-          <button 
-            type="submit" 
-            className="ow-send-btn"
-            disabled={!isConnected || !inputText.trim()} 
-            aria-label="Send message"
-          >
-            <Send size={16} />
-            <span className="ow-send-label">Send</span>
-          </button>
         </form>
+
+        {/* The Exact Blue Send Button */}
+        <button 
+          type="button"
+          className="ow-bottom-action-btn ow-send-action-btn"
+          onClick={handleSend}
+          disabled={!isConnected || !inputText.trim()}
+          title="Press Enter to Send"
+          aria-label="Send message"
+        >
+          <span className="ow-btn-main-label">Send</span>
+          <span className="ow-btn-key-hint">Enter</span>
+        </button>
       </div>
 
       {/* Safety Report Modal */}
       {showReportModal && (
-        <div className="ow-modal-backdrop" onClick={() => !reportSubmitted && setShowReportModal(false)}>
-          <div className="ow-report-card" onClick={e => e.stopPropagation()}>
+        <div className="ow-report-backdrop" onClick={() => !reportSubmitted && setShowReportModal(false)}>
+          <div className="ow-report-modal-box" onClick={e => e.stopPropagation()}>
             {reportSubmitted ? (
-              <div className="ow-report-success">
-                <Flag size={36} className="text-red" />
+              <div className="ow-report-success-view">
+                <Flag size={36} color="#DC2626" />
                 <h3>User Reported</h3>
-                <p>Thank you for keeping our community safe. Skipping to the next user...</p>
+                <p>Thank you for helping keep OmegleWeb clean and safe.</p>
               </div>
             ) : (
               <>
                 <h3>Report User</h3>
-                <p>Select the reason for reporting this user:</p>
-                <div className="ow-report-reasons">
-                  {['Inappropriate or explicit content', 'Harassment or hate speech', 'Spam / Automated bot', 'Underage user', 'Other violation'].map(reason => (
+                <p>Select a reason for reporting:</p>
+                <div className="ow-report-choices">
+                  {['Explicit / Inappropriate content', 'Harassment or hate speech', 'Spam / Automated bot', 'Underage user', 'Other violation'].map(reason => (
                     <button 
-                      key={reason} 
-                      className="ow-report-reason-btn" 
+                      key={reason}
+                      className="ow-report-choice-btn"
                       onClick={() => {
-                        submitReport();
-                        onNext();
+                        setReportSubmitted(true);
+                        setTimeout(() => {
+                          setShowReportModal(false);
+                          setReportSubmitted(false);
+                          onNext();
+                        }, 1200);
                       }}
                     >
                       {reason}
                     </button>
                   ))}
                 </div>
-                <button className="ow-report-cancel-btn" onClick={() => setShowReportModal(false)}>
+                <button className="ow-report-close-btn" onClick={() => setShowReportModal(false)}>
                   Cancel
                 </button>
               </>
